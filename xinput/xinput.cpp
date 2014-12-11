@@ -1,5 +1,5 @@
 #include <SADXModLoader.h>
-#include "WriteControllerData.h"
+#include "WriteControllerXInput.h"
 
 PointerInfo jumps[] = {
 	{ (void*)(0x0040F460), WriteControllerXInput }
