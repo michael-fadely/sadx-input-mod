@@ -33,6 +33,7 @@ typedef unsigned long ulong;
 #define _WORD short
 #define _DWORD long
 #define _QWORD ll
+#undef _LONGLONG
 #define _LONGLONG __int128
 
 #ifndef _WINDOWS_
@@ -48,10 +49,15 @@ typedef int bool; // we want to use bool in our C programs
 
 // Some convenience macros to make partial accesses nicer
 // first unsigned macros:
+#undef LOBYTE
 #define LOBYTE(x) (*((_BYTE*)&(x))) // low byte
+#undef LOWORD
 #define LOWORD(x) (*((_WORD*)&(x))) // low word
+#undef LODWORD
 #define LODWORD(x) (*((_DWORD*)&(x))) // low dword
+#undef HIBYTE
 #define HIBYTE(x) (*((_BYTE*)&(x)+1))
+#undef HIWORD
 #define HIWORD(x) (*((_WORD*)&(x)+1))
 #define HIDWORD(x) (*((_DWORD*)&(x)+1))
 #define BYTEn(x, n) (*((_BYTE*)&(x)+n))
@@ -134,7 +140,7 @@ typedef int bool; // we want to use bool in our C programs
 
 #define _UNKNOWN char
 
-#ifdef _MSC_VER
-#define snprintf _snprintf
-#define vsnprintf _vsnprintf
-#endif
+//#ifdef _MSC_VER
+//#define snprintf _snprintf
+//#define vsnprintf _vsnprintf
+//#endif

@@ -18,7 +18,7 @@
     <ClCompile Include="xinput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WriteControllerData_XInput.cpp">
+    <ClCompile Include="WriteControllerXInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -31,10 +31,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SADXModLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ninja.h">
+    <ClInclude Include="WriteControllerXInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
