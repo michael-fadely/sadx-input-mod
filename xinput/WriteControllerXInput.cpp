@@ -4,9 +4,11 @@
 #include <Xinput.h>
 
 #include <SADXModLoader.h>
+#include <G:\Libraries\LazyTypedefs.h>
 //#include "precious thing.h"
 
-#include <G:\Libraries\LazyTypedefs.h>
+#include "WriteControllerXInput.h"
+
 DataArray(ControllerData, Controller_Data_0, 0x03B0E9C8, 8);
 
 int XInputToDreamcast(const XINPUT_GAMEPAD& controller)
@@ -55,7 +57,6 @@ short deadzone(short analog, short dz = DEADZONE)
 }
 
 // TODO: Mouse
-// TODO: Rumble
 void __cdecl WriteControllerXInput()
 {
 	for (uint i = 0; i < 4; i++)
@@ -65,7 +66,8 @@ void __cdecl WriteControllerXInput()
 		XInputGetState(i, &state);
 		XINPUT_GAMEPAD controller = state.Gamepad;
 
-		// First, let's get all this analog crap out of the way!
+		// Not sure what this is for
+		pad->Support = 0x3F07FEu;
 
 		// L Analog
 		pad->LeftStickX = deadzone(controller.sThumbLX);
@@ -93,6 +95,100 @@ void __cdecl WriteControllerXInput()
 		// Set the "last held" to held
 		pad->Old = pad->HeldButtons;
 	}
+}
+
+DataPointer(int, rumble_related_3B2A2E4, 0x3B2A2E4);
+DataPointer(char, enableRumble, 0x00913B10);
+
+void __cdecl RumbleA(int a1, signed int a2)
+{
+	int intensity; // eax@4
+
+	if (!rumble_related_3B2A2E4)
+	{
+		if (enableRumble)
+		{
+			if (!a1)
+			{
+				intensity = a2;
+				if (a2 <= 255)
+				{
+					if (a2 < 0 || a2 < 1)
+						intensity = 1;
+					Rumble(intensity);
+				}
+				else
+				{
+					Rumble(255);
+				}
+			}
+		}
+	}
+}
+
+void __cdecl RumbleB(int a1, signed int a2, signed int a3, int a4)
+{
+	signed int v4; // ecx@4
+	signed int v5; // eax@12
+	signed int intensity; // eax@16
+
+	if (!rumble_related_3B2A2E4)
+	{
+		if (enableRumble)
+		{
+			if (!a1)
+			{
+				v4 = a2;
+				if (a2 <= 4)
+				{
+					if (a2 >= -4)
+					{
+						if (a2 == 1)
+						{
+							v4 = 2;
+						}
+						else
+						{
+							if (a2 == -1)
+								v4 = -2;
+						}
+					}
+					else
+					{
+						v4 = -4;
+					}
+				}
+				else
+				{
+					v4 = 4;
+				}
+				v5 = a3;
+				if (a3 <= 59)
+				{
+					if (a3 < 7)
+						v5 = 7;
+				}
+				else
+				{
+					v5 = 59;
+				}
+				intensity = a4 * v5 / (4 * v4);
+				if (intensity <= 0)
+					intensity = 1;
+				Rumble(intensity);
+			}
+		}
+	}
+}
+
+void __cdecl Rumble(int a1)
+{
+	a1 *= 4;
+	XINPUT_VIBRATION vibration = { (a1 & 0x0000FFFF), (a1 & 0xFFFF0000) };
+	//XINPUT_VIBRATION vibration = { 65535, 65535 };
+
+	for (uint i = 0; i < 4; i++)
+		XInputSetState(i, &vibration);
 }
 
 #pragma region help me
@@ -175,9 +271,8 @@ FunctionPointer(void, sub_40E900, (void), 0x40E900);
 #pragma endregion
 
 /*
-void __cdecl _WriteControllerData_XInput()
+void __cdecl WriteControllerData()
 {
-#pragma region crap
 	int v0; // eax@4
 	int iterator_maybe; // ecx@6
 	int v2; // eax@8
@@ -230,7 +325,7 @@ void __cdecl _WriteControllerData_XInput()
 	int held_something; // edx@178
 	char dinput_mouse_dupe; // [sp+3h] [bp-21h]@84
 	signed int v51; // [sp+4h] [bp-20h]@13
-	int held_yet_again; // [sp+4h] [bp-20h]@76
+	int v52; // [sp+4h] [bp-20h]@76
 	int v53; // [sp+8h] [bp-1Ch]@42
 	int v54; // [sp+8h] [bp-1Ch]@76
 	int v55; // [sp+Ch] [bp-18h]@6
@@ -240,7 +335,6 @@ void __cdecl _WriteControllerData_XInput()
 	int v59; // [sp+18h] [bp-Ch]@76
 	int v60; // [sp+1Ch] [bp-8h]@10
 	signed int v61; // [sp+20h] [bp-4h]@76
-#pragma endregion
 
 	dword_3B0E340 = sub_77F060(0);
 	if (dword_8929D4[0])
@@ -282,10 +376,10 @@ void __cdecl _WriteControllerData_XInput()
 			zerobutgetsreused = 0;
 		}
 		v6 = 0;
-		controller_ptr->CameraY = zerobutgetsreused;
-		controller_ptr->CameraX = zerobutgetsreused;
-		controller_ptr->ControlY = zerobutgetsreused;
-		controller_ptr->ControlX = zerobutgetsreused;
+		controller_ptr->RightStickY = zerobutgetsreused;
+		controller_ptr->RightStickX = zerobutgetsreused;
+		controller_ptr->LeftStickY = zerobutgetsreused;
+		controller_ptr->LeftStickX = zerobutgetsreused;
 		v51 = zerobutgetsreused;
 		v56 = zerobutgetsreused;
 		v58 = zerobutgetsreused;
@@ -371,7 +465,7 @@ void __cdecl _WriteControllerData_XInput()
 				dword_3B0EC18 = 0;
 			}
 			dword_3B0EC14 = v11;
-			qword_3B0EC1C = zerobutgetsreused;
+			qword_3B0EC1C = __PAIR__(zerobutgetsreused, v53);
 			v6 = v53;
 		}
 		v16 = sub_77F120(dword_90A000[v55]);
@@ -424,13 +518,13 @@ void __cdecl _WriteControllerData_XInput()
 		{
 			*((_WORD *)v15 + 17) = -128;
 		}
-		held_yet_again = *((_DWORD *)v15 + 2) | v51;
+		v52 = *((_DWORD *)v15 + 2) | v51;
 		v54 = *((_WORD *)v15 + 14) + v6;
 		v20 = *((_WORD *)v15 + 15) + zerobutgetsreused;
 		v21 = byte_3B0E9A4[v61];
 		v57 = *((_WORD *)v15 + 16) + v56;
 		v59 = *((_WORD *)v15 + 17) + v58;
-		controller_ptr->field_4 = 0x3F07FEu;
+		controller_ptr->Support = 0x3F07FEu;
 		if (v21)
 		{
 			controller_ptr->HeldButtons = dword_3B0E9B8[v61];
@@ -577,7 +671,7 @@ void __cdecl _WriteControllerData_XInput()
 		v23 = (v23 + 1) & 3;
 		dword_3B0EC0C = v23;
 	LABEL_122:
-		v28 = *(_DWORD *)&Controller_Data_0[5].CameraRight;
+		v28 = *(_DWORD *)&Controller_Data_0[5].RTriggerPressure;
 		v29 = (_UNKNOWN *)word_3B0E6E0;
 		if (RAM_dword_ptr_P1_Obj1)
 		{
@@ -609,7 +703,7 @@ void __cdecl _WriteControllerData_XInput()
 				if (v31 >= v28)
 					goto LABEL_135;
 			}
-			held_yet_again |= *((_WORD *)v29 + 2 * v31 + 1);
+			v52 |= *((_WORD *)v29 + 2 * v31 + 1);
 		}
 	LABEL_135:
 		v33 = *(_DWORD *)dword_3B0E778;
@@ -641,11 +735,11 @@ void __cdecl _WriteControllerData_XInput()
 		{
 			if (v34 == 2)
 			LABEL_144:
-			held_yet_again |= 0x10000u;
+			v52 |= 0x10000u;
 			dword_3B0EBF4 = v35 - 1;
 			goto LABEL_147;
 		}
-		held_yet_again |= 0x20000u;
+		v52 |= 0x20000u;
 		dword_3B0EBF4 = v35 - 1;
 	LABEL_147:
 		v36 = v54;
@@ -668,8 +762,8 @@ void __cdecl _WriteControllerData_XInput()
 			LOWORD(v20) = -127;
 		}
 		v37 = v57;
-		controller_ptr->ControlX = v36;
-		controller_ptr->ControlY = v20;
+		controller_ptr->LeftStickX = v36;
+		controller_ptr->LeftStickY = v20;
 		if (v57 >= -127)
 		{
 			if (v57 > 127)
@@ -690,35 +784,35 @@ void __cdecl _WriteControllerData_XInput()
 			v38 = -127;
 		}
 		held = controller_ptr->HeldButtons;
-		controller_ptr->CameraY = v38;
-		controller_ptr->CameraX = v37;
-		useless_1 = held_yet_again;
-		useless_2 = held_yet_again;
-		controller_ptr->CameraLeft = (useless_1 & 0x20000) != 0 ? 0xFF : 0;
-		controller_ptr->NotHeldButtons = ~held_yet_again;
-		controller_ptr->CameraRight = (useless_2 & 0x10000) != 0 ? 0xFF : 0;
+		controller_ptr->RightStickY = v38;
+		controller_ptr->RightStickX = v37;
+		useless_1 = v52;
+		useless_2 = v52;
+		controller_ptr->LTriggerPressure = (useless_1 & 0x20000) != 0 ? 0xFF : 0;
+		controller_ptr->NotHeldButtons = ~v52;
+		controller_ptr->RTriggerPressure = (useless_2 & 0x10000) != 0 ? 0xFF : 0;
 		held_dupe = held;
-		useless_3 = held_yet_again ^ held;
-		controller_ptr->HeldButtons_Copy = held;
-		pressed = held_yet_again & (held_yet_again ^ held);
+		useless_3 = v52 ^ held;
+		controller_ptr->Old = held;
+		pressed = v52 & (v52 ^ held);
 		controller_ptr->ReleasedButtons = held_dupe & useless_3;
-		controller_ptr->HeldButtons = held_yet_again;
+		controller_ptr->HeldButtons = v52;
 		controller_ptr->PressedButtons = pressed;
 		v61 = v60;
 		dword_3B0E344[v60] = pressed;
-		if (held_yet_again == held_dupe)
+		if (v52 == held_dupe)
 		{
 			v45 = dword_3B0E768[v60] + 1;
 			dword_3B0E768[v60] = v45;
 			if (v45 == 15)
 			{
-				dword_3B0E344[v60] = held_yet_again;
+				dword_3B0E344[v60] = v52;
 			}
 			else
 			{
 				if (v45 == 19)
 				{
-					dword_3B0E344[v60] = held_yet_again;
+					dword_3B0E344[v60] = v52;
 					dword_3B0E768[v60] = 15;
 				}
 			}
@@ -728,7 +822,7 @@ void __cdecl _WriteControllerData_XInput()
 			dword_3B0E768[v60] = 0;
 		}
 	LABEL_169:
-		v47 = (v55 + 1 == 4);
+		v47 = __SETO__(v55 + 1, 4);
 		v46 = v55++ - 3 < 0;
 		if (!(v46 ^ v47))
 			break;
@@ -755,10 +849,10 @@ void __cdecl _WriteControllerData_XInput()
 						else
 						{
 							Controller_Data_0_ptr->HeldButtons = held_something | Controller_Data_0_ptr->HeldButtons & 8;
-							Controller_Data_0_ptr->CameraLeft = *((_WORD *)v48 + 12 * word_3B2C464 + 2);
-							Controller_Data_0_ptr->CameraRight = *((_WORD *)v48 + 12 * word_3B2C464 + 3);
-							Controller_Data_0_ptr->ControlX = *((_WORD *)v48 + 12 * word_3B2C464 + 4);
-							Controller_Data_0_ptr->ControlY = *((_WORD *)v48 + 12 * word_3B2C464 + 5);
+							Controller_Data_0_ptr->LTriggerPressure = *((_WORD *)v48 + 12 * word_3B2C464 + 2);
+							Controller_Data_0_ptr->RTriggerPressure = *((_WORD *)v48 + 12 * word_3B2C464 + 3);
+							Controller_Data_0_ptr->LeftStickX = *((_WORD *)v48 + 12 * word_3B2C464 + 4);
+							Controller_Data_0_ptr->LeftStickY = *((_WORD *)v48 + 12 * word_3B2C464 + 5);
 							Controller_Data_0_ptr->NotHeldButtons = *((_DWORD *)v48 + 6 * word_3B2C464 + 3);
 							Controller_Data_0_ptr->PressedButtons = Controller_Data_0_ptr->PressedButtons & 8 | *((_DWORD *)v48
 								+ 6 * word_3B2C464
