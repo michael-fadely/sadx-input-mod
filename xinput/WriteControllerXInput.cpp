@@ -1,11 +1,9 @@
-//#include <cmath>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <Xinput.h>
 
 #include <SADXModLoader.h>
 #include <G:\Libraries\LazyTypedefs.h>
-//#include "precious thing.h"
 
 #include "WriteControllerXInput.h"
 
@@ -24,7 +22,7 @@ short deadzone(short analog, short dz = DEADZONE)
 {
 	return (analog < -dz || analog > dz) ? analog : 0;
 }
-
+// Converts wButtons in controller to Sonic Adventure compatible buttons and returns the value.
 int XInputToDreamcast(const XINPUT_GAMEPAD& controller)
 {
 	int result = 0;
@@ -111,6 +109,17 @@ void __cdecl WriteControllerXInput()
 	}
 }
 
+void __cdecl Rumble(int a1)
+{
+	rumble = true;
+	// TODO: Automatic scaling from byte to short value
+	a1 *= 32767;
+
+	XINPUT_VIBRATION vibration = { (a1 & 0x0000FFFF), (a1 & 0xFFFF0000) };
+
+	for (uint i = 0; i < 4; i++)
+		XInputSetState(i, &vibration);
+}
 void __cdecl RumbleA(int a1, signed int a2)
 {
 	int intensity; // eax@4
@@ -136,7 +145,6 @@ void __cdecl RumbleA(int a1, signed int a2)
 		}
 	}
 }
-
 void __cdecl RumbleB(int a1, signed int a2, signed int a3, int a4)
 {
 	signed int v4; // ecx@4
@@ -190,18 +198,6 @@ void __cdecl RumbleB(int a1, signed int a2, signed int a3, int a4)
 			}
 		}
 	}
-}
-
-void __cdecl Rumble(int a1)
-{
-	rumble = true;
-	// TODO: Automatic scaling from byte to short value
-	a1 *= 32767;
-
-	XINPUT_VIBRATION vibration = { (a1 & 0x0000FFFF), (a1 & 0xFFFF0000) };
-
-	for (uint i = 0; i < 4; i++)
-		XInputSetState(i, &vibration);
 }
 
 #pragma region help me
