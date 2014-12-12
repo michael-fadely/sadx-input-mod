@@ -5,13 +5,13 @@
 #include <SADXModLoader.h>
 #include <G:\Libraries\LazyTypedefs.h>
 
-#include "WriteControllerXInput.h"
+#include "UpdateControllersXInput.h"
 
 DataArray(ControllerData, Controller_Data_0, 0x03B0E9C8, 8);
 DataPointer(int, rumble_related_3B2A2E4, 0x3B2A2E4);
 DataPointer(char, enableRumble, 0x00913B10);
 
-const short DEADZONE = 4096;
+const short DEADZONE = XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
 bool rumble = false;
 const uint rumble_timer = 15; // TODO: Take framerate setting into consideration.
 uint rumble_elapsed = 0;
@@ -61,7 +61,7 @@ int XInputToDreamcast(const XINPUT_GAMEPAD& controller)
 }
 
 // TODO: Mouse
-void __cdecl WriteControllerXInput()
+void __cdecl UpdateControllersXInput()
 {
 	for (uint i = 0; i < 4; i++)
 	{

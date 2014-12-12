@@ -1,8 +1,8 @@
 #include <SADXModLoader.h>
-#include "WriteControllerXInput.h"
+#include "UpdateControllersXInput.h"
 
 PointerInfo jumps[] = {
-	{ (void*)(0x0040F460), WriteControllerXInput },
+	{ (void*)(0x0040F460), UpdateControllersXInput },
 	{ (void*)(0x004BCB60), Rumble },
 	{ (void*)(0x004BCBC0), RumbleA },
 	{ (void*)(0x004BCC10), RumbleB }

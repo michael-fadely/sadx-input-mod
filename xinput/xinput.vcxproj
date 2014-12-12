@@ -78,7 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="WriteControllerXInput.cpp" />
+    <ClCompile Include="UpdateControllersXInput.cpp" />
     <ClCompile Include="xinput.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -91,7 +91,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="WriteControllerXInput.h" />
+    <ClInclude Include="UpdateControllersXInput.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
