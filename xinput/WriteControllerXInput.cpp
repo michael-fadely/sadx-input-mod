@@ -10,6 +10,20 @@
 #include "WriteControllerXInput.h"
 
 DataArray(ControllerData, Controller_Data_0, 0x03B0E9C8, 8);
+DataPointer(int, rumble_related_3B2A2E4, 0x3B2A2E4);
+DataPointer(char, enableRumble, 0x00913B10);
+
+const short DEADZONE = 4096;
+bool rumble = false;
+const uint rumble_timer = 15; // TODO: Take framerate setting into consideration.
+uint rumble_elapsed = 0;
+
+// Returns analog if it exceeds the deadzone, otherwise 0.
+// TODO: Configurable deadzone, split for each analog stick
+short deadzone(short analog, short dz = DEADZONE)
+{
+	return (analog < -dz || analog > dz) ? analog : 0;
+}
 
 int XInputToDreamcast(const XINPUT_GAMEPAD& controller)
 {
@@ -46,14 +60,6 @@ int XInputToDreamcast(const XINPUT_GAMEPAD& controller)
 		result |= Buttons_Right;
 
 	return result;
-}
-
-// TODO: Configurable deadzone, split for each analog stick
-const short DEADZONE = 4096;
-// Returns analog if it exceeds the deadzone, otherwise 0.
-short deadzone(short analog, short dz = DEADZONE)
-{
-	return (analog < -dz || analog > dz) ? analog : 0;
 }
 
 // TODO: Mouse
@@ -95,10 +101,15 @@ void __cdecl WriteControllerXInput()
 		// Set the "last held" to held
 		pad->Old = pad->HeldButtons;
 	}
-}
 
-DataPointer(int, rumble_related_3B2A2E4, 0x3B2A2E4);
-DataPointer(char, enableRumble, 0x00913B10);
+	// Disable rumble if the timer says it's a good idea.
+	if (rumble && ++rumble_elapsed == rumble_timer)
+	{
+		Rumble(0);
+		rumble_elapsed = 0;
+		rumble = false;
+	}
+}
 
 void __cdecl RumbleA(int a1, signed int a2)
 {
@@ -183,9 +194,11 @@ void __cdecl RumbleB(int a1, signed int a2, signed int a3, int a4)
 
 void __cdecl Rumble(int a1)
 {
-	a1 *= 4;
+	rumble = true;
+	// TODO: Automatic scaling from byte to short value
+	a1 *= 32767;
+
 	XINPUT_VIBRATION vibration = { (a1 & 0x0000FFFF), (a1 & 0xFFFF0000) };
-	//XINPUT_VIBRATION vibration = { 65535, 65535 };
 
 	for (uint i = 0; i < 4; i++)
 		XInputSetState(i, &vibration);
