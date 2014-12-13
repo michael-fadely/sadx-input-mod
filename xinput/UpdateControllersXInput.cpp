@@ -68,28 +68,39 @@ void __cdecl UpdateControllersXInput()
 		ControllerData* pad = &Controller_Data_0[i];
 		XINPUT_STATE state = {};
 		XInputGetState(i, &state);
-		XINPUT_GAMEPAD controller = state.Gamepad;
+		XINPUT_GAMEPAD* controller = &state.Gamepad;
+		// HACK: Used to fix insane analogs that hit -32768 when pressing backwards all the way. (negative numbers are FORWARD!)
+		// Now if there are analogs that hit -32768 when pressing forward, we're gonna have a problem...
+		short analogHack = 0;
 
 		// Not sure what this is for
 		pad->Support = 0x3F07FEu;
 
+#ifdef _DEBUG
+		DisplayDebugStringFormatted(10 + (2 * i), "P%d L X/Y: %05d/%05d - R X/Y: %05d/%05d", (i + 1), pad->LeftStickX, pad->LeftStickY, pad->RightStickX, pad->RightStickY);
+#endif
+
+
 		// L Analog
-		pad->LeftStickX = deadzone(controller.sThumbLX);
-		pad->LeftStickY = deadzone(-controller.sThumbLY);
+		pad->LeftStickX = deadzone(controller->sThumbLX);
+		analogHack = deadzone(-controller->sThumbLY);
+		pad->LeftStickY = (analogHack == -32768) ? 32767 : analogHack;
+
 
 		// R Analog
-		pad->RightStickX = deadzone(controller.sThumbRX);
-		pad->RightStickY = deadzone(-controller.sThumbRY);
+		pad->RightStickX = deadzone(controller->sThumbRX);
+		analogHack = deadzone(-controller->sThumbRY);
+		pad->RightStickY = (analogHack == -32768) ? 32767 : analogHack;
 
 		// Trigger pressure
-		pad->LTriggerPressure = controller.bLeftTrigger;
-		pad->RTriggerPressure = controller.bRightTrigger;
+		pad->LTriggerPressure = controller->bLeftTrigger;
+		pad->RTriggerPressure = controller->bRightTrigger;
 
 		// Now set the released buttons to the pressed buttons from last frame.
 		pad->ReleasedButtons = pad->PressedButtons;
 
 		// Now, get the new buttons from the XInput controller
-		pad->HeldButtons = XInputToDreamcast(controller);
+		pad->HeldButtons = XInputToDreamcast(*controller);
 		pad->NotHeldButtons = pad->HeldButtons;
 
 		// Do some fancy math to "press" only the necessary buttons
