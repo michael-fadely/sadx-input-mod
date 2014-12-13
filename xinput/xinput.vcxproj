@@ -78,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FileExists.cpp" />
     <ClCompile Include="UpdateControllersXInput.cpp" />
     <ClCompile Include="xinput.cpp" />
   </ItemGroup>
@@ -91,6 +92,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FileExists.h" />
     <ClInclude Include="UpdateControllersXInput.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

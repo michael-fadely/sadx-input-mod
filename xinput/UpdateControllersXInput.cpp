@@ -11,201 +11,225 @@ DataArray(ControllerData, Controller_Data_0, 0x03B0E9C8, 8);
 DataPointer(int, rumble_related_3B2A2E4, 0x3B2A2E4);
 DataPointer(char, enableRumble, 0x00913B10);
 
-const short DEADZONE = XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
-bool rumble = false;
-const uint rumble_timer = 15; // TODO: Take framerate setting into consideration.
-uint rumble_elapsed = 0;
-
-// Returns analog if it exceeds the deadzone, otherwise 0.
-// TODO: Configurable deadzone, split for each analog stick
-short deadzone(short analog, short dz = DEADZONE)
+namespace xinput
 {
-	return (analog < -dz || analog > dz) ? analog : 0;
-}
-// Converts wButtons in controller to Sonic Adventure compatible buttons and returns the value.
-int XInputToDreamcast(const XINPUT_GAMEPAD& controller)
-{
-	int result = 0;
-	int buttons = controller.wButtons;
-
-	if (buttons & XINPUT_GAMEPAD_A)
-		result |= Buttons_A;
-	if (buttons & XINPUT_GAMEPAD_B)
-		result |= Buttons_B;
-	if (buttons & XINPUT_GAMEPAD_X)
-		result |= Buttons_X;
-	if (buttons & XINPUT_GAMEPAD_Y)
-		result |= Buttons_Y;
-	if (buttons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
-		result |= Buttons_Z;
-
-	// TODO: Configurable trigger threshold
-	if (controller.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
-		result |= Buttons_L;
-	if (controller.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
-		result |= Buttons_R;
-
-	if (buttons & XINPUT_GAMEPAD_START)
-		result |= Buttons_Start;
-
-	if (buttons & XINPUT_GAMEPAD_DPAD_UP)
-		result |= Buttons_Up;
-	if (buttons & XINPUT_GAMEPAD_DPAD_DOWN)
-		result |= Buttons_Down;
-	if (buttons & XINPUT_GAMEPAD_DPAD_LEFT)
-		result |= Buttons_Left;
-	if (buttons & XINPUT_GAMEPAD_DPAD_RIGHT)
-		result |= Buttons_Right;
-
-	return result;
-}
-
-// TODO: Mouse
-void __cdecl UpdateControllersXInput()
-{
-	for (uint i = 0; i < 4; i++)
+	namespace deadzone
 	{
-		ControllerData* pad = &Controller_Data_0[i];
-		XINPUT_STATE state = {};
-		XInputGetState(i, &state);
-		XINPUT_GAMEPAD* controller = &state.Gamepad;
-		// HACK: Used to fix insane analogs that hit -32768 when pressing backwards all the way. (negative numbers are FORWARD!)
-		// Now if there are analogs that hit -32768 when pressing forward, we're gonna have a problem...
-		short analogHack = 0;
+		short stickL[4] = {
+			XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
+			XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
+			XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
+			XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE
+		};
 
-		// Not sure what this is for
-		pad->Support = 0x3F07FEu;
+		short stickR[4] = {
+			XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
+			XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
+			XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
+			XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE
+		};
+
+		short triggers[4] = {
+			XINPUT_GAMEPAD_TRIGGER_THRESHOLD,
+			XINPUT_GAMEPAD_TRIGGER_THRESHOLD,
+			XINPUT_GAMEPAD_TRIGGER_THRESHOLD,
+			XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+		};
+	}
+
+	bool rumble = false;
+	const uint rumble_timer = 15; // TODO: Take framerate setting into consideration.
+	uint rumble_elapsed = 0;
+
+	// Returns analog if it exceeds the deadzone, otherwise 0.
+	short GetWithinDeadzone(short analog, short dz)
+	{
+		return (analog < -dz || analog > dz) ? analog : 0;
+	}
+	// Converts wButtons in controller to Sonic Adventure compatible buttons and returns the value.
+	int XInputToDreamcast(const XINPUT_GAMEPAD& controller, ushort id)
+	{
+		int result = 0;
+		int buttons = controller.wButtons;
+
+		if (buttons & XINPUT_GAMEPAD_A)
+			result |= Buttons_A;
+		if (buttons & XINPUT_GAMEPAD_B)
+			result |= Buttons_B;
+		if (buttons & XINPUT_GAMEPAD_X)
+			result |= Buttons_X;
+		if (buttons & XINPUT_GAMEPAD_Y)
+			result |= Buttons_Y;
+		if (buttons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
+			result |= Buttons_Z;
+
+		// TODO: Configurable trigger threshold
+		if (controller.bLeftTrigger > deadzone::triggers[id])
+			result |= Buttons_L;
+		if (controller.bRightTrigger > deadzone::triggers[id])
+			result |= Buttons_R;
+
+		if (buttons & XINPUT_GAMEPAD_START)
+			result |= Buttons_Start;
+
+		if (buttons & XINPUT_GAMEPAD_DPAD_UP)
+			result |= Buttons_Up;
+		if (buttons & XINPUT_GAMEPAD_DPAD_DOWN)
+			result |= Buttons_Down;
+		if (buttons & XINPUT_GAMEPAD_DPAD_LEFT)
+			result |= Buttons_Left;
+		if (buttons & XINPUT_GAMEPAD_DPAD_RIGHT)
+			result |= Buttons_Right;
+
+		return result;
+	}
+
+	// TODO: Mouse
+	void __cdecl UpdateControllersXInput()
+	{
+		for (uint i = 0; i < 4; i++)
+		{
+			ControllerData* pad = &Controller_Data_0[i];
+			XINPUT_STATE state = {};
+			XInputGetState(i, &state);
+			XINPUT_GAMEPAD* controller = &state.Gamepad;
+			// HACK: Used to fix insane analogs that hit -32768 when pressing backwards all the way. (negative numbers are FORWARD!)
+			// Now if there are analogs that hit -32768 when pressing forward, we're gonna have a problem...
+			short analogHack = 0;
+
+			// Not sure what this is for
+			pad->Support = 0x3F07FEu;
 
 #ifdef _DEBUG
-		DisplayDebugStringFormatted(10 + (2 * i), "P%d L X/Y: %05d/%05d - R X/Y: %05d/%05d", (i + 1), pad->LeftStickX, pad->LeftStickY, pad->RightStickX, pad->RightStickY);
+			DisplayDebugStringFormatted(10 + (2 * i), "P%d L X/Y: %05d/%05d - R X/Y: %05d/%05d", (i + 1), pad->LeftStickX, pad->LeftStickY, pad->RightStickX, pad->RightStickY);
 #endif
 
+			// L Analog
+			pad->LeftStickX = GetWithinDeadzone(controller->sThumbLX, deadzone::stickL[i]);
+			analogHack = GetWithinDeadzone(-controller->sThumbLY, deadzone::stickL[i]);
+			pad->LeftStickY = (analogHack == -32768) ? 32767 : analogHack;
 
-		// L Analog
-		pad->LeftStickX = deadzone(controller->sThumbLX);
-		analogHack = deadzone(-controller->sThumbLY);
-		pad->LeftStickY = (analogHack == -32768) ? 32767 : analogHack;
 
+			// R Analog
+			pad->RightStickX = GetWithinDeadzone(controller->sThumbRX, deadzone::stickR[i]);
+			analogHack = GetWithinDeadzone(-controller->sThumbRY, deadzone::stickR[i]);
+			pad->RightStickY = (analogHack == -32768) ? 32767 : analogHack;
 
-		// R Analog
-		pad->RightStickX = deadzone(controller->sThumbRX);
-		analogHack = deadzone(-controller->sThumbRY);
-		pad->RightStickY = (analogHack == -32768) ? 32767 : analogHack;
+			// Trigger pressure
+			pad->LTriggerPressure = controller->bLeftTrigger;
+			pad->RTriggerPressure = controller->bRightTrigger;
 
-		// Trigger pressure
-		pad->LTriggerPressure = controller->bLeftTrigger;
-		pad->RTriggerPressure = controller->bRightTrigger;
+			// Now set the released buttons to the pressed buttons from last frame.
+			pad->ReleasedButtons = pad->PressedButtons;
 
-		// Now set the released buttons to the pressed buttons from last frame.
-		pad->ReleasedButtons = pad->PressedButtons;
+			// Now, get the new buttons from the XInput controller
+			pad->HeldButtons = XInputToDreamcast(*controller, i);
+			pad->NotHeldButtons = pad->HeldButtons;
 
-		// Now, get the new buttons from the XInput controller
-		pad->HeldButtons = XInputToDreamcast(*controller);
-		pad->NotHeldButtons = pad->HeldButtons;
+			// Do some fancy math to "press" only the necessary buttons
+			pad->PressedButtons = pad->HeldButtons;
+			pad->PressedButtons &= ~pad->Old;
 
-		// Do some fancy math to "press" only the necessary buttons
-		pad->PressedButtons = pad->HeldButtons;
-		pad->PressedButtons &= ~pad->Old;
+			// Set the "last held" to held
+			pad->Old = pad->HeldButtons;
+		}
 
-		// Set the "last held" to held
-		pad->Old = pad->HeldButtons;
-	}
-
-	// Disable rumble if the timer says it's a good idea.
-	if (rumble && ++rumble_elapsed == rumble_timer)
-	{
-		Rumble(0);
-		rumble_elapsed = 0;
-		rumble = false;
-	}
-}
-
-void __cdecl Rumble(int a1)
-{
-	rumble = true;
-	// TODO: Automatic scaling from byte to short value
-	a1 *= 32767;
-
-	XINPUT_VIBRATION vibration = { (a1 & 0x0000FFFF), (a1 & 0xFFFF0000) };
-
-	for (uint i = 0; i < 4; i++)
-		XInputSetState(i, &vibration);
-}
-void __cdecl RumbleA(int a1, signed int a2)
-{
-	int intensity; // eax@4
-
-	if (!rumble_related_3B2A2E4)
-	{
-		if (enableRumble)
+		// Disable rumble if the timer says it's a good idea.
+		if (rumble && ++rumble_elapsed == rumble_timer)
 		{
-			if (!a1)
+			Rumble(0);
+			rumble_elapsed = 0;
+			rumble = false;
+		}
+	}
+
+	void __cdecl Rumble(int a1)
+	{
+		rumble = true;
+		// TODO: Automatic scaling from byte to short value
+		a1 *= 32767;
+
+		XINPUT_VIBRATION vibration = { (a1 & 0x0000FFFF), (a1 & 0xFFFF0000) };
+
+		for (uint i = 0; i < 4; i++)
+			XInputSetState(i, &vibration);
+	}
+	void __cdecl RumbleA(int a1, signed int a2)
+	{
+		int intensity; // eax@4
+
+		if (!rumble_related_3B2A2E4)
+		{
+			if (enableRumble)
 			{
-				intensity = a2;
-				if (a2 <= 255)
+				if (!a1)
 				{
-					if (a2 < 0 || a2 < 1)
-						intensity = 1;
-					Rumble(intensity);
-				}
-				else
-				{
-					Rumble(255);
+					intensity = a2;
+					if (a2 <= 255)
+					{
+						if (a2 < 0 || a2 < 1)
+							intensity = 1;
+						Rumble(intensity);
+					}
+					else
+					{
+						Rumble(255);
+					}
 				}
 			}
 		}
 	}
-}
-void __cdecl RumbleB(int a1, signed int a2, signed int a3, int a4)
-{
-	signed int v4; // ecx@4
-	signed int v5; // eax@12
-	signed int intensity; // eax@16
-
-	if (!rumble_related_3B2A2E4)
+	void __cdecl RumbleB(int a1, signed int a2, signed int a3, int a4)
 	{
-		if (enableRumble)
+		signed int v4; // ecx@4
+		signed int v5; // eax@12
+		signed int intensity; // eax@16
+
+		if (!rumble_related_3B2A2E4)
 		{
-			if (!a1)
+			if (enableRumble)
 			{
-				v4 = a2;
-				if (a2 <= 4)
+				if (!a1)
 				{
-					if (a2 >= -4)
+					v4 = a2;
+					if (a2 <= 4)
 					{
-						if (a2 == 1)
+						if (a2 >= -4)
 						{
-							v4 = 2;
+							if (a2 == 1)
+							{
+								v4 = 2;
+							}
+							else
+							{
+								if (a2 == -1)
+									v4 = -2;
+							}
 						}
 						else
 						{
-							if (a2 == -1)
-								v4 = -2;
+							v4 = -4;
 						}
 					}
 					else
 					{
-						v4 = -4;
+						v4 = 4;
 					}
+					v5 = a3;
+					if (a3 <= 59)
+					{
+						if (a3 < 7)
+							v5 = 7;
+					}
+					else
+					{
+						v5 = 59;
+					}
+					intensity = a4 * v5 / (4 * v4);
+					if (intensity <= 0)
+						intensity = 1;
+					Rumble(intensity);
 				}
-				else
-				{
-					v4 = 4;
-				}
-				v5 = a3;
-				if (a3 <= 59)
-				{
-					if (a3 < 7)
-						v5 = 7;
-				}
-				else
-				{
-					v5 = 59;
-				}
-				intensity = a4 * v5 / (4 * v4);
-				if (intensity <= 0)
-					intensity = 1;
-				Rumble(intensity);
 			}
 		}
 	}

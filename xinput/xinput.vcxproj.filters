@@ -21,6 +21,9 @@
     <ClCompile Include="UpdateControllersXInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FileExists.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="mod.ini">
@@ -32,6 +35,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UpdateControllersXInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileExists.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
