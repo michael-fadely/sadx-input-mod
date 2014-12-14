@@ -11,14 +11,9 @@
 #include "FileExists.h"
 #include "UpdateControllersXInput.h"
 
-PointerInfo jumps[] = {
-	{ (void*)(0x0040F460), xinput::UpdateControllersXInput },
-	{ (void*)(0x004BCB60), xinput::Rumble },
-	{ (void*)(0x004BCBC0), xinput::RumbleA },
-	{ (void*)(0x004BCC10), xinput::RumbleB }
-};
+char _path[FILENAME_MAX];
 
-void  _cdecl SetDeadzone(short* array, uint id, int value)
+void _cdecl SetDeadzone(short* array, uint id, int value)
 {
 	if (value < 0)
 		return;
@@ -30,15 +25,12 @@ void  _cdecl SetDeadzone(short* array, uint id, int value)
 
 	PrintDebug("Deadzone set to %d", value);
 }
-
-char _path[FILENAME_MAX];
-
 void _cdecl xinput_main(const char *path, const HelperFunctions &helperFunctions)
 {
 	using namespace std;
 
 	_getcwd(_path, FILENAME_MAX);
-	
+
 	string configPath;
 	{
 		// because
@@ -48,7 +40,7 @@ void _cdecl xinput_main(const char *path, const HelperFunctions &helperFunctions
 	}
 
 	PrintDebug(configPath.c_str() + '\n');
-	
+
 	if (FileExists(configPath))
 	{
 		for (uint i = 0; i < 4; i++)
@@ -56,9 +48,9 @@ void _cdecl xinput_main(const char *path, const HelperFunctions &helperFunctions
 			std::string section = "Controller " + to_string(i + 1);
 			int l, r, t;
 
-			l = GetPrivateProfileIntA(section.c_str(), "DeadZoneL",			-1, configPath.c_str());
-			r = GetPrivateProfileIntA(section.c_str(), "DeadZoneR",			-1, configPath.c_str());
-			t = GetPrivateProfileIntA(section.c_str(), "TriggerThreshold",	-1, configPath.c_str());
+			l = GetPrivateProfileIntA(section.c_str(), "DeadZoneL", -1, configPath.c_str());
+			r = GetPrivateProfileIntA(section.c_str(), "DeadZoneR", -1, configPath.c_str());
+			t = GetPrivateProfileIntA(section.c_str(), "TriggerThreshold", -1, configPath.c_str());
 
 			SetDeadzone(xinput::deadzone::stickL, i, l);
 			SetDeadzone(xinput::deadzone::stickR, i, r);
@@ -66,6 +58,13 @@ void _cdecl xinput_main(const char *path, const HelperFunctions &helperFunctions
 		}
 	}
 }
+
+PointerInfo jumps[] = {
+	{ (void*)(0x0040F460), xinput::UpdateControllersXInput },
+	{ (void*)(0x004BCB60), xinput::Rumble },
+	{ (void*)(0x004BCBC0), xinput::RumbleA },
+	{ (void*)(0x004BCC10), xinput::RumbleB }
+};
 
 extern "C"						// Required for proper export
 __declspec(dllexport)			// This data is being exported from this DLL
