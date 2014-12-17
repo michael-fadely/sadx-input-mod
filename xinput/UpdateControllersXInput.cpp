@@ -7,7 +7,6 @@
 
 #include "UpdateControllersXInput.h"
 
-// TODO: Fix Big casting
 // TODO: Fix analog hack
 
 DataArray(ControllerData, Controller_Data_0, 0x03B0E9C8, 8);
@@ -66,7 +65,6 @@ namespace xinput
 		if (buttons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
 			result |= Buttons_Z;
 
-		// TODO: Configurable trigger threshold
 		if (controller.bLeftTrigger > deadzone::triggers[id])
 			result |= Buttons_L;
 		if (controller.bRightTrigger > deadzone::triggers[id])
@@ -121,12 +119,12 @@ namespace xinput
 			pad->LTriggerPressure = controller->bLeftTrigger;
 			pad->RTriggerPressure = controller->bRightTrigger;
 
-			// Now set the released buttons to the pressed buttons from last frame.
-			pad->ReleasedButtons = pad->PressedButtons;
-
 			// Now, get the new buttons from the XInput controller
 			pad->HeldButtons = XInputToDreamcast(*controller, i);
-			pad->NotHeldButtons = pad->HeldButtons;
+			pad->NotHeldButtons = ~pad->HeldButtons;
+
+			// Now set the released buttons to the pressed buttons from last frame.
+			pad->ReleasedButtons = pad->HeldButtons ^ pad->Old;
 
 			// Do some fancy math to "press" only the necessary buttons
 			pad->PressedButtons = pad->HeldButtons;
