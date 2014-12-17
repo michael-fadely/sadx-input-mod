@@ -7,6 +7,11 @@
 
 #include "UpdateControllersXInput.h"
 
+// TODO: Fix Knuckles climbing
+// TODO: Fix Big casting
+// TODO: Fix karts
+// TODO: Fix lost world mirror thing
+
 DataArray(ControllerData, Controller_Data_0, 0x03B0E9C8, 8);
 DataPointer(int, rumble_related_3B2A2E4, 0x3B2A2E4);
 DataPointer(char, enableRumble, 0x00913B10);
