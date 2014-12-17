@@ -7,10 +7,8 @@
 
 #include "UpdateControllersXInput.h"
 
-// TODO: Fix Knuckles climbing
 // TODO: Fix Big casting
-// TODO: Fix karts
-// TODO: Fix lost world mirror thing
+// TODO: Fix analog hack
 
 DataArray(ControllerData, Controller_Data_0, 0x03B0E9C8, 8);
 DataPointer(int, rumble_related_3B2A2E4, 0x3B2A2E4);
@@ -49,7 +47,7 @@ namespace xinput
 	// Returns analog if it exceeds the deadzone, otherwise 0.
 	short GetWithinDeadzone(short analog, short dz)
 	{
-		return (analog < -dz || analog > dz) ? analog : 0;
+		return (analog < -dz || analog > dz) ? (analog / 256) : 0;
 	}
 	// Converts wButtons in controller to Sonic Adventure compatible buttons and returns the value.
 	int XInputToDreamcast(const XINPUT_GAMEPAD& controller, ushort id)
@@ -112,13 +110,12 @@ namespace xinput
 			// L Analog
 			pad->LeftStickX = GetWithinDeadzone(controller->sThumbLX, deadzone::stickL[i]);
 			analogHack = GetWithinDeadzone(-controller->sThumbLY, deadzone::stickL[i]);
-			pad->LeftStickY = (analogHack == -32768) ? 32767 : analogHack;
-
+			pad->LeftStickY = (analogHack == -128) ? 127 : analogHack;
 
 			// R Analog
 			pad->RightStickX = GetWithinDeadzone(controller->sThumbRX, deadzone::stickR[i]);
 			analogHack = GetWithinDeadzone(-controller->sThumbRY, deadzone::stickR[i]);
-			pad->RightStickY = (analogHack == -32768) ? 32767 : analogHack;
+			pad->RightStickY = (analogHack == -128) ? 127 : analogHack;
 
 			// Trigger pressure
 			pad->LTriggerPressure = controller->bLeftTrigger;
