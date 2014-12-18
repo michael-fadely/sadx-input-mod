@@ -43,19 +43,14 @@ namespace xinput
 	const uint rumble_timer = 15; // TODO: Take framerate setting into consideration.
 	uint rumble_elapsed = 0;
 
-	// Returns analog if it exceeds the deadzone, otherwise 0.
 	short GetWithinDeadzone(short analog, short dz)
 	{
-		short result = (analog < -dz || analog > dz) ? (analog / 256) : 0;
-		
-		// HACK: Used to fix insane analogs that hit -32768 when pressing backwards all the way. (negative numbers are FORWARD!)
-		// Now if there are analogs that hit -32768 when pressing forward, we're gonna have a problem...
-		if (result < -127)
-			result = -127;
-		else if (result > 127)
-			result = 127;
-		
-		return result;
+		// tl;dr: if analog exceeds the deadzone
+		// make sure it's not < -127 or > 127 and return it; else 0.
+		if (analog < -dz || analog > dz)
+			return min(max(-127, (analog / 256)), 127);
+		else
+			return 0;
 	}
 	// Converts wButtons in controller to Sonic Adventure compatible buttons and returns the value.
 	int XInputToDreamcast(const XINPUT_GAMEPAD& controller, ushort id)
