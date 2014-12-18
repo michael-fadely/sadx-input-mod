@@ -22,8 +22,6 @@ void _cdecl SetDeadzone(short* array, uint id, int value)
 		value = 320767;
 
 	array[id] = value;
-
-	PrintDebug("Deadzone set to %d", value);
 }
 void _cdecl xinput_main(const char *path, const HelperFunctions &helperFunctions)
 {
@@ -39,8 +37,6 @@ void _cdecl xinput_main(const char *path, const HelperFunctions &helperFunctions
 		configPath = ss.str();
 	}
 
-	PrintDebug(configPath.c_str() + '\n');
-
 	if (FileExists(configPath))
 	{
 		for (uint i = 0; i < 4; i++)
@@ -55,6 +51,9 @@ void _cdecl xinput_main(const char *path, const HelperFunctions &helperFunctions
 			SetDeadzone(xinput::deadzone::stickL, i, l);
 			SetDeadzone(xinput::deadzone::stickR, i, r);
 			SetDeadzone(xinput::deadzone::triggers, i, t);
+
+			PrintDebug("[XInput] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
+				xinput::deadzone::stickL[i], xinput::deadzone::stickR[i], xinput::deadzone::triggers[i]);
 		}
 	}
 }
