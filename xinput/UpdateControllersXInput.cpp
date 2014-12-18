@@ -52,7 +52,7 @@ namespace xinput
 		else
 			return 0;
 	}
-	// Converts wButtons in controller to Sonic Adventure compatible buttons and returns the value.
+	// Converts wButtons in XINPUT_GAMEPAD to Sonic Adventure compatible buttons and returns the value.
 	int XInputToDreamcast(const XINPUT_GAMEPAD& controller, ushort id)
 	{
 		int result = 0;
@@ -138,38 +138,44 @@ namespace xinput
 		if (rumble && ++rumble_elapsed == rumble_timer)
 		{
 			Rumble(0);
-			rumble_elapsed = 0;
 			rumble = false;
 		}
 	}
 
+#pragma region Rumble
 	void __cdecl Rumble(int a1)
 	{
+		// This stuff is used to disable the rumble later.
 		rumble = true;
+		rumble_elapsed = 0;
+		
 		// TODO: Automatic scaling from byte to short value
 		a1 *= 32767;
 
+		// Too bad this doesn't do anything but rumble left (heavy) motor =/
 		XINPUT_VIBRATION vibration = { (a1 & 0x0000FFFF), (a1 & 0xFFFF0000) };
 
 		for (uint i = 0; i < 4; i++)
 			XInputSetState(i, &vibration);
 	}
-	void __cdecl RumbleA(int a1, signed int a2)
+	void __cdecl RumbleA(int playerNumber, signed int intensity)
 	{
-		int intensity; // eax@4
+		int _intensity; // eax@4
 
 		if (!rumble_related_3B2A2E4)
 		{
 			if (enableRumble)
 			{
-				if (!a1)
+				// Only continue if the calling player(?) is Player 1 (0)
+				if (!playerNumber)
 				{
-					intensity = a2;
-					if (a2 <= 255)
+					_intensity = intensity;
+					if (intensity <= 255)
 					{
-						if (a2 < 0 || a2 < 1)
-							intensity = 1;
-						Rumble(intensity);
+						// If the intensity is <= 0, set to the default of 1
+						if (intensity < 0 || intensity < 1)
+							_intensity = 1;
+						Rumble(_intensity);
 					}
 					else
 					{
@@ -181,8 +187,8 @@ namespace xinput
 	}
 	void __cdecl RumbleB(int a1, signed int a2, signed int a3, int a4)
 	{
-		signed int v4; // ecx@4
-		signed int v5; // eax@12
+		signed int _a2; // ecx@4
+		signed int _a3; // eax@12
 		signed int intensity; // eax@16
 
 		if (!rumble_related_3B2A2E4)
@@ -191,41 +197,41 @@ namespace xinput
 			{
 				if (!a1)
 				{
-					v4 = a2;
+					_a2 = a2;
 					if (a2 <= 4)
 					{
 						if (a2 >= -4)
 						{
 							if (a2 == 1)
 							{
-								v4 = 2;
+								_a2 = 2;
 							}
 							else
 							{
 								if (a2 == -1)
-									v4 = -2;
+									_a2 = -2;
 							}
 						}
 						else
 						{
-							v4 = -4;
+							_a2 = -4;
 						}
 					}
 					else
 					{
-						v4 = 4;
+						_a2 = 4;
 					}
-					v5 = a3;
+					_a3 = a3;
 					if (a3 <= 59)
 					{
 						if (a3 < 7)
-							v5 = 7;
+							_a3 = 7;
 					}
 					else
 					{
-						v5 = 59;
+						_a3 = 59;
 					}
-					intensity = a4 * v5 / (4 * v4);
+					intensity = a4 * _a3 / (4 * _a2);
 					if (intensity <= 0)
 						intensity = 1;
 					Rumble(intensity);
@@ -233,6 +239,7 @@ namespace xinput
 			}
 		}
 	}
+#pragma endregion
 }
 
 #pragma region help me
