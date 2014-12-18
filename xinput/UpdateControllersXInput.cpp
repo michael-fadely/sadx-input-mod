@@ -46,7 +46,16 @@ namespace xinput
 	// Returns analog if it exceeds the deadzone, otherwise 0.
 	short GetWithinDeadzone(short analog, short dz)
 	{
-		return (analog < -dz || analog > dz) ? (analog / 256) : 0;
+		short result = (analog < -dz || analog > dz) ? (analog / 256) : 0;
+		
+		// HACK: Used to fix insane analogs that hit -32768 when pressing backwards all the way. (negative numbers are FORWARD!)
+		// Now if there are analogs that hit -32768 when pressing forward, we're gonna have a problem...
+		if (result < -127)
+			result = -127;
+		else if (result > 127)
+			result = 127;
+		
+		return result;
 	}
 	// Converts wButtons in controller to Sonic Adventure compatible buttons and returns the value.
 	int XInputToDreamcast(const XINPUT_GAMEPAD& controller, ushort id)
@@ -94,9 +103,6 @@ namespace xinput
 			XINPUT_STATE state = {};
 			XInputGetState(i, &state);
 			XINPUT_GAMEPAD* controller = &state.Gamepad;
-			// HACK: Used to fix insane analogs that hit -32768 when pressing backwards all the way. (negative numbers are FORWARD!)
-			// Now if there are analogs that hit -32768 when pressing forward, we're gonna have a problem...
-			short analogHack = 0;
 
 			// Not sure what this is for
 			pad->Support = 0x3F07FEu;
@@ -107,13 +113,11 @@ namespace xinput
 
 			// L Analog
 			pad->LeftStickX = GetWithinDeadzone(controller->sThumbLX, deadzone::stickL[i]);
-			analogHack = GetWithinDeadzone(-controller->sThumbLY, deadzone::stickL[i]);
-			pad->LeftStickY = (analogHack == -128) ? 127 : analogHack;
+			pad->LeftStickY = GetWithinDeadzone(-controller->sThumbLY, deadzone::stickL[i]);
 
 			// R Analog
 			pad->RightStickX = GetWithinDeadzone(controller->sThumbRX, deadzone::stickR[i]);
-			analogHack = GetWithinDeadzone(-controller->sThumbRY, deadzone::stickR[i]);
-			pad->RightStickY = (analogHack == -128) ? 127 : analogHack;
+			pad->RightStickY = GetWithinDeadzone(-controller->sThumbRY, deadzone::stickR[i]);
 
 			// Trigger pressure
 			pad->LTriggerPressure = controller->bLeftTrigger;
@@ -123,7 +127,8 @@ namespace xinput
 			pad->HeldButtons = XInputToDreamcast(*controller, i);
 			pad->NotHeldButtons = ~pad->HeldButtons;
 
-			// Now set the released buttons to the pressed buttons from last frame.
+			// Now set the released buttons to the difference between
+			// the last and currently held buttons
 			pad->ReleasedButtons = pad->HeldButtons ^ pad->Old;
 
 			// Do some fancy math to "press" only the necessary buttons
