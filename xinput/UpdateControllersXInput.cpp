@@ -15,14 +15,13 @@ DataPointer(char, enableRumble, 0x00913B10);
 
 namespace xinput
 {
-	// TODO: Take framerate into account
-	const uint rumble_l_timer = 15;
-	const uint rumble_r_timer = 60;
+	const uint64 rumble_l_timer = 250;
+	const uint64 rumble_r_timer = 1000;
 
 	static XINPUT_VIBRATION vibration = {};
 	static Motor rumble = Motor::None;
-	static uint rumble_l_elapsed = 0;
-	static uint rumble_r_elapsed = 0;
+	static uint64 rumble_l_elapsed = 0;
+	static uint64 rumble_r_elapsed = 0;
 
 	static bool multi_gate = false;
 	static float rumble_multi = 255.0;
@@ -167,13 +166,13 @@ namespace xinput
 		if (rumble != Motor::None)
 		{
 			Motor result = Motor::None;
-			
-			if (++rumble_l_elapsed >= rumble_l_timer)
+			uint64 now = GetTickCount64();
+			if ((now - rumble_l_elapsed) >= rumble_l_timer)
 			{
 				result = (Motor)(result | Motor::Left);
 				rumble = (Motor)(rumble ^ Motor::Left);
 			}
-			if (++rumble_r_elapsed >= rumble_r_timer)
+			if ((now - rumble_r_elapsed) >= rumble_r_timer)
 			{
 				result = (Motor)(result | Motor::Right);
 				rumble = (Motor)(rumble ^ Motor::Right);
@@ -213,12 +212,12 @@ namespace xinput
 		if (motor & Motor::Left)
 		{
 			vibration.wLeftMotorSpeed = intensity;
-			rumble_l_elapsed = 0;
+			rumble_l_elapsed = GetTickCount64();
 		}
 		if (motor & Motor::Right)
 		{
 			vibration.wRightMotorSpeed = intensity * 2;
-			rumble_r_elapsed = 0;
+			rumble_r_elapsed = GetTickCount64();
 		}
 
 		for (uint i = 0; i < 4; i++)
