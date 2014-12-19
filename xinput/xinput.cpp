@@ -11,6 +11,13 @@
 #include "FileExists.h"
 #include "UpdateControllersXInput.h"
 
+PointerInfo jumps[] = {
+	{ (void*)(0x0040F460), xinput::UpdateControllersXInput },
+	//{ (void*)(0x004BCB60), xinput::Rumble },
+	{ (void*)(0x004BCBC0), xinput::RumbleLarge },
+	{ (void*)(0x004BCC10), xinput::RumbleSmall }
+};
+
 char _path[FILENAME_MAX];
 
 void _cdecl SetDeadzone(short* array, uint id, int value)
@@ -57,13 +64,6 @@ void _cdecl xinput_main(const char *path, const HelperFunctions &helperFunctions
 		}
 	}
 }
-
-PointerInfo jumps[] = {
-	{ (void*)(0x0040F460), xinput::UpdateControllersXInput },
-	{ (void*)(0x004BCB60), xinput::Rumble },
-	{ (void*)(0x004BCBC0), xinput::RumbleA },
-	{ (void*)(0x004BCC10), xinput::RumbleB }
-};
 
 extern "C"						// Required for proper export
 __declspec(dllexport)			// This data is being exported from this DLL
