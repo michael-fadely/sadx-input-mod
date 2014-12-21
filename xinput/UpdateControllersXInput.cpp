@@ -65,7 +65,7 @@ namespace xinput
 
 #ifdef _DEBUG
 			DisplayDebugStringFormatted(10 + i, "P%d L X/Y: %04d/%04d - R X/Y: %04d/%04d", (i + 1), pad->LeftStickX, pad->LeftStickY, pad->RightStickX, pad->RightStickY);
-			
+
 			if (i == 0 && xpad->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
 			{
 				if (xpad->wButtons & XINPUT_GAMEPAD_DPAD_UP)
@@ -84,10 +84,11 @@ namespace xinput
 				{
 					multi_gate = false;
 				}
-				
+
 				DisplayDebugStringFormatted(15, "Rumble multiplier: %f", rumble_multi);
 			}
 #endif
+
 			// Gotta get that enum set up for this.
 			pad->Support = 0x3F07FEu;
 
@@ -144,11 +145,11 @@ namespace xinput
 	void Rumble(int a1, Motor motor)
 	{
 		short intensity = 4 * a1;
-		
+
 		if (a1 > 0)
 		{
 			float m = 0;
-			
+
 			// RumbleLarge only ever passes in a value in that is <= 10,
 			// and scaling that to 2 bytes is super annoying, so here's
 			// some arbitrary values to increase the intensity.
@@ -158,10 +159,6 @@ namespace xinput
 				m = intensity / rumble_multi;
 
 			intensity = (short)(SHRT_MAX * min(1.0f, m));
-
-#ifdef _DEBUG
-			PrintDebug("Multiplier/Intensity: %f | %d\n", m, intensity);
-#endif
 
 			rumble = (Motor)(rumble | motor);
 		}
@@ -182,82 +179,76 @@ namespace xinput
 	}
 	void __cdecl RumbleLarge(int playerNumber, signed int intensity)
 	{
-		int _intensity; // eax@4
+		int _intensity;
 
-		if (!rumble_related_3B2A2E4)
+		if (!rumble_related_3B2A2E4 && enableRumble)
 		{
-			if (enableRumble)
+			// Only continue if the calling player(?) is Player 1 (0)
+			if (!playerNumber)
 			{
-				// Only continue if the calling player(?) is Player 1 (0)
-				if (!playerNumber)
+				_intensity = intensity;
+				if (intensity <= 255)
 				{
-					_intensity = intensity;
-					if (intensity <= 255)
-					{
-						// If the intensity is <= 0, set to the default of 1
-						if (intensity < 0 || intensity < 1)
-							_intensity = 1;
-						Rumble(_intensity, Motor::Left);
-					}
-					else
-					{
-						Rumble(255, Motor::Left);
-					}
+					// If the intensity is < 1, set to the default of 1
+					if (intensity < 1)
+						_intensity = 1;
+
+					Rumble(_intensity, Motor::Left);
+				}
+				else
+				{
+					Rumble(255, Motor::Left);
 				}
 			}
 		}
 	}
-	void __cdecl RumbleSmall(int a1, signed int a2, signed int a3, int a4)
+	void __cdecl RumbleSmall(int playerNumber, signed int a2, signed int a3, int a4)
 	{
-		signed int _a2; // ecx@4
-		signed int _a3; // eax@12
-		signed int intensity; // eax@16
+		signed int _a2;
+		signed int _a3;
+		signed int intensity;
 
-		if (!rumble_related_3B2A2E4)
+		if (!rumble_related_3B2A2E4 && enableRumble)
 		{
-			if (enableRumble)
+			if (!playerNumber)
 			{
-				if (!a1)
+				_a2 = a2;
+				_a3 = a3;
+				
+				// I have a hunch that this stuff can be simplified further,
+				// but I can't be bothered to figure it out.
+
+				if (_a2 <= 4)
 				{
-					_a2 = a2;
-					if (a2 <= 4)
+					if (_a2 >= -4)
 					{
-						if (a2 >= -4)
-						{
-							if (a2 == 1)
-							{
-								_a2 = 2;
-							}
-							else
-							{
-								if (a2 == -1)
-									_a2 = -2;
-							}
-						}
-						else
-						{
-							_a2 = -4;
-						}
+						if (_a2 == 1)
+							_a2 = 2;
+						else if (_a2 == -1)
+							_a2 = -2;
 					}
 					else
 					{
-						_a2 = 4;
+						_a2 = -4;
 					}
-					_a3 = a3;
-					if (a3 <= 59)
-					{
-						if (a3 < 7)
-							_a3 = 7;
-					}
-					else
-					{
-						_a3 = 59;
-					}
-					intensity = a4 * _a3 / (4 * _a2);
-					if (intensity <= 0)
-						intensity = 1;
-					Rumble(intensity, Motor::Right);
 				}
+				else
+				{
+					_a2 = 4;
+				}
+
+				if (_a3 <= 59)
+				{
+					if (_a3 < 7)
+						_a3 = 7;
+				}
+				else
+				{
+					_a3 = 59;
+				}
+
+				intensity = max(1, a4 * _a3 / (4 * _a2));
+				Rumble(intensity, Motor::Right);
 			}
 		}
 	}
