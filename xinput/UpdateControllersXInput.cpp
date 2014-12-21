@@ -158,7 +158,7 @@ namespace xinput
 			else
 				m = intensity / rumble_multi;
 
-			intensity = (short)(SHRT_MAX * min(1.0f, m));
+			intensity = (short)(SHRT_MAX * max(0.0, min(1.0f, m)));
 
 			rumble = (Motor)(rumble | motor);
 		}
@@ -170,6 +170,7 @@ namespace xinput
 		}
 		if (motor & Motor::Right)
 		{
+			// This is doubled because it's never strong enough.
 			vibration.wRightMotorSpeed = intensity * 2;
 			rumble_r_elapsed = GetTickCount64();
 		}
