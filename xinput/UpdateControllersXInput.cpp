@@ -15,16 +15,19 @@ DataPointer(char, enableRumble, 0x00913B10);
 
 namespace xinput
 {
+	short GetWithinDeadzone(short analog, short deadzone);
+	int XInputToDreamcast(XINPUT_GAMEPAD* xpad, ushort id);
+
 	const uint64 rumble_l_timer = 250;
 	const uint64 rumble_r_timer = 1000;
 
-	static XINPUT_VIBRATION vibration = {};
-	static Motor rumble = Motor::None;
-	static uint64 rumble_l_elapsed = 0;
-	static uint64 rumble_r_elapsed = 0;
+	XINPUT_VIBRATION vibration = {};
+	Motor rumble = Motor::None;
+	uint64 rumble_l_elapsed = 0;
+	uint64 rumble_r_elapsed = 0;
 
-	static bool multi_gate = false;
-	static float rumble_multi = 255.0;
+	bool multi_gate = false;
+	float rumble_multi = 255.0;
 
 	namespace deadzone
 	{
@@ -50,74 +53,28 @@ namespace xinput
 		};
 	}
 
-	short GetWithinDeadzone(short analog, short dz)
-	{
-		// tl;dr: if analog exceeds the deadzone, convert to SADX-friendly
-		// value, then make sure it's not < -127 or > 127 and return it; else 0.
-		if (analog < -dz || analog > dz)
-			return min(max(-127, (analog / 256)), 127);
-		else
-			return 0;
-	}
-	// Converts wButtons in XINPUT_GAMEPAD to Sonic Adventure compatible buttons and returns the value.
-	int XInputToDreamcast(const XINPUT_GAMEPAD& controller, ushort id)
-	{
-		int result = 0;
-		int buttons = controller.wButtons;
-
-		if (buttons & XINPUT_GAMEPAD_A)
-			result |= Buttons_A;
-		if (buttons & XINPUT_GAMEPAD_B)
-			result |= Buttons_B;
-		if (buttons & XINPUT_GAMEPAD_X)
-			result |= Buttons_X;
-		if (buttons & XINPUT_GAMEPAD_Y)
-			result |= Buttons_Y;
-		if (buttons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
-			result |= Buttons_Z;
-
-		if (controller.bLeftTrigger > deadzone::triggers[id])
-			result |= Buttons_L;
-		if (controller.bRightTrigger > deadzone::triggers[id])
-			result |= Buttons_R;
-
-		if (buttons & XINPUT_GAMEPAD_START)
-			result |= Buttons_Start;
-
-		if (buttons & XINPUT_GAMEPAD_DPAD_UP)
-			result |= Buttons_Up;
-		if (buttons & XINPUT_GAMEPAD_DPAD_DOWN)
-			result |= Buttons_Down;
-		if (buttons & XINPUT_GAMEPAD_DPAD_LEFT)
-			result |= Buttons_Left;
-		if (buttons & XINPUT_GAMEPAD_DPAD_RIGHT)
-			result |= Buttons_Right;
-
-		return result;
-	}
-
 	// TODO: Keyboard & Mouse
 	void __cdecl UpdateControllersXInput()
 	{
-		for (uint i = 0; i < 4; i++)
+		for (uint8 i = 0; i < 4; i++)
 		{
 			ControllerData* pad = &Controller_Data_0[i];
 			XINPUT_STATE state = {};
 			XInputGetState(i, &state);
-			XINPUT_GAMEPAD* controller = &state.Gamepad;
+			XINPUT_GAMEPAD* xpad = &state.Gamepad;
 
 #ifdef _DEBUG
 			DisplayDebugStringFormatted(10 + i, "P%d L X/Y: %04d/%04d - R X/Y: %04d/%04d", (i + 1), pad->LeftStickX, pad->LeftStickY, pad->RightStickX, pad->RightStickY);
 			
-			if (i == 0 && controller->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
+			if (i == 0 && xpad->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
 			{
-				if (controller->wButtons & XINPUT_GAMEPAD_DPAD_UP)
+				if (xpad->wButtons & XINPUT_GAMEPAD_DPAD_UP)
 				{
 					if (multi_gate == false)
 						rumble_multi += 8.0;
 					multi_gate = true;
 				}
-				else if (controller->wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
+				else if (xpad->wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
 				{
 					if (multi_gate == false)
 						rumble_multi -= 8.0;
@@ -135,19 +92,19 @@ namespace xinput
 			pad->Support = 0x3F07FEu;
 
 			// L Analog
-			pad->LeftStickX = GetWithinDeadzone(controller->sThumbLX, deadzone::stickL[i]);
-			pad->LeftStickY = GetWithinDeadzone(-controller->sThumbLY, deadzone::stickL[i]);
+			pad->LeftStickX = GetWithinDeadzone(xpad->sThumbLX, deadzone::stickL[i]);
+			pad->LeftStickY = GetWithinDeadzone(-xpad->sThumbLY, deadzone::stickL[i]);
 
 			// R Analog
-			pad->RightStickX = GetWithinDeadzone(controller->sThumbRX, deadzone::stickR[i]);
-			pad->RightStickY = GetWithinDeadzone(-controller->sThumbRY, deadzone::stickR[i]);
+			pad->RightStickX = GetWithinDeadzone(xpad->sThumbRX, deadzone::stickR[i]);
+			pad->RightStickY = GetWithinDeadzone(-xpad->sThumbRY, deadzone::stickR[i]);
 
 			// Trigger pressure
-			pad->LTriggerPressure = controller->bLeftTrigger;
-			pad->RTriggerPressure = controller->bRightTrigger;
+			pad->LTriggerPressure = xpad->bLeftTrigger;
+			pad->RTriggerPressure = xpad->bRightTrigger;
 
-			// Now, get the new buttons from the XInput controller
-			pad->HeldButtons = XInputToDreamcast(*controller, i);
+			// Now, get the new buttons from the XInput xpad
+			pad->HeldButtons = XInputToDreamcast(xpad, i);
 			pad->NotHeldButtons = ~pad->HeldButtons;
 
 			// Now set the released buttons to the difference between
@@ -167,6 +124,7 @@ namespace xinput
 		{
 			Motor result = Motor::None;
 			uint64 now = GetTickCount64();
+
 			if ((now - rumble_l_elapsed) >= rumble_l_timer)
 			{
 				result = (Motor)(result | Motor::Left);
@@ -183,7 +141,6 @@ namespace xinput
 		}
 	}
 
-#pragma region Rumble
 	void Rumble(int a1, Motor motor)
 	{
 		short intensity = 4 * a1;
@@ -194,13 +151,13 @@ namespace xinput
 			
 			// RumbleLarge only ever passes in a value in that is <= 10,
 			// and scaling that to 2 bytes is super annoying, so here's
-			// some arbitrary values to make it more intense.
+			// some arbitrary values to increase the intensity.
 			if (a1 >= 1 && a1 <= 10)
 				m = max(0.2375f, intensity / 25.0f);
 			else
 				m = intensity / rumble_multi;
 
-			intensity = (short)(min(1.0f, m) * SHRT_MAX);
+			intensity = (short)(SHRT_MAX * min(1.0f, m));
 
 #ifdef _DEBUG
 			PrintDebug("Multiplier/Intensity: %f | %d\n", m, intensity);
@@ -220,10 +177,9 @@ namespace xinput
 			rumble_r_elapsed = GetTickCount64();
 		}
 
-		for (uint i = 0; i < 4; i++)
+		for (uint8 i = 0; i < 4; i++)
 			XInputSetState(i, &vibration);
 	}
-
 	void __cdecl RumbleLarge(int playerNumber, signed int intensity)
 	{
 		int _intensity; // eax@4
@@ -305,5 +261,52 @@ namespace xinput
 			}
 		}
 	}
-#pragma endregion
+
+	// If analog exceeds deadzone, return SADX-friendly
+	// version of the value; else 0.
+	short GetWithinDeadzone(short analog, short deadzone)
+	{
+		// tl;dr: if analog exceeds the deadzone, convert to SADX-friendly
+		// value, then make sure it's not < -127 or > 127 and return it; else 0.
+		if (analog < -deadzone || analog > deadzone)
+			return min(max(-127, (analog / 256)), 127);
+		else
+			return 0;
+	}
+	// Converts wButtons in XINPUT_GAMEPAD to Sonic Adventure compatible buttons and returns the value.
+	int XInputToDreamcast(XINPUT_GAMEPAD* xpad, ushort id)
+	{
+		int result = 0;
+		int buttons = xpad->wButtons;
+
+		if (buttons & XINPUT_GAMEPAD_A)
+			result |= Buttons_A;
+		if (buttons & XINPUT_GAMEPAD_B)
+			result |= Buttons_B;
+		if (buttons & XINPUT_GAMEPAD_X)
+			result |= Buttons_X;
+		if (buttons & XINPUT_GAMEPAD_Y)
+			result |= Buttons_Y;
+		if (buttons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
+			result |= Buttons_Z;
+
+		if (xpad->bLeftTrigger > deadzone::triggers[id])
+			result |= Buttons_L;
+		if (xpad->bRightTrigger > deadzone::triggers[id])
+			result |= Buttons_R;
+
+		if (buttons & XINPUT_GAMEPAD_START)
+			result |= Buttons_Start;
+
+		if (buttons & XINPUT_GAMEPAD_DPAD_UP)
+			result |= Buttons_Up;
+		if (buttons & XINPUT_GAMEPAD_DPAD_DOWN)
+			result |= Buttons_Down;
+		if (buttons & XINPUT_GAMEPAD_DPAD_LEFT)
+			result |= Buttons_Left;
+		if (buttons & XINPUT_GAMEPAD_DPAD_RIGHT)
+			result |= Buttons_Right;
+
+		return result;
+	}
 }
