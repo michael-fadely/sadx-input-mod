@@ -3,6 +3,7 @@
 #include <direct.h>	// for _getcwd
 
 // Standard library
+#include <string>
 #include <sstream>	// because
 #include <limits>	// for min()
 
@@ -21,30 +22,33 @@ PointerInfo jumps[] = {
 	{ (void*)(0x004BCC10), xinput::RumbleSmall }
 };
 
-char _path[FILENAME_MAX];
+std::string BuildConfigPath(const char* modpath)
+{
+	std::stringstream result;
+	char* workingdir = new char[FILENAME_MAX];
+	
+	result << _getcwd(workingdir, FILENAME_MAX) << "\\" << modpath << "\\xinput.ini";
+	delete[] workingdir;
 
-void _cdecl xinput_main(const char *path, const HelperFunctions &helperFunctions)
+	return result.str();
+}
+
+void _cdecl xinput_main(const char* path, const HelperFunctions& helperFunctions)
 {
 	using namespace std;
 
-	_getcwd(_path, FILENAME_MAX);
+	string config = BuildConfigPath(path);
 
-	// because
-	// TODO: not
-	stringstream ss;
-	ss << _path << "\\" << path << "\\xinput.ini";
-	string configPath = ss.str();
-
-	if (FileExists(configPath))
+	if (FileExists(config))
 	{
 		for (uint i = 0; i < 4; i++)
 		{
 			std::string section = "Controller " + to_string(i + 1);
 			int l, r, t;
 
-			l = GetPrivateProfileIntA(section.c_str(), "DeadZoneL", -1, configPath.c_str());
-			r = GetPrivateProfileIntA(section.c_str(), "DeadZoneR", -1, configPath.c_str());
-			t = GetPrivateProfileIntA(section.c_str(), "TriggerThreshold", -1, configPath.c_str());
+			l = GetPrivateProfileIntA(section.c_str(), "DeadZoneL", -1, config.c_str());
+			r = GetPrivateProfileIntA(section.c_str(), "DeadZoneR", -1, config.c_str());
+			t = GetPrivateProfileIntA(section.c_str(), "TriggerThreshold", -1, config.c_str());
 
 			xinput::SetDeadzone(xinput::deadzone::stickL, i, l);
 			xinput::SetDeadzone(xinput::deadzone::stickR, i, r);
