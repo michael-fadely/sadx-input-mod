@@ -1,48 +1,39 @@
-#define WIN32_LEAN_AND_MEAN
-#include <iostream>
-
+// Microsoft stuff
 #include <Windows.h>
 #include <direct.h>	// for _getcwd
-#include <sstream>
 
+// Standard library
+#include <sstream>	// because
+#include <limits>	// for min()
+
+// Mod loader and other global stuff
 #include <SADXModLoader.h>
 #include <G:\Libraries\LazyTypedefs.h>
 
+// Local stuff
 #include "FileExists.h"
 #include "UpdateControllersXInput.h"
 
 PointerInfo jumps[] = {
 	{ (void*)(0x0040F460), xinput::UpdateControllersXInput },
-	//{ (void*)(0x004BCB60), xinput::Rumble },
+	/*{ (void*)(0x004BCB60), xinput::Rumble },*/	// Disabled because it didn't make sense.
 	{ (void*)(0x004BCBC0), xinput::RumbleLarge },
 	{ (void*)(0x004BCC10), xinput::RumbleSmall }
 };
 
 char _path[FILENAME_MAX];
 
-void _cdecl SetDeadzone(short* array, uint id, int value)
-{
-	if (value < 0)
-		return;
-
-	if (value > 320767)
-		value = 320767;
-
-	array[id] = value;
-}
 void _cdecl xinput_main(const char *path, const HelperFunctions &helperFunctions)
 {
 	using namespace std;
 
 	_getcwd(_path, FILENAME_MAX);
 
-	string configPath;
-	{
-		// because
-		stringstream ss;
-		ss << _path << "\\" << path << "\\xinput.ini";
-		configPath = ss.str();
-	}
+	// because
+	// TODO: not
+	stringstream ss;
+	ss << _path << "\\" << path << "\\xinput.ini";
+	string configPath = ss.str();
 
 	if (FileExists(configPath))
 	{
@@ -55,14 +46,16 @@ void _cdecl xinput_main(const char *path, const HelperFunctions &helperFunctions
 			r = GetPrivateProfileIntA(section.c_str(), "DeadZoneR", -1, configPath.c_str());
 			t = GetPrivateProfileIntA(section.c_str(), "TriggerThreshold", -1, configPath.c_str());
 
-			SetDeadzone(xinput::deadzone::stickL, i, l);
-			SetDeadzone(xinput::deadzone::stickR, i, r);
-			SetDeadzone(xinput::deadzone::triggers, i, t);
+			xinput::SetDeadzone(xinput::deadzone::stickL, i, l);
+			xinput::SetDeadzone(xinput::deadzone::stickR, i, r);
+			xinput::SetDeadzone(xinput::deadzone::triggers, i, t);
 
 			PrintDebug("[XInput] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
 				xinput::deadzone::stickL[i], xinput::deadzone::stickR[i], xinput::deadzone::triggers[i]);
 		}
 	}
+
+	PrintDebug("[XInput] Initialization complete.");
 }
 
 extern "C"						// Required for proper export

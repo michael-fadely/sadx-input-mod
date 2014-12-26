@@ -1,12 +1,15 @@
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <Xinput.h>
+// Microsoft
+#include <Windows.h>	// Required for XInput.h
+#include <Xinput.h>		// obvious
 
-#include <limits>
+// Standard
+#include <limits>	// for min(), max(), SHRT_MAX
 
+// Other crap
 #include <SADXModLoader.h>
 #include <G:\Libraries\LazyTypedefs.h>
 
+// This namespace
 #include "UpdateControllersXInput.h"
 
 DataArray(ControllerData, Controller_Data_0, 0x03B0E9C8, 8);
@@ -15,9 +18,6 @@ DataPointer(char, enableRumble, 0x00913B10);
 
 namespace xinput
 {
-	short GetWithinDeadzone(short analog, short deadzone);
-	int XInputToDreamcast(XINPUT_GAMEPAD* xpad, ushort id);
-
 	const uint64 rumble_l_timer = 250;
 	const uint64 rumble_r_timer = 1000;
 
@@ -264,6 +264,11 @@ namespace xinput
 			return min(max(-127, (analog / 256)), 127);
 		else
 			return 0;
+	}
+	void SetDeadzone(short* array, uint id, int value)
+	{
+		if (value >= 0)
+			array[id] = min(320767, value);
 	}
 	// Converts wButtons in XINPUT_GAMEPAD to Sonic Adventure compatible buttons and returns the value.
 	int XInputToDreamcast(XINPUT_GAMEPAD* xpad, ushort id)
