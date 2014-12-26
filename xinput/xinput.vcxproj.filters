@@ -40,5 +40,8 @@
     <ClInclude Include="FileExists.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="typedefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

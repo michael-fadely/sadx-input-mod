@@ -6,11 +6,11 @@
 #include <sstream>	// because
 #include <limits>	// for min()
 
-// Mod loader and other global stuff
+// Mod loader
 #include <SADXModLoader.h>
-#include <G:\Libraries\LazyTypedefs.h>
 
 // Local stuff
+#include "typedefs.h"
 #include "FileExists.h"
 #include "UpdateControllersXInput.h"
 

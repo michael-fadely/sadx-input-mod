@@ -7,7 +7,7 @@
 
 // Other crap
 #include <SADXModLoader.h>
-#include <G:\Libraries\LazyTypedefs.h>
+#include "typedefs.h"
 
 // This namespace
 #include "UpdateControllersXInput.h"

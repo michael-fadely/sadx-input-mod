@@ -93,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileExists.h" />
+    <ClInclude Include="typedefs.h" />
     <ClInclude Include="UpdateControllersXInput.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

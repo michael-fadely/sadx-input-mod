@@ -1,6 +1,6 @@
 #pragma once
 
-#include <G:\Libraries\LazyTypedefs.h>
+#include "typedefs.h"
 #include <Xinput.h>
 
 namespace xinput
