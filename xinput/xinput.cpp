@@ -15,11 +15,15 @@
 #include "FileExists.h"
 #include "UpdateControllersXInput.h"
 
+void* UpdateControllers_ptr	= (void*)(0x0040F460);
+void* RumbleLarge_ptr		= (void*)(0x004BCBC0);
+void* RumbleSmall_ptr		= (void*)(0x004BCC10);
+void* Rumble_ptr			= (void*)(0x004BCB60); // Unused, but here so I don't lose it.
+
 PointerInfo jumps[] = {
-	{ (void*)(0x0040F460), xinput::UpdateControllersXInput },
-	/*{ (void*)(0x004BCB60), xinput::Rumble },*/	// Disabled because it didn't make sense.
-	{ (void*)(0x004BCBC0), xinput::RumbleLarge },
-	{ (void*)(0x004BCC10), xinput::RumbleSmall }
+	{ UpdateControllers_ptr, xinput::UpdateControllersXInput },
+	{ RumbleLarge_ptr, xinput::RumbleLarge },
+	{ RumbleSmall_ptr, xinput::RumbleSmall }
 };
 
 std::string BuildConfigPath(const char* modpath)
@@ -59,7 +63,7 @@ void _cdecl xinput_main(const char* path, const HelperFunctions& helperFunctions
 		}
 	}
 
-	PrintDebug("[XInput] Initialization complete.");
+	PrintDebug("[XInput] Initialization complete.\n");
 }
 
 extern "C"						// Required for proper export
