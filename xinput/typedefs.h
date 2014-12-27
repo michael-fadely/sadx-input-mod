@@ -4,9 +4,9 @@
 
 // Shorthand for unsigned standard types (unsigned x -> ux)
 
-typedef uint8_t			uchar;
-typedef uint16_t		ushort;
-typedef uint32_t		uint;
+typedef unsigned char	uchar;
+typedef unsigned short	ushort;
+typedef unsigned int	uint;
 typedef unsigned long	ulong;
 
 // Integer by bit count (char -> int8)
