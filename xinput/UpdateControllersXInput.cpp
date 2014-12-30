@@ -1,34 +1,46 @@
 // Microsoft
-#include <Windows.h>	// Required for XInput.h
-#include <Xinput.h>		// obvious
+#include <Windows.h>		// Required for XInput.h
+#include <Xinput.h>			// obvious
 
 // Standard
-#include <limits>	// for min(), max(), SHRT_MAX
+#include <limits>			// for min(), max(), SHRT_MAX
 
 // Other crap
 #include <SADXModLoader.h>
-#include "typedefs.h"
+#include "typedefs.h"		// includes cstdint as used by _ControllerData
 
 // This namespace
 #include "UpdateControllersXInput.h"
 
-DataArray(ControllerData, Controller_Data_0, 0x03B0E9C8, 8);
-DataPointer(int, rumble_related_3B2A2E4, 0x3B2A2E4);
-DataPointer(char, enableRumble, 0x00913B10);
+DataArray(ControllerData, Controller_Data_0, 0x03B0E9C8, 8);	// Yes, there are in fact *8* controller structures in SADX PC.
+DataPointer(int, isCutscenePlaying, 0x3B2A2E4);					// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
+DataPointer(char, enableRumble, 0x00913B10);					// Not sure why this is a char and ^ is an int.
+
+// From the SA2 Mod Loader
+// Using this until it or PDS_PERIPHERAL gets implemented into the SADX Mod Loader.
+// Aside from having all of its members named, it's otherwise exactly the same.
+struct _ControllerData
+{
+	uint32_t ID;
+	uint32_t Support;
+	uint32_t HeldButtons;
+	uint32_t NotHeldButtons;
+	uint32_t PressedButtons;
+	uint32_t ReleasedButtons;
+	uint16_t RTriggerPressure;
+	uint16_t LTriggerPressure;
+	int16_t LeftStickX;
+	int16_t LeftStickY;
+	int16_t RightStickX;
+	int16_t RightStickY;
+	char* Name;
+	void* Extend;
+	uint32_t Old;
+	void* Info;
+};
 
 namespace xinput
 {
-	const uint64 rumble_l_timer = 250;
-	const uint64 rumble_r_timer = 1000;
-
-	XINPUT_VIBRATION vibration = {};
-	Motor rumble = Motor::None;
-	uint64 rumble_l_elapsed = 0;
-	uint64 rumble_r_elapsed = 0;
-
-	bool multi_gate = false;
-	float rumble_multi = 255.0;
-
 	namespace deadzone
 	{
 		short stickL[4] = {
@@ -53,12 +65,24 @@ namespace xinput
 		};
 	}
 
+	const uint64 rumble_l_timer = 250;
+	const uint64 rumble_r_timer = 1000;
+
+	XINPUT_VIBRATION vibration;
+	Motor rumble;
+	uint64 rumble_l_elapsed;
+	uint64 rumble_r_elapsed;
+
+	bool multi_gate = false;
+	float rumble_multi = 255.0;
+
+
 	// TODO: Keyboard & Mouse
 	void __cdecl UpdateControllersXInput()
 	{
 		for (uint8 i = 0; i < 4; i++)
 		{
-			ControllerData* pad = &Controller_Data_0[i];
+			_ControllerData* pad = (_ControllerData*)&Controller_Data_0[i];
 			XINPUT_STATE state = {};
 			XInputGetState(i, &state);
 			XINPUT_GAMEPAD* xpad = &state.Gamepad;
@@ -182,7 +206,7 @@ namespace xinput
 	{
 		int _intensity;
 
-		if (!rumble_related_3B2A2E4 && enableRumble)
+		if (!isCutscenePlaying && enableRumble)
 		{
 			// Only continue if the calling player(?) is Player 1 (0)
 			if (!playerNumber)
@@ -200,7 +224,7 @@ namespace xinput
 				{
 					Rumble(255, Motor::Left);
 				}
-			}
+				}
 		}
 	}
 	void __cdecl RumbleSmall(int playerNumber, signed int a2, signed int a3, int a4)
@@ -209,8 +233,9 @@ namespace xinput
 		signed int _a3;
 		signed int intensity;
 
-		if (!rumble_related_3B2A2E4 && enableRumble)
+		if (!isCutscenePlaying && enableRumble)
 		{
+			// Only continue if the calling player(?) is Player 1 (0)
 			if (!playerNumber)
 			{
 				_a2 = a2;
@@ -250,8 +275,8 @@ namespace xinput
 
 				intensity = max(1, a4 * _a3 / (4 * _a2));
 				Rumble(intensity, Motor::Right);
-			}
 		}
+	}
 	}
 
 	// If analog exceeds deadzone, return SADX-friendly
