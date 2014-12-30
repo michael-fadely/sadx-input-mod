@@ -12,9 +12,6 @@
 // This namespace
 #include "UpdateControllersXInput.h"
 
-DataArray(ControllerData, Controller_Data_0, 0x03B0E9C8, 8);	// Yes, there are in fact *8* controller structures in SADX PC.
-DataPointer(int, isCutscenePlaying, 0x3B2A2E4);					// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
-DataPointer(char, enableRumble, 0x00913B10);					// Not sure why this is a char and ^ is an int.
 
 // From the SA2 Mod Loader
 // Using this until it or PDS_PERIPHERAL gets implemented into the SADX Mod Loader.
@@ -38,6 +35,10 @@ struct _ControllerData
 	uint32_t Old;
 	void* Info;
 };
+
+DataArray(_ControllerData, Controller_Data_0, 0x03B0E9C8, 8);	// Yes, there are in fact *8* controller structures in SADX PC.
+DataPointer(int, isCutscenePlaying, 0x3B2A2E4);					// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
+DataPointer(char, enableRumble, 0x00913B10);					// Not sure why this is a char and ^ is an int.
 
 namespace xinput
 {
@@ -68,10 +69,10 @@ namespace xinput
 	const uint64 rumble_l_timer = 250;
 	const uint64 rumble_r_timer = 1000;
 
-	XINPUT_VIBRATION vibration;
-	Motor rumble;
-	uint64 rumble_l_elapsed;
-	uint64 rumble_r_elapsed;
+	XINPUT_VIBRATION vibration[4];
+	Motor rumble[4];
+	uint64 rumble_l_elapsed[4];
+	uint64 rumble_r_elapsed[4];
 
 	bool multi_gate = false;
 	float rumble_multi = 255.0;
@@ -82,7 +83,7 @@ namespace xinput
 	{
 		for (uint8 i = 0; i < 4; i++)
 		{
-			_ControllerData* pad = (_ControllerData*)&Controller_Data_0[i];
+			_ControllerData* pad = &Controller_Data_0[i];
 			XINPUT_STATE state = {};
 			XInputGetState(i, &state);
 			XINPUT_GAMEPAD* xpad = &state.Gamepad;
@@ -142,33 +143,39 @@ namespace xinput
 
 			// Set the "last held" to held
 			pad->Old = pad->HeldButtons;
-		}
 
-		// Disable rumble if the timer says it's a good idea.
-		if (rumble != Motor::None)
-		{
-			Motor result = Motor::None;
-			uint64 now = GetTickCount64();
-
-			if ((now - rumble_l_elapsed) >= rumble_l_timer)
+			// Disable rumble if the timer says it's a good idea.
+			if (rumble[i] != Motor::None)
 			{
-				result = (Motor)(result | Motor::Left);
-				rumble = (Motor)(rumble ^ Motor::Left);
-			}
-			if ((now - rumble_r_elapsed) >= rumble_r_timer)
-			{
-				result = (Motor)(result | Motor::Right);
-				rumble = (Motor)(rumble ^ Motor::Right);
-			}
+				Motor result = Motor::None;
+				uint64 now = GetTickCount64();
 
-			if (result != Motor::None)
-				Rumble(0, result);
+				if ((now - rumble_l_elapsed[i]) >= rumble_l_timer)
+				{
+					result = (Motor)(result | Motor::Left);
+					rumble[i] = (Motor)(rumble[i] ^ Motor::Left);
+				}
+				if ((now - rumble_r_elapsed[i]) >= rumble_r_timer)
+				{
+					result = (Motor)(result | Motor::Right);
+					rumble[i] = (Motor)(rumble[i] ^ Motor::Right);
+				}
+
+				if (result != Motor::None)
+					Rumble(i, 0, result);
+			}
 		}
 	}
 
-	void Rumble(int a1, Motor motor)
+	void Rumble(short id, int a1, Motor motor)
 	{
+		// Just for the record:
+		// This function was a LOT cleaner before I implemented per-controller rumble. =/
+
 		short intensity = 4 * a1;
+
+		bool isWithinRange = (id >= 0 && id < 4);
+		Motor resultMotor = (isWithinRange) ? rumble[id] : Motor::None;
 
 		if (a1 > 0)
 		{
@@ -184,23 +191,46 @@ namespace xinput
 
 			intensity = (short)(SHRT_MAX * max(0.0, min(1.0f, m)));
 
-			rumble = (Motor)(rumble | motor);
+			resultMotor = (Motor)(resultMotor | motor);
 		}
 
-		if (motor & Motor::Left)
+		// TODO: Check if the player ID is currently AI controlled (or if intensity is 0).
+		// This will avoid vibrating the second controller when Tails does something stupid.
+		if (isWithinRange)
 		{
-			vibration.wLeftMotorSpeed = intensity;
-			rumble_l_elapsed = GetTickCount64();
+			if (motor & Motor::Left)
+			{
+				vibration[id].wLeftMotorSpeed = intensity;
+				rumble_l_elapsed[id] = GetTickCount64();
+			}
+			if (motor & Motor::Right)
+			{
+				// This is doubled because it's never strong enough.
+				vibration[id].wRightMotorSpeed = intensity * 2;
+				rumble_r_elapsed[id] = GetTickCount64();
+			}
+			rumble[id] = (Motor)(rumble[id] | resultMotor);
+			XInputSetState(id, &vibration[id]);
 		}
-		if (motor & Motor::Right)
+		else
 		{
-			// This is doubled because it's never strong enough.
-			vibration.wRightMotorSpeed = intensity * 2;
-			rumble_r_elapsed = GetTickCount64();
+			for (uint8 i = 0; i < 4; i++)
+			{
+				if (motor & Motor::Left)
+				{
+					vibration[i].wLeftMotorSpeed = intensity;
+					rumble_l_elapsed[i] = GetTickCount64();
+				}
+				if (motor & Motor::Right)
+				{
+					// This is doubled because it's never strong enough.
+					vibration[i].wRightMotorSpeed = intensity * 2;
+					rumble_r_elapsed[i] = GetTickCount64();
+				}
+				rumble[i] = (Motor)(rumble[i] | resultMotor);
+				XInputSetState(i, &vibration[i]);
+			}
 		}
-
-		for (uint8 i = 0; i < 4; i++)
-			XInputSetState(i, &vibration);
 	}
 	void __cdecl RumbleLarge(int playerNumber, signed int intensity)
 	{
@@ -209,22 +239,24 @@ namespace xinput
 		if (!isCutscenePlaying && enableRumble)
 		{
 			// Only continue if the calling player(?) is Player 1 (0)
-			if (!playerNumber)
+			// Vanilla SADX only rumbles for P1, but that check has been disabled
+			// to allow per-controller rumble.
+			//if (!playerNumber)
+			//{
+			_intensity = intensity;
+			if (intensity <= 255)
 			{
-				_intensity = intensity;
-				if (intensity <= 255)
-				{
-					// If the intensity is < 1, set to the default of 1
-					if (intensity < 1)
-						_intensity = 1;
+				// If the intensity is < 1, set to the default of 1
+				if (intensity < 1)
+					_intensity = 1;
 
-					Rumble(_intensity, Motor::Left);
-				}
-				else
-				{
-					Rumble(255, Motor::Left);
-				}
-				}
+				Rumble(playerNumber, _intensity, Motor::Left);
+			}
+			else
+			{
+				Rumble(playerNumber, 255, Motor::Left);
+			}
+			//}
 		}
 	}
 	void __cdecl RumbleSmall(int playerNumber, signed int a2, signed int a3, int a4)
@@ -236,47 +268,49 @@ namespace xinput
 		if (!isCutscenePlaying && enableRumble)
 		{
 			// Only continue if the calling player(?) is Player 1 (0)
-			if (!playerNumber)
+			// Vanilla SADX only rumbles for P1, but that check has been disabled
+			// to allow per-controller rumble.
+			//if (!playerNumber)
+			//{
+			_a2 = a2;
+			_a3 = a3;
+
+			// I have a hunch that this stuff can be simplified further,
+			// but I can't be bothered to figure it out.
+
+			if (_a2 <= 4)
 			{
-				_a2 = a2;
-				_a3 = a3;
-				
-				// I have a hunch that this stuff can be simplified further,
-				// but I can't be bothered to figure it out.
-
-				if (_a2 <= 4)
+				if (_a2 >= -4)
 				{
-					if (_a2 >= -4)
-					{
-						if (_a2 == 1)
-							_a2 = 2;
-						else if (_a2 == -1)
-							_a2 = -2;
-					}
-					else
-					{
-						_a2 = -4;
-					}
+					if (_a2 == 1)
+						_a2 = 2;
+					else if (_a2 == -1)
+						_a2 = -2;
 				}
 				else
 				{
-					_a2 = 4;
+					_a2 = -4;
 				}
+			}
+			else
+			{
+				_a2 = 4;
+			}
 
-				if (_a3 <= 59)
-				{
-					if (_a3 < 7)
-						_a3 = 7;
-				}
-				else
-				{
-					_a3 = 59;
-				}
+			if (_a3 <= 59)
+			{
+				if (_a3 < 7)
+					_a3 = 7;
+			}
+			else
+			{
+				_a3 = 59;
+			}
 
-				intensity = max(1, a4 * _a3 / (4 * _a2));
-				Rumble(intensity, Motor::Right);
+			intensity = max(1, a4 * _a3 / (4 * _a2));
+			Rumble(playerNumber, intensity, Motor::Right);
+			//}
 		}
-	}
 	}
 
 	// If analog exceeds deadzone, return SADX-friendly
