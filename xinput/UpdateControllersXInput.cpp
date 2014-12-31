@@ -166,7 +166,7 @@ namespace xinput
 					multi_gate = false;
 				}
 
-				DisplayDebugStringFormatted(15, "Rumble multiplier: %f", rumble_multi);
+				DisplayDebugStringFormatted(6, "Rumble multiplier: %f", rumble_multi);
 			}
 #endif
 		}
