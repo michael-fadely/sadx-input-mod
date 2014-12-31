@@ -88,32 +88,6 @@ namespace xinput
 			XInputGetState(i, &state);
 			XINPUT_GAMEPAD* xpad = &state.Gamepad;
 
-#ifdef _DEBUG
-			DisplayDebugStringFormatted(10 + i, "P%d L X/Y: %04d/%04d - R X/Y: %04d/%04d", (i + 1), pad->LeftStickX, pad->LeftStickY, pad->RightStickX, pad->RightStickY);
-
-			if (i == 0 && xpad->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
-			{
-				if (xpad->wButtons & XINPUT_GAMEPAD_DPAD_UP)
-				{
-					if (multi_gate == false)
-						rumble_multi += 8.0;
-					multi_gate = true;
-				}
-				else if (xpad->wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
-				{
-					if (multi_gate == false)
-						rumble_multi -= 8.0;
-					multi_gate = true;
-				}
-				else
-				{
-					multi_gate = false;
-				}
-
-				DisplayDebugStringFormatted(15, "Rumble multiplier: %f", rumble_multi);
-			}
-#endif
-
 			// Gotta get that enum set up for this.
 			pad->Support = 0x3F07FEu;
 
@@ -153,17 +127,48 @@ namespace xinput
 				if ((now - rumble_l_elapsed[i]) >= rumble_l_timer)
 				{
 					result = (Motor)(result | Motor::Left);
-					rumble[i] = (Motor)(rumble[i] ^ Motor::Left);
+					rumble[i] = (Motor)(rumble[i] & ~Motor::Left);
 				}
 				if ((now - rumble_r_elapsed[i]) >= rumble_r_timer)
 				{
 					result = (Motor)(result | Motor::Right);
-					rumble[i] = (Motor)(rumble[i] ^ Motor::Right);
+					rumble[i] = (Motor)(rumble[i] & ~Motor::Right);
 				}
 
 				if (result != Motor::None)
 					Rumble(i, 0, result);
 			}
+
+#ifdef _DEBUG
+			DisplayDebugStringFormatted(8 + (3 * i), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
+				pad->HeldButtons, pad->LTriggerPressure, pad->RTriggerPressure, (rumble[i] & Motor::Left), ((rumble[i] & Motor::Right) >> 1));
+			DisplayDebugStringFormatted(9 + (3 * i), "   LS: %04d/%04d RS: %04d/%04d",
+				pad->LeftStickX, pad->LeftStickY, pad->RightStickX, pad->RightStickY);
+
+			if (i == 0 && xpad->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
+			{
+				if (xpad->wButtons & XINPUT_GAMEPAD_DPAD_UP)
+				{
+					if (multi_gate == false)
+						rumble_multi += 8.0;
+
+					multi_gate = true;
+				}
+				else if (xpad->wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
+				{
+					if (multi_gate == false)
+						rumble_multi -= 8.0;
+
+					multi_gate = true;
+				}
+				else
+				{
+					multi_gate = false;
+				}
+
+				DisplayDebugStringFormatted(15, "Rumble multiplier: %f", rumble_multi);
+			}
+#endif
 		}
 	}
 
@@ -223,6 +228,7 @@ namespace xinput
 			}
 		}
 	}
+
 	void __cdecl RumbleLarge(int playerNumber, signed int intensity)
 	{
 		int _intensity;
@@ -320,6 +326,7 @@ namespace xinput
 		if (value >= 0)
 			array[id] = min(32767, value);
 	}
+
 	// Converts wButtons in XINPUT_GAMEPAD to Sonic Adventure compatible buttons and returns the value.
 	int XInputToDreamcast(XINPUT_GAMEPAD* xpad, ushort id)
 	{
