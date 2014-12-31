@@ -167,11 +167,22 @@ namespace xinput
 		}
 	}
 
+	inline void SetMotor(short id, Motor motor, short intensity)
+	{
+		if (motor & Motor::Left)
+		{
+			vibration[id].wLeftMotorSpeed = intensity;
+			rumble_l_elapsed[id] = GetTickCount64();
+		}
+		if (motor & Motor::Right)
+		{
+			// This is doubled because it's never strong enough.
+			vibration[id].wRightMotorSpeed = intensity * 2;
+			rumble_r_elapsed[id] = GetTickCount64();
+		}
+	}
 	void Rumble(short id, int a1, Motor motor)
 	{
-		// Just for the record:
-		// This function was a LOT cleaner before I implemented per-controller rumble. =/
-
 		short intensity = 4 * a1;
 
 		bool isWithinRange = (id >= 0 && id < 4);
@@ -198,17 +209,7 @@ namespace xinput
 		// This will avoid vibrating the second controller when Tails does something stupid.
 		if (isWithinRange)
 		{
-			if (motor & Motor::Left)
-			{
-				vibration[id].wLeftMotorSpeed = intensity;
-				rumble_l_elapsed[id] = GetTickCount64();
-			}
-			if (motor & Motor::Right)
-			{
-				// This is doubled because it's never strong enough.
-				vibration[id].wRightMotorSpeed = intensity * 2;
-				rumble_r_elapsed[id] = GetTickCount64();
-			}
+			SetMotor(id, motor, intensity);
 			rumble[id] = (Motor)(rumble[id] | resultMotor);
 			XInputSetState(id, &vibration[id]);
 		}
@@ -216,17 +217,7 @@ namespace xinput
 		{
 			for (uint8 i = 0; i < 4; i++)
 			{
-				if (motor & Motor::Left)
-				{
-					vibration[i].wLeftMotorSpeed = intensity;
-					rumble_l_elapsed[i] = GetTickCount64();
-				}
-				if (motor & Motor::Right)
-				{
-					// This is doubled because it's never strong enough.
-					vibration[i].wRightMotorSpeed = intensity * 2;
-					rumble_r_elapsed[i] = GetTickCount64();
-				}
+				SetMotor(i, motor, intensity);
 				rumble[i] = (Motor)(rumble[i] | resultMotor);
 				XInputSetState(i, &vibration[i]);
 			}
