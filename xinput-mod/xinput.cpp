@@ -39,15 +39,13 @@ std::string BuildConfigPath(const char* modpath)
 
 void _cdecl xinput_main(const char* path, const HelperFunctions& helperFunctions)
 {
-	using namespace std;
-
-	string config = BuildConfigPath(path);
+	std::string config = BuildConfigPath(path);
 
 	if (FileExists(config))
 	{
 		for (uint i = 0; i < 4; i++)
 		{
-			std::string section = "Controller " + to_string(i + 1);
+			std::string section = "Controller " + std::to_string(i + 1);
 			int l, r, t;
 
 			l = GetPrivateProfileIntA(section.c_str(), "DeadZoneL", -1, config.c_str());
