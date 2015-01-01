@@ -84,7 +84,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="mod.ini" />
-    <None Include="precious thing.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="mod.ini">

@@ -29,9 +29,6 @@
     <None Include="mod.ini">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="precious thing.h">
-      <Filter>Header Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UpdateControllersXInput.h">
