@@ -72,13 +72,13 @@ namespace xinput
 		};
 	}
 
-	const uint64 rumble_l_timer = 250;
-	const uint64 rumble_r_timer = 1000;
+	const uint32 rumble_l_timer = 250;
+	const uint32 rumble_r_timer = 1000;
 
 	XINPUT_VIBRATION vibration[4];
 	Motor rumble[4];
-	uint64 rumble_l_elapsed[4];
-	uint64 rumble_r_elapsed[4];
+	uint32 rumble_l_elapsed[4];
+	uint32 rumble_r_elapsed[4];
 
 	bool multi_gate = false;
 	float rumble_multi = 255.0;
@@ -128,7 +128,7 @@ namespace xinput
 			if (rumble[i] != Motor::None)
 			{
 				Motor result = Motor::None;
-				uint64 now = GetTickCount64();
+				uint64 now = GetTickCount();
 
 				if ((now - rumble_l_elapsed[i]) >= rumble_l_timer)
 				{
@@ -184,13 +184,13 @@ namespace xinput
 		if (motor & Motor::Left)
 		{
 			vibration[id].wLeftMotorSpeed = intensity;
-			rumble_l_elapsed[id] = GetTickCount64();
+			rumble_l_elapsed[id] = GetTickCount();
 		}
 		if (motor & Motor::Right)
 		{
 			// This is doubled because it's never strong enough.
 			vibration[id].wRightMotorSpeed = intensity * 2;
-			rumble_r_elapsed[id] = GetTickCount64();
+			rumble_r_elapsed[id] = GetTickCount();
 		}
 	}
 	void Rumble(short id, int a1, Motor motor)
