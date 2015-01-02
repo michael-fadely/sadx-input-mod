@@ -72,13 +72,13 @@ namespace xinput
 		};
 	}
 
-	const uint32 rumble_l_timer = 250;
-	const uint32 rumble_r_timer = 1000;
+	const uint rumble_l_timer = 250;
+	const uint rumble_r_timer = 1000;
 
 	XINPUT_VIBRATION vibration[4];
 	Motor rumble[4];
-	uint32 rumble_l_elapsed[4];
-	uint32 rumble_r_elapsed[4];
+	uint rumble_l_elapsed[4];
+	uint rumble_r_elapsed[4];
 
 	bool multi_gate = false;
 	float rumble_multi = 255.0;
