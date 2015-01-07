@@ -46,6 +46,8 @@ const bool isDebug = true;
 const bool isDebug = false;
 #endif
 
+#define clamp(value, low, high) min(max(low, value), high)
+
 namespace xinput
 {
 	namespace deadzone
@@ -238,7 +240,6 @@ namespace xinput
 
 	void __cdecl RumbleLarge(int playerNumber, signed int intensity)
 	{
-		int _intensity;
 
 		if (!isCutscenePlaying && enableRumble)
 		{
@@ -246,29 +247,12 @@ namespace xinput
 			// Vanilla SADX only rumbles for P1, but that check has been disabled
 			// to allow per-controller rumble.
 			//if (!playerNumber)
-			//{
-			_intensity = intensity;
-			if (intensity <= 255)
-			{
-				// If the intensity is < 1, set to the default of 1
-				if (intensity < 1)
-					_intensity = 1;
-
-				Rumble(playerNumber, _intensity, Motor::Left);
-			}
-			else
-			{
-				Rumble(playerNumber, 255, Motor::Left);
-			}
-			//}
+				Rumble(playerNumber, clamp(intensity, 1, 255), Motor::Left);
 		}
 	}
+	// TODO: Simplify this function
 	void __cdecl RumbleSmall(int playerNumber, signed int a2, signed int a3, int a4)
 	{
-		signed int _a2;
-		signed int _a3;
-		signed int intensity;
-
 		if (!isCutscenePlaying && enableRumble)
 		{
 			// Only continue if the calling player(?) is Player 1 (0)
@@ -276,43 +260,42 @@ namespace xinput
 			// to allow per-controller rumble.
 			//if (!playerNumber)
 			//{
-			_a2 = a2;
-			_a3 = a3;
+				int _a2 = a2;
+				int _a3 = a3;
 
-			// I have a hunch that this stuff can be simplified further,
-			// but I can't be bothered to figure it out.
+				// I have a hunch that this stuff can be simplified further,
+				// but I can't be bothered to figure it out.
 
-			if (_a2 <= 4)
-			{
-				if (_a2 >= -4)
+				if (_a2 <= 4)
 				{
-					if (_a2 == 1)
-						_a2 = 2;
-					else if (_a2 == -1)
-						_a2 = -2;
+					if (_a2 >= -4)
+					{
+						if (_a2 == 1)
+							_a2 = 2;
+						else if (_a2 == -1)
+							_a2 = -2;
+					}
+					else
+					{
+						_a2 = -4;
+					}
 				}
 				else
 				{
-					_a2 = -4;
+					_a2 = 4;
 				}
-			}
-			else
-			{
-				_a2 = 4;
-			}
 
-			if (_a3 <= 59)
-			{
-				if (_a3 < 7)
-					_a3 = 7;
-			}
-			else
-			{
-				_a3 = 59;
-			}
+				if (_a3 <= 59)
+				{
+					if (_a3 < 7)
+						_a3 = 7;
+				}
+				else
+				{
+					_a3 = 59;
+				}
 
-			intensity = max(1, a4 * _a3 / (4 * _a2));
-			Rumble(playerNumber, intensity, Motor::Right);
+				Rumble(playerNumber, max(1, a4 * _a3 / (4 * _a2)), Motor::Right);
 			//}
 		}
 	}
@@ -324,7 +307,7 @@ namespace xinput
 		// tl;dr: if analog exceeds the deadzone, convert to SADX-friendly
 		// value, then make sure it's not < -127 or > 127 and return it; else 0.
 		if (analog < -deadzone || analog > deadzone)
-			return min(max(-127, (analog / 256)), 127);
+			return clamp((analog / 256), -127, 127);
 		else
 			return 0;
 	}
