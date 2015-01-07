@@ -319,7 +319,7 @@ namespace xinput
 
 	// If analog exceeds deadzone, return SADX-friendly
 	// version of the value; else 0.
-	short GetWithinDeadzone(short analog, short deadzone)
+	short GetWithinDeadzone(int analog, short deadzone)
 	{
 		// tl;dr: if analog exceeds the deadzone, convert to SADX-friendly
 		// value, then make sure it's not < -127 or > 127 and return it; else 0.
