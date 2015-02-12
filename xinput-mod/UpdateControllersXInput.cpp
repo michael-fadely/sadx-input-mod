@@ -40,12 +40,6 @@ DataArray(_ControllerData, Controller_Data_0, 0x03B0E9C8, 8);	// Yes, there are 
 DataPointer(int, isCutscenePlaying, 0x3B2A2E4);					// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
 DataPointer(char, enableRumble, 0x00913B10);					// Not sure why this is a char and ^ is an int.
 
-#ifdef _DEBUG
-const bool isDebug = true;
-#else
-const bool isDebug = false;
-#endif
-
 #define clamp(value, low, high) min(max(low, value), high)
 
 namespace xinput
@@ -147,7 +141,8 @@ namespace xinput
 					Rumble(i, 0, result);
 			}
 
-			if (isDebug || xpad->wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)
+#ifdef _DEBUG
+			if (xpad->wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)
 			{
 				DisplayDebugStringFormatted(8 + (3 * i), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
 					pad->HeldButtons, pad->LTriggerPressure, pad->RTriggerPressure, (rumble[i] & Motor::Left), ((rumble[i] & Motor::Right) >> 1));
@@ -178,6 +173,7 @@ namespace xinput
 					DisplayDebugStringFormatted(6, "Rumble multiplier (U/D): %f", rumble_multi);
 				}
 			}
+#endif
 		}
 	}
 
