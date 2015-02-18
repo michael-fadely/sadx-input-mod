@@ -15,13 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="xinput.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="UpdateControllersXInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileExists.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xinput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

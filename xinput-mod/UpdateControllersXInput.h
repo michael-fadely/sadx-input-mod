@@ -23,7 +23,7 @@ namespace xinput
 	// Ingame functions
 	void __cdecl UpdateControllersXInput();
 	void __cdecl RumbleLarge(int playerNumber, signed int intensity);
-	void __cdecl RumbleSmall(int a1, signed int a2, signed int a3, int a4);
+	void __cdecl RumbleSmall(int playerNumber, signed int a2, signed int a3, int a4);
 	void Rumble(short id, int a1, Motor motor);
 
 	// Utility functions

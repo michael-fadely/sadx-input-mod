@@ -13,6 +13,8 @@
 #include "UpdateControllersXInput.h"
 
 
+// TODO: Figure out how to determine if a player is AI controlled or not, then enable per-controller rumble.
+
 // From the SA2 Mod Loader
 // Using this until it or PDS_PERIPHERAL gets implemented into the SADX Mod Loader.
 // Aside from having all of its members named, it's otherwise exactly the same.
@@ -38,7 +40,7 @@ struct _ControllerData
 
 DataArray(_ControllerData, Controller_Data_0, 0x03B0E9C8, 8);	// Yes, there are in fact *8* controller structures in SADX PC.
 DataPointer(int, isCutscenePlaying, 0x3B2A2E4);					// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
-DataPointer(char, enableRumble, 0x00913B10);					// Not sure why this is a char and ^ is an int.
+DataPointer(char, rumbleEnabled, 0x00913B10);					// Not sure why this is a char and ^ is an int.
 
 #define clamp(value, low, high) min(max(low, value), high)
 
@@ -78,7 +80,6 @@ namespace xinput
 
 	bool multi_gate = false;
 	float rumble_multi = 255.0;
-
 
 	// TODO: Keyboard & Mouse
 	void __cdecl UpdateControllersXInput()
@@ -236,63 +237,34 @@ namespace xinput
 
 	void __cdecl RumbleLarge(int playerNumber, signed int intensity)
 	{
-
-		if (!isCutscenePlaying && enableRumble)
+		if (!isCutscenePlaying && rumbleEnabled)
 		{
-			// Only continue if the calling player(?) is Player 1 (0)
-			// Vanilla SADX only rumbles for P1, but that check has been disabled
-			// to allow per-controller rumble.
-			//if (!playerNumber)
+			// Only continue if the calling player is Player 1 (0)
+			// Vanilla SADX only rumbles for P1.
+			if (!playerNumber)
 				Rumble(playerNumber, clamp(intensity, 1, 255), Motor::Left);
 		}
 	}
-	// TODO: Simplify this function
 	void __cdecl RumbleSmall(int playerNumber, signed int a2, signed int a3, int a4)
 	{
-		if (!isCutscenePlaying && enableRumble)
+		if (!isCutscenePlaying && rumbleEnabled)
 		{
-			// Only continue if the calling player(?) is Player 1 (0)
-			// Vanilla SADX only rumbles for P1, but that check has been disabled
-			// to allow per-controller rumble.
-			//if (!playerNumber)
-			//{
-				int _a2 = a2;
-				int _a3 = a3;
+			// Only continue if the calling player is Player 1 (0)
+			// Vanilla SADX only rumbles for P1.
+			if (!playerNumber)
+			{
+				int _a2 = clamp(a2, -4, 4);
 
-				// I have a hunch that this stuff can be simplified further,
-				// but I can't be bothered to figure it out.
+				// Could be inline if'd, but it'd look borderline unreadable.
+				if (_a2 == 1)
+					_a2 = 2;
+				else if (_a2 == -1)
+					_a2 = -2;
 
-				if (_a2 <= 4)
-				{
-					if (_a2 >= -4)
-					{
-						if (_a2 == 1)
-							_a2 = 2;
-						else if (_a2 == -1)
-							_a2 = -2;
-					}
-					else
-					{
-						_a2 = -4;
-					}
-				}
-				else
-				{
-					_a2 = 4;
-				}
-
-				if (_a3 <= 59)
-				{
-					if (_a3 < 7)
-						_a3 = 7;
-				}
-				else
-				{
-					_a3 = 59;
-				}
+				int _a3 = clamp(a3, 7, 59);
 
 				Rumble(playerNumber, max(1, a4 * _a3 / (4 * _a2)), Motor::Right);
-			//}
+			}
 		}
 	}
 
