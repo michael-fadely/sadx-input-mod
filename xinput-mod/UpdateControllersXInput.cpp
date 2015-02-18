@@ -310,7 +310,7 @@ namespace xinput
 	void SetDeadzone(short* array, uint id, int value)
 	{
 		if (value >= 0)
-			array[id] = min(32767, value);
+			array[id] = min(SHRT_MAX, value);
 	}
 
 	// Converts wButtons in XINPUT_GAMEPAD to Sonic Adventure compatible buttons and returns the value.
