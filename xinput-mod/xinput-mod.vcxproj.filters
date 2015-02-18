@@ -21,7 +21,7 @@
     <ClCompile Include="FileExists.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="xinput.cpp">
+    <ClCompile Include="mod.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

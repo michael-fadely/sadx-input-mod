@@ -84,7 +84,7 @@
   <ItemGroup>
     <ClCompile Include="FileExists.cpp" />
     <ClCompile Include="UpdateControllersXInput.cpp" />
-    <ClCompile Include="xinput.cpp" />
+    <ClCompile Include="mod.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="mod.ini" />
