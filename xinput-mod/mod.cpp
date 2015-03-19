@@ -30,47 +30,42 @@ std::string BuildConfigPath(const char* modpath)
 {
 	std::stringstream result;
 	char* workingdir = new char[FILENAME_MAX];
-	
+
 	result << _getcwd(workingdir, FILENAME_MAX) << "\\" << modpath << "\\xinput.ini";
 	delete[] workingdir;
 
 	return result.str();
 }
 
-void _cdecl xinput_main(const char* path, const HelperFunctions& helperFunctions)
+extern "C"
 {
-	std::string config = BuildConfigPath(path);
-
-	if (FileExists(config))
+	__declspec(dllexport) void _cdecl Init(const char* path, const HelperFunctions& helperFunctions)
 	{
-		for (uint i = 0; i < 4; i++)
+		std::string config = BuildConfigPath(path);
+
+		if (FileExists(config))
 		{
-			std::string section = "Controller " + std::to_string(i + 1);
-			int l, r, t;
+			for (uint i = 0; i < 4; i++)
+			{
+				std::string section = "Controller " + std::to_string(i + 1);
+				int l, r, t;
 
-			l = GetPrivateProfileIntA(section.c_str(), "DeadZoneL", -1, config.c_str());
-			r = GetPrivateProfileIntA(section.c_str(), "DeadZoneR", -1, config.c_str());
-			t = GetPrivateProfileIntA(section.c_str(), "TriggerThreshold", -1, config.c_str());
+				l = GetPrivateProfileIntA(section.c_str(), "DeadZoneL", -1, config.c_str());
+				r = GetPrivateProfileIntA(section.c_str(), "DeadZoneR", -1, config.c_str());
+				t = GetPrivateProfileIntA(section.c_str(), "TriggerThreshold", -1, config.c_str());
 
-			xinput::SetDeadzone(xinput::deadzone::stickL, i, l);
-			xinput::SetDeadzone(xinput::deadzone::stickR, i, r);
-			xinput::SetDeadzone(xinput::deadzone::triggers, i, t);
+				xinput::SetDeadzone(xinput::deadzone::stickL, i, l);
+				xinput::SetDeadzone(xinput::deadzone::stickR, i, r);
+				xinput::SetDeadzone(xinput::deadzone::triggers, i, t);
 
-			PrintDebug("[XInput] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
-				xinput::deadzone::stickL[i], xinput::deadzone::stickR[i], xinput::deadzone::triggers[i]);
+				PrintDebug("[XInput] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
+					xinput::deadzone::stickL[i], xinput::deadzone::stickR[i], xinput::deadzone::triggers[i]);
+			}
 		}
+
+		PrintDebug("[XInput] Initialization complete.\n");
 	}
 
-	PrintDebug("[XInput] Initialization complete.\n");
+	__declspec(dllexport) PointerList Jumps[] = { { arrayptrandlength(jumps) } };
+	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
 }
-
-extern "C"						// Required for proper export
-__declspec(dllexport)			// This data is being exported from this DLL
-ModInfo SADXModInfo = {
-	ModLoaderVer,				// Struct version
-	xinput_main,				// Initialization function
-	NULL, 0,					// List of Patches & Patch Count
-	arrayptrandlength(jumps),	// List of Jumps & Jump Count
-	NULL, 0,					// List of Calls & Call Count
-	NULL, 0,					// List of Pointers & Pointer Count
-};
