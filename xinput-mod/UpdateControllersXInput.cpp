@@ -78,7 +78,6 @@ namespace xinput
 	uint rumble_l_elapsed[4];
 	uint rumble_r_elapsed[4];
 
-	bool multi_gate = false;
 	float rumble_multi = 255.0;
 
 	// TODO: Keyboard & Mouse
@@ -115,8 +114,7 @@ namespace xinput
 			pad->ReleasedButtons = pad->HeldButtons ^ pad->Old;
 
 			// Do some fancy math to "press" only the necessary buttons
-			pad->PressedButtons = pad->HeldButtons;
-			pad->PressedButtons &= ~pad->Old;
+			pad->PressedButtons = pad->HeldButtons & ~pad->Old;
 
 			// Set the "last held" to held
 			pad->Old = pad->HeldButtons;
@@ -125,7 +123,7 @@ namespace xinput
 			if (rumble[i] != Motor::None)
 			{
 				Motor result = Motor::None;
-				uint64 now = GetTickCount();
+				uint now = GetTickCount();
 
 				if ((now - rumble_l_elapsed[i]) >= rumble_l_timer)
 				{
@@ -152,24 +150,10 @@ namespace xinput
 
 				if (i == 0 && xpad->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
 				{
-					if (xpad->wButtons & XINPUT_GAMEPAD_DPAD_UP)
-					{
-						if (multi_gate == false)
-							rumble_multi += 8.0;
-
-						multi_gate = true;
-					}
-					else if (xpad->wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
-					{
-						if (multi_gate == false)
-							rumble_multi -= 8.0;
-
-						multi_gate = true;
-					}
-					else
-					{
-						multi_gate = false;
-					}
+					if (pad->PressedButtons & Buttons_Up)
+						rumble_multi += 8.0;
+					else if (pad->PressedButtons & Buttons_Down)
+						rumble_multi -= 8.0;
 
 					DisplayDebugStringFormatted(6, "Rumble multiplier (U/D): %f", rumble_multi);
 				}
