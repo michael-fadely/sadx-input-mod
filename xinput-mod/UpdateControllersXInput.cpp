@@ -111,10 +111,10 @@ namespace xinput
 
 			// Now set the released buttons to the difference between
 			// the last and currently held buttons
-			pad->ReleasedButtons = pad->HeldButtons ^ pad->Old;
+			pad->ReleasedButtons = pad->Old & (pad->HeldButtons ^ pad->Old);
 
 			// Do some fancy math to "press" only the necessary buttons
-			pad->PressedButtons = pad->HeldButtons & ~pad->Old;
+			pad->PressedButtons = pad->HeldButtons & (pad->HeldButtons ^ pad->Old);
 
 			// Set the "last held" to held
 			pad->Old = pad->HeldButtons;
