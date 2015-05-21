@@ -94,19 +94,17 @@ namespace xinput
 			pad->Support = 0x3F07FEu;
 
 			// L Analog
-			pad->LeftStickX = GetWithinDeadzone(xpad->sThumbLX, deadzone::stickL[i]);
-			pad->LeftStickY = GetWithinDeadzone(-xpad->sThumbLY, deadzone::stickL[i]);
+			ConvertAxes((short*)&pad->LeftStickX, (short*)&xpad->sThumbLX, deadzone::stickL[i], true);
 
 			// R Analog
-			pad->RightStickX = GetWithinDeadzone(xpad->sThumbRX, deadzone::stickR[i]);
-			pad->RightStickY = GetWithinDeadzone(-xpad->sThumbRY, deadzone::stickR[i]);
+			ConvertAxes((short*)&pad->RightStickX, (short*)&xpad->sThumbRX, deadzone::stickR[i], false);
 
 			// Trigger pressure
 			pad->LTriggerPressure = xpad->bLeftTrigger;
 			pad->RTriggerPressure = xpad->bRightTrigger;
 
 			// Now, get the new buttons from the XInput xpad
-			pad->HeldButtons = XInputToDreamcast(xpad, i);
+			pad->HeldButtons = ConvertButtons(xpad, i);
 			pad->NotHeldButtons = ~pad->HeldButtons;
 
 			// Now set the released buttons to the difference between
@@ -252,25 +250,46 @@ namespace xinput
 		}
 	}
 
-	// If analog exceeds deadzone, return SADX-friendly
-	// version of the value; else 0.
-	short GetWithinDeadzone(int analog, short deadzone)
+	/// <summary>
+	/// Converts from XInput (-32768 - 32767) to Dreamcast (-127 - 127) axes, including scaled deadzone.
+	/// </summary>
+	/// <param name="dest">The destination axes (Dreamcast).</param>
+	/// <param name="source">The source axes (XInput).</param>
+	/// <param name="deadzone">The deadzone.</param>
+	/// <param name="radial">If set to <c>true</c>, the deadzone is handled as radial. (e.g if the X axis exceeds deadzone, both X and Y axes are converted)</param>
+	void ConvertAxes(short dest[2], short source[2], short deadzone, bool radial)
 	{
-		// tl;dr: if analog exceeds the deadzone, convert to SADX-friendly
-		// value, then make sure it's not < -127 or > 127 and return it; else 0.
-		if (analog < -deadzone || analog > deadzone)
-			return clamp((analog / 256), -127, 127);
-		else
-			return 0;
-	}
-	void SetDeadzone(short* array, uint id, int value)
-	{
-		if (value >= 0)
-			array[id] = min(SHRT_MAX, value);
-	}
+		const float x = (float)clamp(source[0], -SHRT_MAX, SHRT_MAX);
+		const float y = (float)clamp(source[1], -SHRT_MAX, SHRT_MAX);
 
-	// Converts wButtons in XINPUT_GAMEPAD to Sonic Adventure compatible buttons and returns the value.
-	int XInputToDreamcast(XINPUT_GAMEPAD* xpad, ushort id)
+		float m = sqrt(x*x + y*y);
+
+		if (m < deadzone)
+		{
+			dest[0] = dest[1] = 0;
+		}
+		else
+		{
+			const float nx = (m < deadzone) ? 0 : x / m;
+			const float ny = (m < deadzone) ? 0 : y / m;
+
+			if (m > SHRT_MAX)
+				m = SHRT_MAX;
+
+			m = (m - deadzone) / (SHRT_MAX - deadzone);
+
+			dest[0] = (radial || abs(source[0]) >= deadzone) ? (short)(128 * (nx * m)) : 0;
+			dest[1] = (radial || abs(source[1]) >= deadzone) ? (short)(-128 * (ny * m)) : 0;
+		}
+	}
+	
+	/// <summary>
+	/// Converts XInput buttons to Dreamcast buttons.
+	/// </summary>
+	/// <param name="xpad">The XInput gamepad containing the buttons to convert.</param>
+	/// <param name="id">The controller ID (player number)</param>
+	/// <returns>Converted buttons.</returns>
+	int ConvertButtons(XINPUT_GAMEPAD* xpad, ushort id)
 	{
 		int result = 0;
 		int buttons = xpad->wButtons;
@@ -304,5 +323,11 @@ namespace xinput
 			result |= Buttons_Right;
 
 		return result;
+	}
+
+	void SetDeadzone(short* array, uint id, int value)
+	{
+		if (value >= 0)
+			array[id] = min(SHRT_MAX, value);
 	}
 }

@@ -27,7 +27,7 @@ namespace xinput
 	void Rumble(short id, int a1, Motor motor);
 
 	// Utility functions
-	short GetWithinDeadzone(int analog, short deadzone);
+	void ConvertAxes(short dest[2], short source[2], short deadzone, bool radial);
+	int ConvertButtons(XINPUT_GAMEPAD* xpad, ushort id);
 	void SetDeadzone(short* array, uint id, int value);
-	int XInputToDreamcast(XINPUT_GAMEPAD* xpad, ushort id);
 }
