@@ -185,7 +185,7 @@ namespace xinput
 
 		if (a1 > 0)
 		{
-			float m = 0;
+			float m;
 
 			// RumbleLarge only ever passes in a value in that is <= 10,
 			// and scaling that to 2 bytes is super annoying, so here's

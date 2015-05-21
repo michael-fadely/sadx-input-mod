@@ -5,7 +5,6 @@
 // Standard library
 #include <string>
 #include <sstream>	// because
-#include <limits>	// for min()
 
 // Mod loader
 #include <SADXModLoader.h>
@@ -15,15 +14,16 @@
 #include "FileExists.h"
 #include "UpdateControllersXInput.h"
 
-void* UpdateControllers_ptr	= (void*)(0x0040F460);
-void* RumbleLarge_ptr		= (void*)(0x004BCBC0);
-void* RumbleSmall_ptr		= (void*)(0x004BCC10);
-void* Rumble_ptr			= (void*)(0x004BCB60); // Unused, but here so I don't lose it.
+void* onInput				= (void*)0x0040FDB3; // For future endeavors
+void* UpdateControllers_ptr = (void*)0x0040F460;
+void* RumbleLarge_ptr		= (void*)0x004BCBC0;
+void* RumbleSmall_ptr		= (void*)0x004BCC10;
+void* Rumble_ptr			= (void*)0x004BCB60; // Unused, but here so I don't lose it.
 
 PointerInfo jumps[] = {
-	{ UpdateControllers_ptr, xinput::UpdateControllersXInput },
-	{ RumbleLarge_ptr, xinput::RumbleLarge },
-	{ RumbleSmall_ptr, xinput::RumbleSmall }
+	{ UpdateControllers_ptr,	xinput::UpdateControllersXInput },
+	{ RumbleLarge_ptr,			xinput::RumbleLarge },
+	{ RumbleSmall_ptr,			xinput::RumbleSmall }
 };
 
 std::string BuildConfigPath(const char* modpath)
