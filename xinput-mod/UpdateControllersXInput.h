@@ -16,12 +16,22 @@ namespace xinput
 		Both
 	};
 
-	namespace deadzone
+	struct Settings
 	{
-		extern short stickL[XPAD_COUNT];
-		extern short stickR[XPAD_COUNT];
-		extern short triggers[XPAD_COUNT];
-	}
+		Settings();
+		// Left stick deadzone
+		short deadzoneL;
+		bool radialL;
+		// Right stick deadzone
+		short deadzoneR;
+		bool radialR;
+		// Trigger threshold
+		ushort triggerThreshold;
+
+		void apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, ushort triggerThreshold);
+	};
+
+	extern Settings settings[XPAD_COUNT];
 
 	// Ingame functions
 	void __cdecl UpdateControllersXInput();
@@ -34,5 +44,4 @@ namespace xinput
 	void ConvertAxes(short dest[2], short source[2], short deadzone = 0, bool radial = true);
 	int ConvertButtons(ushort id, XINPUT_GAMEPAD* xpad);
 	static void SetMotor(ushort id, Motor motor, short intensity);
-	void SetDeadzone(ushort id, short* array, int value);
 }

@@ -43,31 +43,27 @@ DataPointer(char, rumbleEnabled, 0x00913B10);					// Not sure why this is a char
 
 #define clamp(value, low, high) min(max(low, value), high)
 
+
 namespace xinput
 {
-	namespace deadzone
+	Settings::Settings()
 	{
-		short stickL[XPAD_COUNT] = {
-			XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
-			XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
-			XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
-			XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE
-		};
-
-		short stickR[XPAD_COUNT] = {
-			XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
-			XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
-			XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
-			XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE
-		};
-
-		short triggers[XPAD_COUNT] = {
-			XINPUT_GAMEPAD_TRIGGER_THRESHOLD,
-			XINPUT_GAMEPAD_TRIGGER_THRESHOLD,
-			XINPUT_GAMEPAD_TRIGGER_THRESHOLD,
-			XINPUT_GAMEPAD_TRIGGER_THRESHOLD
-		};
+		deadzoneL = XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
+		deadzoneR = XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
+		triggerThreshold = XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+		radialL = true;
+		radialR = false;
 	}
+	void Settings::apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, ushort triggerThreshold)
+	{
+		this->deadzoneL = min(SHRT_MAX, deadzoneL);
+		this->deadzoneR = min(SHRT_MAX, deadzoneR);
+		this->radialL = radialL;
+		this->radialR = radialR;
+		this->triggerThreshold = min(USHRT_MAX, triggerThreshold);
+	}
+
+	Settings settings[XPAD_COUNT];
 
 	const uint rumble_l_timer = 250;
 	const uint rumble_r_timer = 1000;
@@ -95,10 +91,10 @@ namespace xinput
 			pad->Support = 0x3F07FEu;
 
 			// L Analog
-			ConvertAxes((short*)&pad->LeftStickX, (short*)&xpad->sThumbLX, deadzone::stickL[i], true);
+			ConvertAxes((short*)&pad->LeftStickX, (short*)&xpad->sThumbLX, settings[i].deadzoneL, settings[i].radialL);
 
 			// R Analog
-			ConvertAxes((short*)&pad->RightStickX, (short*)&xpad->sThumbRX, deadzone::stickR[i], false);
+			ConvertAxes((short*)&pad->RightStickX, (short*)&xpad->sThumbRX, settings[i].deadzoneR, settings[i].radialR);
 
 			// Trigger pressure
 			pad->LTriggerPressure = xpad->bLeftTrigger;
@@ -245,7 +241,7 @@ namespace xinput
 	/// <param name="dest">The destination axes (Dreamcast).</param>
 	/// <param name="source">The source axes (XInput).</param>
 	/// <param name="deadzone">The deadzone.</param>
-	/// <param name="radial">If set to <c>true</c>, the deadzone is handled as radial. (e.g if the X axis exceeds deadzone, both X and Y axes are converted)</param>
+	/// <param name="radial">If set to <c>true</c>, the deadzone is treated as radial. (e.g if the X axis exceeds deadzone, both X and Y axes are converted)</param>
 	void ConvertAxes(short dest[2], short source[2], short deadzone, bool radial)
 	{
 		// This is being intentionally limited to -32767 instead of -32768
@@ -291,9 +287,9 @@ namespace xinput
 		if (buttons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
 			result |= Buttons_Z;
 
-		if (xpad->bLeftTrigger > deadzone::triggers[id])
+		if (xpad->bLeftTrigger > settings[id].triggerThreshold)
 			result |= Buttons_L;
-		if (xpad->bRightTrigger > deadzone::triggers[id])
+		if (xpad->bRightTrigger > settings[id].triggerThreshold)
 			result |= Buttons_R;
 
 		if (buttons & XINPUT_GAMEPAD_START)
@@ -330,11 +326,5 @@ namespace xinput
 			vibration[id].wRightMotorSpeed = intensity * 2;
 			rumble_r_elapsed[id] = GetTickCount();
 		}
-	}
-
-	void SetDeadzone(ushort id, short* array, int value)
-	{
-		if (value >= 0)
-			array[id] = min(SHRT_MAX, value);
 	}
 }

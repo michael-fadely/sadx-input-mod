@@ -38,7 +38,7 @@ std::string BuildConfigPath(const char* modpath)
 
 extern "C"
 {
-	__declspec(dllexport) void _cdecl Init(const char* path, const HelperFunctions& helperFunctions)
+	__declspec(dllexport) void Init(const char* path, const HelperFunctions& helperFunctions)
 	{
 		std::string config = BuildConfigPath(path);
 
@@ -47,18 +47,20 @@ extern "C"
 			for (ushort i = 0; i < XPAD_COUNT; i++)
 			{
 				std::string section = "Controller " + std::to_string(i + 1);
-				int l, r, t;
 
-				l = GetPrivateProfileIntA(section.c_str(), "DeadZoneL", -1, config.c_str());
-				r = GetPrivateProfileIntA(section.c_str(), "DeadZoneR", -1, config.c_str());
-				t = GetPrivateProfileIntA(section.c_str(), "TriggerThreshold", -1, config.c_str());
+				int deadzoneL = GetPrivateProfileIntA(section.c_str(), "DeadzoneL", XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, config.c_str());
+				int deadzoneR = GetPrivateProfileIntA(section.c_str(), "DeadzoneR", XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, config.c_str());
 
-				xinput::SetDeadzone(i, xinput::deadzone::stickL, l);
-				xinput::SetDeadzone(i, xinput::deadzone::stickR, r);
-				xinput::SetDeadzone(i, xinput::deadzone::triggers, t);
+				bool radialL = GetPrivateProfileIntA(section.c_str(), "RadialL", 1, config.c_str()) != 0;
+				bool radialR = GetPrivateProfileIntA(section.c_str(), "RadialR", 0, config.c_str()) != 0;
+
+				int triggerThreshold = GetPrivateProfileIntA(section.c_str(), "TriggerThreshold", XINPUT_GAMEPAD_TRIGGER_THRESHOLD, config.c_str());
+
+				xinput::Settings* settings = &xinput::settings[i];
+				settings->apply(deadzoneL, deadzoneR, radialL, radialR, triggerThreshold);
 
 				PrintDebug("[XInput] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
-					xinput::deadzone::stickL[i], xinput::deadzone::stickR[i], xinput::deadzone::triggers[i]);
+					settings->deadzoneL, settings->deadzoneR, settings->triggerThreshold);
 			}
 		}
 
