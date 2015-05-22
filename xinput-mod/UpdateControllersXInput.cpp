@@ -80,6 +80,8 @@ namespace xinput
 
 	float rumble_multi = 255.0;
 
+#pragma region Ingame Functions
+
 	// TODO: Keyboard & Mouse
 	void __cdecl UpdateControllersXInput()
 	{
@@ -160,20 +162,6 @@ namespace xinput
 		}
 	}
 
-	inline void SetMotor(short id, Motor motor, short intensity)
-	{
-		if (motor & Motor::Left)
-		{
-			vibration[id].wLeftMotorSpeed = intensity;
-			rumble_l_elapsed[id] = GetTickCount();
-		}
-		if (motor & Motor::Right)
-		{
-			// This is doubled because it's never strong enough.
-			vibration[id].wRightMotorSpeed = intensity * 2;
-			rumble_r_elapsed[id] = GetTickCount();
-		}
-	}
 	void Rumble(short id, int a1, Motor motor)
 	{
 		short intensity = 4 * a1;
@@ -216,7 +204,6 @@ namespace xinput
 			}
 		}
 	}
-
 	void __cdecl RumbleLarge(int playerNumber, signed int intensity)
 	{
 		if (!isCutscenePlaying && rumbleEnabled)
@@ -250,6 +237,9 @@ namespace xinput
 		}
 	}
 
+#pragma endregion
+	
+#pragma region Utility Functions
 	/// <summary>
 	/// Converts from XInput (-32768 - 32767) to Dreamcast (-127 - 127) axes, including scaled deadzone.
 	/// </summary>
@@ -259,27 +249,23 @@ namespace xinput
 	/// <param name="radial">If set to <c>true</c>, the deadzone is handled as radial. (e.g if the X axis exceeds deadzone, both X and Y axes are converted)</param>
 	void ConvertAxes(short dest[2], short source[2], short deadzone, bool radial)
 	{
+		// This is being intentionally limited to -32767 instead of -32768
 		const float x = (float)clamp(source[0], -SHRT_MAX, SHRT_MAX);
 		const float y = (float)clamp(source[1], -SHRT_MAX, SHRT_MAX);
 
-		float m = sqrt(x*x + y*y);
-
-		if (m < deadzone)
+		if (abs(source[0]) < deadzone && abs(source[1]) < deadzone)
 		{
 			dest[0] = dest[1] = 0;
 		}
 		else
 		{
+			const float m = sqrt(x*x + y*y);
 			const float nx = (m < deadzone) ? 0 : x / m;
 			const float ny = (m < deadzone) ? 0 : y / m;
+			const float n = (((m > SHRT_MAX) ? SHRT_MAX : m) - deadzone) / (SHRT_MAX - deadzone);
 
-			if (m > SHRT_MAX)
-				m = SHRT_MAX;
-
-			m = (m - deadzone) / (SHRT_MAX - deadzone);
-
-			dest[0] = (radial || abs(source[0]) >= deadzone) ? (short)(128 * (nx * m)) : 0;
-			dest[1] = (radial || abs(source[1]) >= deadzone) ? (short)(-128 * (ny * m)) : 0;
+			dest[0] = (radial || abs(source[0]) >= deadzone) ? (short)(128 * (nx * n)) : 0;
+			dest[1] = (radial || abs(source[1]) >= deadzone) ? (short)(-128 * (ny * n)) : 0;
 		}
 	}
 	
@@ -323,6 +309,21 @@ namespace xinput
 			result |= Buttons_Right;
 
 		return result;
+	}
+
+	inline void SetMotor(short id, Motor motor, short intensity)
+	{
+		if (motor & Motor::Left)
+		{
+			vibration[id].wLeftMotorSpeed = intensity;
+			rumble_l_elapsed[id] = GetTickCount();
+		}
+		if (motor & Motor::Right)
+		{
+			// This is doubled because it's never strong enough.
+			vibration[id].wRightMotorSpeed = intensity * 2;
+			rumble_r_elapsed[id] = GetTickCount();
+		}
 	}
 
 	void SetDeadzone(short* array, uint id, int value)
