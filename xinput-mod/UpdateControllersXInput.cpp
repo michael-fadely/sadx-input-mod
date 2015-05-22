@@ -12,7 +12,6 @@
 // This namespace
 #include "UpdateControllersXInput.h"
 
-
 // TODO: Figure out how to determine if a player is AI controlled or not, then enable per-controller rumble.
 
 // From the SA2 Mod Loader
@@ -48,21 +47,21 @@ namespace xinput
 {
 	namespace deadzone
 	{
-		short stickL[4] = {
+		short stickL[XPAD_COUNT] = {
 			XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
 			XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
 			XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
 			XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE
 		};
 
-		short stickR[4] = {
+		short stickR[XPAD_COUNT] = {
 			XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
 			XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
 			XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
 			XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE
 		};
 
-		short triggers[4] = {
+		short triggers[XPAD_COUNT] = {
 			XINPUT_GAMEPAD_TRIGGER_THRESHOLD,
 			XINPUT_GAMEPAD_TRIGGER_THRESHOLD,
 			XINPUT_GAMEPAD_TRIGGER_THRESHOLD,
@@ -73,10 +72,10 @@ namespace xinput
 	const uint rumble_l_timer = 250;
 	const uint rumble_r_timer = 1000;
 
-	XINPUT_VIBRATION vibration[4];
-	Motor rumble[4];
-	uint rumble_l_elapsed[4];
-	uint rumble_r_elapsed[4];
+	XINPUT_VIBRATION vibration[XPAD_COUNT];
+	Motor rumble[XPAD_COUNT];
+	uint rumble_l_elapsed[XPAD_COUNT];
+	uint rumble_r_elapsed[XPAD_COUNT];
 
 	float rumble_multi = 255.0;
 
@@ -85,7 +84,7 @@ namespace xinput
 	// TODO: Keyboard & Mouse
 	void __cdecl UpdateControllersXInput()
 	{
-		for (uint8 i = 0; i < 4; i++)
+		for (ushort i = 0; i < XPAD_COUNT; i++)
 		{
 			_ControllerData* pad = &Controller_Data_0[i];
 			XINPUT_STATE state = {};
@@ -106,7 +105,7 @@ namespace xinput
 			pad->RTriggerPressure = xpad->bRightTrigger;
 
 			// Now, get the new buttons from the XInput xpad
-			pad->HeldButtons = ConvertButtons(xpad, i);
+			pad->HeldButtons = ConvertButtons(i, xpad);
 			pad->NotHeldButtons = ~pad->HeldButtons;
 
 			// Now set the released buttons to the difference between
@@ -166,7 +165,7 @@ namespace xinput
 	{
 		short intensity = 4 * a1;
 
-		bool isWithinRange = (id >= 0 && id < 4);
+		bool isWithinRange = (id >= 0 && id < XPAD_COUNT);
 		Motor resultMotor = (isWithinRange) ? rumble[id] : Motor::None;
 
 		if (a1 > 0)
@@ -196,7 +195,7 @@ namespace xinput
 		}
 		else
 		{
-			for (uint8 i = 0; i < 4; i++)
+			for (ushort i = 0; i < XPAD_COUNT; i++)
 			{
 				SetMotor(i, motor, intensity);
 				rumble[i] = (Motor)(rumble[i] | resultMotor);
@@ -264,6 +263,7 @@ namespace xinput
 			const float ny = (m < deadzone) ? 0 : y / m;
 			const float n = (((m > SHRT_MAX) ? SHRT_MAX : m) - deadzone) / (SHRT_MAX - deadzone);
 
+			// In my testing, multiplying -128 - 128 results in 127 instead, which is the desired value.
 			dest[0] = (radial || abs(source[0]) >= deadzone) ? (short)(128 * (nx * n)) : 0;
 			dest[1] = (radial || abs(source[1]) >= deadzone) ? (short)(-128 * (ny * n)) : 0;
 		}
@@ -275,7 +275,7 @@ namespace xinput
 	/// <param name="xpad">The XInput gamepad containing the buttons to convert.</param>
 	/// <param name="id">The controller ID (player number)</param>
 	/// <returns>Converted buttons.</returns>
-	int ConvertButtons(XINPUT_GAMEPAD* xpad, ushort id)
+	int ConvertButtons(ushort id, XINPUT_GAMEPAD* xpad)
 	{
 		int result = 0;
 		int buttons = xpad->wButtons;
@@ -311,7 +311,13 @@ namespace xinput
 		return result;
 	}
 
-	inline void SetMotor(short id, Motor motor, short intensity)
+	/// <summary>
+	/// Rumbles the specified motor using the specified intensity.
+	/// </summary>
+	/// <param name="id">The identifier.</param>
+	/// <param name="motor">The motor.</param>
+	/// <param name="intensity">The intensity.</param>
+	inline void SetMotor(ushort id, Motor motor, short intensity)
 	{
 		if (motor & Motor::Left)
 		{
@@ -326,7 +332,7 @@ namespace xinput
 		}
 	}
 
-	void SetDeadzone(short* array, uint id, int value)
+	void SetDeadzone(ushort id, short* array, int value)
 	{
 		if (value >= 0)
 			array[id] = min(SHRT_MAX, value);

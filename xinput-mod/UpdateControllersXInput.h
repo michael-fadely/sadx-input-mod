@@ -3,6 +3,9 @@
 #include "typedefs.h"
 #include <Xinput.h>
 
+// Re-defining so it can be changed easily, and because XUSER_MAX_COUNT is far too long.
+#define XPAD_COUNT XUSER_MAX_COUNT
+
 namespace xinput
 {
 	enum Motor : int8
@@ -15,9 +18,9 @@ namespace xinput
 
 	namespace deadzone
 	{
-		extern short stickL[4];
-		extern short stickR[4];
-		extern short triggers[4];
+		extern short stickL[XPAD_COUNT];
+		extern short stickR[XPAD_COUNT];
+		extern short triggers[XPAD_COUNT];
 	}
 
 	// Ingame functions
@@ -27,9 +30,9 @@ namespace xinput
 	void Rumble(short id, int a1, Motor motor);
 
 	// Utility functions
-	// TODO: Pull these functions out of here for modularity.
-	void ConvertAxes(short dest[2], short source[2], short deadzone, bool radial);
-	int ConvertButtons(XINPUT_GAMEPAD* xpad, ushort id);
-	static void SetMotor(short id, Motor motor, short intensity);
-	void SetDeadzone(short* array, uint id, int value);
+	// TODO: Separate utility functions into separate file.
+	void ConvertAxes(short dest[2], short source[2], short deadzone = 0, bool radial = true);
+	int ConvertButtons(ushort id, XINPUT_GAMEPAD* xpad);
+	static void SetMotor(ushort id, Motor motor, short intensity);
+	void SetDeadzone(ushort id, short* array, int value);
 }

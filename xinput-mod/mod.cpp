@@ -29,10 +29,9 @@ PointerInfo jumps[] = {
 std::string BuildConfigPath(const char* modpath)
 {
 	std::stringstream result;
-	char* workingdir = new char[FILENAME_MAX];
+	char workingdir[FILENAME_MAX];
 
 	result << _getcwd(workingdir, FILENAME_MAX) << "\\" << modpath << "\\xinput.ini";
-	delete[] workingdir;
 
 	return result.str();
 }
@@ -45,7 +44,7 @@ extern "C"
 
 		if (FileExists(config))
 		{
-			for (uint i = 0; i < 4; i++)
+			for (ushort i = 0; i < XPAD_COUNT; i++)
 			{
 				std::string section = "Controller " + std::to_string(i + 1);
 				int l, r, t;
@@ -54,9 +53,9 @@ extern "C"
 				r = GetPrivateProfileIntA(section.c_str(), "DeadZoneR", -1, config.c_str());
 				t = GetPrivateProfileIntA(section.c_str(), "TriggerThreshold", -1, config.c_str());
 
-				xinput::SetDeadzone(xinput::deadzone::stickL, i, l);
-				xinput::SetDeadzone(xinput::deadzone::stickR, i, r);
-				xinput::SetDeadzone(xinput::deadzone::triggers, i, t);
+				xinput::SetDeadzone(i, xinput::deadzone::stickL, l);
+				xinput::SetDeadzone(i, xinput::deadzone::stickR, r);
+				xinput::SetDeadzone(i, xinput::deadzone::triggers, t);
 
 				PrintDebug("[XInput] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
 					xinput::deadzone::stickL[i], xinput::deadzone::stickR[i], xinput::deadzone::triggers[i]);
