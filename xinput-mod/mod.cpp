@@ -14,14 +14,12 @@
 #include "FileExists.h"
 #include "UpdateControllersXInput.h"
 
-void* onInput				= (void*)0x0040FDB3; // For future endeavors
-void* UpdateControllers_ptr = (void*)0x0040F460;
 void* RumbleLarge_ptr		= (void*)0x004BCBC0;
 void* RumbleSmall_ptr		= (void*)0x004BCC10;
 void* Rumble_ptr			= (void*)0x004BCB60; // Unused, but here so I don't lose it.
+void* UpdateControllers_ptr = (void*)0x0040F460; // Ditto
 
 PointerInfo jumps[] = {
-	{ UpdateControllers_ptr,	xinput::UpdateControllersXInput },
 	{ RumbleLarge_ptr,			xinput::RumbleLarge },
 	{ RumbleSmall_ptr,			xinput::RumbleSmall }
 };
@@ -51,13 +49,13 @@ extern "C"
 				int deadzoneL = GetPrivateProfileIntA(section.c_str(), "DeadzoneL", XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, config.c_str());
 				int deadzoneR = GetPrivateProfileIntA(section.c_str(), "DeadzoneR", XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, config.c_str());
 
-				bool radialL = GetPrivateProfileIntA(section.c_str(), "RadialL", 1, config.c_str()) != 0;
-				bool radialR = GetPrivateProfileIntA(section.c_str(), "RadialR", 0, config.c_str()) != 0;
+				bool normalizeL = GetPrivateProfileIntA(section.c_str(), "NormalizeL", 1, config.c_str()) != 0;
+				bool normalizeR = GetPrivateProfileIntA(section.c_str(), "NormalizeR", 0, config.c_str()) != 0;
 
 				int triggerThreshold = GetPrivateProfileIntA(section.c_str(), "TriggerThreshold", XINPUT_GAMEPAD_TRIGGER_THRESHOLD, config.c_str());
 
 				xinput::Settings* settings = &xinput::settings[i];
-				settings->apply(deadzoneL, deadzoneR, radialL, radialR, triggerThreshold);
+				settings->apply(deadzoneL, deadzoneR, normalizeL, normalizeR, triggerThreshold);
 
 				PrintDebug("[XInput] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
 					settings->deadzoneL, settings->deadzoneR, settings->triggerThreshold);
@@ -65,6 +63,11 @@ extern "C"
 		}
 
 		PrintDebug("[XInput] Initialization complete.\n");
+	}
+
+	__declspec(dllexport) void OnInput()
+	{
+		xinput::UpdateControllersXInput();
 	}
 
 	__declspec(dllexport) PointerList Jumps[] = { { arrayptrandlength(jumps) } };

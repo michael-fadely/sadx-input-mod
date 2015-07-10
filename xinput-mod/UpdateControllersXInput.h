@@ -21,14 +21,14 @@ namespace xinput
 		Settings();
 		// Left stick deadzone
 		short deadzoneL;
-		bool radialL;
+		bool normalizeL;
 		// Right stick deadzone
 		short deadzoneR;
-		bool radialR;
+		bool normalizeR;
 		// Trigger threshold
 		ushort triggerThreshold;
 
-		void apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, ushort triggerThreshold);
+		void apply(short deadzoneL, short deadzoneR, bool normalizeL, bool normalizeR, ushort triggerThreshold);
 	};
 
 	extern Settings settings[XPAD_COUNT];
@@ -41,7 +41,7 @@ namespace xinput
 
 	// Utility functions
 	// TODO: Separate utility functions into separate file.
-	void ConvertAxes(short dest[2], short source[2], short deadzone = 0, bool radial = true);
+	void ConvertAxes(short dest[2], short source[2], short deadzone = 0, bool normalize = true);
 	int ConvertButtons(ushort id, XINPUT_GAMEPAD* xpad);
 	static void SetMotor(ushort id, Motor motor, short intensity);
 }

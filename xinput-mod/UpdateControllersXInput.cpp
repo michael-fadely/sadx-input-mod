@@ -1,4 +1,4 @@
-// Microsoft
+﻿// Microsoft
 #include <Windows.h>		// Required for XInput.h
 #include <Xinput.h>			// obvious
 
@@ -51,15 +51,15 @@ namespace xinput
 		deadzoneL = XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
 		deadzoneR = XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
 		triggerThreshold = XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-		radialL = true;
-		radialR = false;
+		normalizeL = true;
+		normalizeR = false;
 	}
-	void Settings::apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, ushort triggerThreshold)
+	void Settings::apply(short deadzoneL, short deadzoneR, bool normalizeL, bool normalizeR, ushort triggerThreshold)
 	{
 		this->deadzoneL = min(SHRT_MAX, deadzoneL);
 		this->deadzoneR = min(SHRT_MAX, deadzoneR);
-		this->radialL = radialL;
-		this->radialR = radialR;
+		this->normalizeL = normalizeL;
+		this->normalizeR = normalizeR;
 		this->triggerThreshold = min(USHRT_MAX, triggerThreshold);
 	}
 
@@ -91,10 +91,10 @@ namespace xinput
 			pad->Support = 0x3F07FEu;
 
 			// L Analog
-			ConvertAxes((short*)&pad->LeftStickX, (short*)&xpad->sThumbLX, settings[i].deadzoneL, settings[i].radialL);
+			ConvertAxes((short*)&pad->LeftStickX, (short*)&xpad->sThumbLX, settings[i].deadzoneL, settings[i].normalizeL);
 
 			// R Analog
-			ConvertAxes((short*)&pad->RightStickX, (short*)&xpad->sThumbRX, settings[i].deadzoneR, settings[i].radialR);
+			ConvertAxes((short*)&pad->RightStickX, (short*)&xpad->sThumbRX, settings[i].deadzoneR, settings[i].normalizeR);
 
 			// Trigger pressure
 			pad->LTriggerPressure = xpad->bLeftTrigger;
@@ -241,8 +241,8 @@ namespace xinput
 	/// <param name="dest">The destination axes (Dreamcast).</param>
 	/// <param name="source">The source axes (XInput).</param>
 	/// <param name="deadzone">The deadzone.</param>
-	/// <param name="radial">If set to <c>true</c>, the deadzone is treated as radial. (e.g if the X axis exceeds deadzone, both X and Y axes are converted)</param>
-	void ConvertAxes(short dest[2], short source[2], short deadzone, bool radial)
+	/// <param name="normalize">If set to <c>true</c>, the deadzone is treated as radial. (e.g if the X axis exceeds deadzone, both X and Y axes are converted)</param>
+	void ConvertAxes(short dest[2], short source[2], short deadzone, bool normalize)
 	{
 		// This is being intentionally limited to -32767 instead of -32768
 		const float x = (float)clamp(source[0], -SHRT_MAX, SHRT_MAX);
@@ -260,8 +260,8 @@ namespace xinput
 			const float n = (((m > SHRT_MAX) ? SHRT_MAX : m) - deadzone) / (SHRT_MAX - deadzone);
 
 			// In my testing, multiplying -128 - 128 results in 127 instead, which is the desired value.
-			dest[0] = (radial || abs(source[0]) >= deadzone) ? (short)(128 * (nx * n)) : 0;
-			dest[1] = (radial || abs(source[1]) >= deadzone) ? (short)(-128 * (ny * n)) : 0;
+			dest[0] = (normalize || abs(source[0]) >= deadzone) ? (short)(128 * (nx * n)) : 0;
+			dest[1] = (normalize || abs(source[1]) >= deadzone) ? (short)(-128 * (ny * n)) : 0;
 		}
 	}
 	
@@ -284,8 +284,15 @@ namespace xinput
 			result |= Buttons_X;
 		if (buttons & XINPUT_GAMEPAD_Y)
 			result |= Buttons_Y;
+
+#ifdef EXTENDED_BUTTONS
+		if (buttons & XINPUT_GAMEPAD_LEFT_SHOULDER)
+			result |= Buttons_C;
 		if (buttons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
 			result |= Buttons_Z;
+		if (buttons & XINPUT_GAMEPAD_BACK)
+			result |= Buttons_D;
+#endif
 
 		if (xpad->bLeftTrigger > settings[id].triggerThreshold)
 			result |= Buttons_L;
