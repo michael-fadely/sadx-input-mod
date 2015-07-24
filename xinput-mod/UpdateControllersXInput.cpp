@@ -37,12 +37,10 @@ struct _ControllerData
 	void* Info;
 };
 
-DataArray(_ControllerData, Controller_Data_0, 0x03B0E9C8, 8);	// Yes, there are in fact *8* controller structures in SADX PC.
-DataPointer(int, isCutscenePlaying, 0x3B2A2E4);					// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
-DataPointer(char, rumbleEnabled, 0x00913B10);					// Not sure why this is a char and ^ is an int.
+DataPointer(int, isCutscenePlaying, 0x3B2A2E4);	// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
+DataPointer(char, rumbleEnabled, 0x00913B10);	// Not sure why this is a char and ^ is an int.
 
 #define clamp(value, low, high) min(max(low, value), high)
-
 
 namespace xinput
 {
@@ -82,7 +80,7 @@ namespace xinput
 	{
 		for (ushort i = 0; i < XPAD_COUNT; i++)
 		{
-			_ControllerData* pad = &Controller_Data_0[i];
+			_ControllerData* pad = (_ControllerData*)&ControllersRaw[i];
 			XINPUT_STATE state = {};
 			XInputGetState(i, &state);
 			XINPUT_GAMEPAD* xpad = &state.Gamepad;
