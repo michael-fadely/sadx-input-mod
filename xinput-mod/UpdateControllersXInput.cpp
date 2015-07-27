@@ -12,33 +12,9 @@
 // This namespace
 #include "UpdateControllersXInput.h"
 
-// TODO: Figure out how to determine if a player is AI controlled or not, then enable per-controller rumble.
-
-// From the SA2 Mod Loader
-// Using this until it or PDS_PERIPHERAL gets implemented into the SADX Mod Loader.
-// Aside from having all of its members named, it's otherwise exactly the same.
-struct _ControllerData
-{
-	uint32_t ID;
-	uint32_t Support;
-	uint32_t HeldButtons;
-	uint32_t NotHeldButtons;
-	uint32_t PressedButtons;
-	uint32_t ReleasedButtons;
-	uint16_t RTriggerPressure;
-	uint16_t LTriggerPressure;
-	int16_t LeftStickX;
-	int16_t LeftStickY;
-	int16_t RightStickX;
-	int16_t RightStickY;
-	char* Name;
-	void* Extend;
-	uint32_t Old;
-	void* Info;
-};
-
-DataPointer(int, isCutscenePlaying, 0x3B2A2E4);	// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
-DataPointer(char, rumbleEnabled, 0x00913B10);	// Not sure why this is a char and ^ is an int.
+DataPointer(int, isCutscenePlaying, 0x3B2A2E4);		// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
+DataPointer(char, rumbleEnabled, 0x00913B10);		// Not sure why this is a char and ^ is an int.
+DataArray(bool, Controller_Enabled, 0x00909FB4, 4);	// TODO: Figure out what toggles this for P2.
 
 #define clamp(value, low, high) min(max(low, value), high)
 
@@ -80,7 +56,7 @@ namespace xinput
 	{
 		for (ushort i = 0; i < XPAD_COUNT; i++)
 		{
-			_ControllerData* pad = (_ControllerData*)&ControllersRaw[i];
+			ControllerData* pad = &ControllersRaw[i];
 			XINPUT_STATE state = {};
 			XInputGetState(i, &state);
 			XINPUT_GAMEPAD* xpad = &state.Gamepad;
@@ -179,59 +155,50 @@ namespace xinput
 			resultMotor = (Motor)(resultMotor | motor);
 		}
 
-		// TODO: Check if the player ID is currently AI controlled (or if intensity is 0).
-		// This will avoid vibrating the second controller when Tails does something stupid.
-		if (isWithinRange)
+		if (intensity == 0 || Controller_Enabled[id])
 		{
-			SetMotor(id, motor, intensity);
-			rumble[id] = (Motor)(rumble[id] | resultMotor);
-			XInputSetState(id, &vibration[id]);
-		}
-		else
-		{
-			for (ushort i = 0; i < XPAD_COUNT; i++)
+			if (isWithinRange)
 			{
-				SetMotor(i, motor, intensity);
-				rumble[i] = (Motor)(rumble[i] | resultMotor);
-				XInputSetState(i, &vibration[i]);
+				SetMotor(id, motor, intensity);
+				rumble[id] = (Motor)(rumble[id] | resultMotor);
+				XInputSetState(id, &vibration[id]);
+			}
+			else
+			{
+				for (ushort i = 0; i < XPAD_COUNT; i++)
+				{
+					SetMotor(i, motor, intensity);
+					rumble[i] = (Motor)(rumble[i] | resultMotor);
+					XInputSetState(i, &vibration[i]);
+				}
 			}
 		}
 	}
 	void __cdecl RumbleLarge(int playerNumber, signed int intensity)
 	{
 		if (!isCutscenePlaying && rumbleEnabled)
-		{
-			// Only continue if the calling player is Player 1 (0)
-			// Vanilla SADX only rumbles for P1.
-			if (!playerNumber)
-				Rumble(playerNumber, clamp(intensity, 1, 255), Motor::Left);
-		}
+			Rumble(playerNumber, clamp(intensity, 1, 255), Motor::Left);
 	}
 	void __cdecl RumbleSmall(int playerNumber, signed int a2, signed int a3, int a4)
 	{
 		if (!isCutscenePlaying && rumbleEnabled)
 		{
-			// Only continue if the calling player is Player 1 (0)
-			// Vanilla SADX only rumbles for P1.
-			if (!playerNumber)
-			{
-				int _a2 = clamp(a2, -4, 4);
+			int _a2 = clamp(a2, -4, 4);
 
-				// Could be inline if'd, but it'd look borderline unreadable.
-				if (_a2 == 1)
-					_a2 = 2;
-				else if (_a2 == -1)
-					_a2 = -2;
+			// Could be inline if'd, but it'd look borderline unreadable.
+			if (_a2 == 1)
+				_a2 = 2;
+			else if (_a2 == -1)
+				_a2 = -2;
 
-				int _a3 = clamp(a3, 7, 59);
+			int _a3 = clamp(a3, 7, 59);
 
-				Rumble(playerNumber, max(1, a4 * _a3 / (4 * _a2)), Motor::Right);
-			}
+			Rumble(playerNumber, max(1, a4 * _a3 / (4 * _a2)), Motor::Right);
 		}
 	}
 
 #pragma endregion
-	
+
 #pragma region Utility Functions
 	/// <summary>
 	/// Converts from XInput (-32768 - 32767) to Dreamcast (-127 - 127) axes, including scaled deadzone.
@@ -262,7 +229,7 @@ namespace xinput
 			dest[1] = (normalize || abs(source[1]) >= deadzone) ? (short)(-128 * (ny * n)) : 0;
 		}
 	}
-	
+
 	/// <summary>
 	/// Converts XInput buttons to Dreamcast buttons.
 	/// </summary>
