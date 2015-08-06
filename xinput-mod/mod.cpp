@@ -45,17 +45,24 @@ extern "C"
 			for (ushort i = 0; i < XPAD_COUNT; i++)
 			{
 				std::string section = "Controller " + std::to_string(i + 1);
+				const char* section_cstr = section.c_str();
+				const char* config_cstr = config.c_str();
 
-				int deadzoneL = GetPrivateProfileIntA(section.c_str(), "DeadzoneL", XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, config.c_str());
-				int deadzoneR = GetPrivateProfileIntA(section.c_str(), "DeadzoneR", XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, config.c_str());
+				int deadzoneL = GetPrivateProfileIntA(section_cstr, "DeadzoneL", XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, config_cstr);
+				int deadzoneR = GetPrivateProfileIntA(section_cstr, "DeadzoneR", XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, config_cstr);
 
-				bool normalizeL = GetPrivateProfileIntA(section.c_str(), "NormalizeL", 1, config.c_str()) != 0;
-				bool normalizeR = GetPrivateProfileIntA(section.c_str(), "NormalizeR", 0, config.c_str()) != 0;
+				bool normalizeL = GetPrivateProfileIntA(section_cstr, "NormalizeL", 1, config_cstr) != 0;
+				bool normalizeR = GetPrivateProfileIntA(section_cstr, "NormalizeR", 0, config_cstr) != 0;
 
-				int triggerThreshold = GetPrivateProfileIntA(section.c_str(), "TriggerThreshold", XINPUT_GAMEPAD_TRIGGER_THRESHOLD, config.c_str());
+				int triggerThreshold = GetPrivateProfileIntA(section_cstr, "TriggerThreshold", XINPUT_GAMEPAD_TRIGGER_THRESHOLD, config_cstr);
+
+				// TODO: Not this
+				char wtf[255];
+				GetPrivateProfileStringA(section_cstr, "RumbleMultiplier", "1.0", wtf, 255, config_cstr);
+				float rumbleMultiplier = (float)atof(wtf);
 
 				xinput::Settings* settings = &xinput::settings[i];
-				settings->apply(deadzoneL, deadzoneR, normalizeL, normalizeR, triggerThreshold);
+				settings->apply(deadzoneL, deadzoneR, normalizeL, normalizeR, triggerThreshold, rumbleMultiplier);
 
 				PrintDebug("[XInput] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
 					settings->deadzoneL, settings->deadzoneR, settings->triggerThreshold);

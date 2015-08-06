@@ -20,15 +20,17 @@ namespace xinput
 	{
 		Settings();
 		// Left stick deadzone
-		short deadzoneL;
-		bool normalizeL;
+		short	deadzoneL;
+		bool	normalizeL;
 		// Right stick deadzone
-		short deadzoneR;
-		bool normalizeR;
+		short	deadzoneR;
+		bool	normalizeR;
 		// Trigger threshold
-		ushort triggerThreshold;
+		ushort	triggerThreshold;
+		// Rumble multiplier (1.0 by default)
+		float	rumbleMultiplier;
 
-		void apply(short deadzoneL, short deadzoneR, bool normalizeL, bool normalizeR, ushort triggerThreshold);
+		void apply(short deadzoneL, short deadzoneR, bool normalizeL, bool normalizeR, ushort triggerThreshold, float rumbleMultiplier);
 	};
 
 	extern Settings settings[XPAD_COUNT];

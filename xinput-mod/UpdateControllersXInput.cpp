@@ -22,19 +22,21 @@ namespace xinput
 {
 	Settings::Settings()
 	{
-		deadzoneL = XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
-		deadzoneR = XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
-		triggerThreshold = XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-		normalizeL = true;
-		normalizeR = false;
+		deadzoneL			= XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
+		deadzoneR			= XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
+		triggerThreshold	= XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+		normalizeL			= true;
+		normalizeR			= false;
+		rumbleMultiplier	= 1.0f;
 	}
-	void Settings::apply(short deadzoneL, short deadzoneR, bool normalizeL, bool normalizeR, ushort triggerThreshold)
+	void Settings::apply(short deadzoneL, short deadzoneR, bool normalizeL, bool normalizeR, ushort triggerThreshold, float rumbleMultiplier)
 	{
-		this->deadzoneL = min(SHRT_MAX, deadzoneL);
-		this->deadzoneR = min(SHRT_MAX, deadzoneR);
-		this->normalizeL = normalizeL;
-		this->normalizeR = normalizeR;
-		this->triggerThreshold = min(USHRT_MAX, triggerThreshold);
+		this->deadzoneL			= min(SHRT_MAX, deadzoneL);
+		this->deadzoneR			= min(SHRT_MAX, deadzoneR);
+		this->normalizeL		= normalizeL;
+		this->normalizeR		= normalizeR;
+		this->triggerThreshold	= min(USHRT_MAX, triggerThreshold);
+		this->rumbleMultiplier	= rumbleMultiplier;
 	}
 
 	Settings settings[XPAD_COUNT];
@@ -120,11 +122,11 @@ namespace xinput
 				if (i == 0 && xpad->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
 				{
 					if (pad->PressedButtons & Buttons_Up)
-						rumble_multi += 8.0;
+						settings[i].rumbleMultiplier += 0.125f;
 					else if (pad->PressedButtons & Buttons_Down)
-						rumble_multi -= 8.0;
+						settings[i].rumbleMultiplier -= 0.125f;
 
-					DisplayDebugStringFormatted(6, "Rumble multiplier (U/D): %f", rumble_multi);
+					DisplayDebugStringFormatted(6, "Rumble multiplier (U/D): 255 * %f", settings[i].rumbleMultiplier);
 				}
 			}
 #endif
@@ -287,15 +289,17 @@ namespace xinput
 	/// <param name="intensity">The intensity.</param>
 	inline void SetMotor(ushort id, Motor motor, short intensity)
 	{
+		float m = settings[id].rumbleMultiplier;
+
 		if (motor & Motor::Left)
 		{
-			vibration[id].wLeftMotorSpeed = intensity;
+			vibration[id].wLeftMotorSpeed = (short)min(SHRT_MAX, (int)(intensity * m));
 			rumble_l_elapsed[id] = GetTickCount();
 		}
+
 		if (motor & Motor::Right)
 		{
-			// This is doubled because it's never strong enough.
-			vibration[id].wRightMotorSpeed = intensity * 2;
+			vibration[id].wRightMotorSpeed = (short)min(SHRT_MAX, (int)(intensity * (2 + m)));
 			rumble_r_elapsed[id] = GetTickCount();
 		}
 	}
