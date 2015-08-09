@@ -137,10 +137,16 @@ namespace xinput
 
 	void Rumble(ushort id, int a1, Motor motor)
 	{
-		short intensity = 4 * a1;
+		if (id >= XPAD_COUNT)
+		{
+			for (ushort i = 0; i < XPAD_COUNT; i++)
+				Rumble(id, a1, motor);
 
-		bool isWithinRange = (id < XPAD_COUNT);
-		Motor resultMotor = (isWithinRange) ? rumble[id] : Motor::None;
+			return;
+		}
+
+		short intensity = 4 * a1;
+		Motor resultMotor = rumble[id];
 
 		if (a1 > 0)
 		{
@@ -159,24 +165,11 @@ namespace xinput
 			resultMotor = (Motor)(resultMotor | motor);
 		}
 
-		// TODO: Clean up logic here. id shouldn't be used before checking isWithinRange.
 		if (intensity == 0 || Controller_Enabled[id])
 		{
-			if (isWithinRange)
-			{
-				SetMotor(id, motor, intensity);
-				rumble[id] = (Motor)(rumble[id] | resultMotor);
-				XInputSetState(id, &vibration[id]);
-			}
-			else
-			{
-				for (ushort i = 0; i < XPAD_COUNT; i++)
-				{
-					SetMotor(i, motor, intensity);
-					rumble[i] = (Motor)(rumble[i] | resultMotor);
-					XInputSetState(i, &vibration[i]);
-				}
-			}
+			SetMotor(id, motor, intensity);
+			rumble[id] = (Motor)(rumble[id] | resultMotor);
+			XInputSetState(id, &vibration[id]);
 		}
 	}
 	void __cdecl RumbleLarge(int playerNumber, int intensity)
