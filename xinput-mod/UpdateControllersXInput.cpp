@@ -215,20 +215,26 @@ namespace xinput
 		const float x = (float)clamp(source[0], -SHRT_MAX, SHRT_MAX);
 		const float y = (float)clamp(source[1], -SHRT_MAX, SHRT_MAX);
 
+		// Using this will deliberately put us outside the proper range,
+		// but this is unfortunately required for proper diagonal movement.
+		// TODO: Investigate fixing this without deliberately going out of range (which kills my beautiful perfectly radial magic).
+		// TODO: Make configurable.
+		static const short scale = (short)(128 * 1.5f);
+
 		if (abs(source[0]) < deadzone && abs(source[1]) < deadzone)
 		{
 			dest[0] = dest[1] = 0;
 		}
 		else
 		{
-			const float m = sqrt(x*x + y*y);
-			const float nx = (m < deadzone) ? 0 : x / m;
-			const float ny = (m < deadzone) ? 0 : y / m;
-			const float n = (((m > SHRT_MAX) ? SHRT_MAX : m) - deadzone) / (SHRT_MAX - deadzone);
+			const float m	= sqrt(x * x + y * y);
+			const float nx	= (m < deadzone) ? 0 : x / m;
+			const float ny	= (m < deadzone) ? 0 : y / m;
+			const float n	= (min((float)SHRT_MAX, m) - deadzone) / ((float)SHRT_MAX - deadzone);
 
 			// In my testing, multiplying -128 - 128 results in 127 instead, which is the desired value.
-			dest[0] = (normalize || abs(source[0]) >= deadzone) ? (short)(128 * (nx * n)) : 0;
-			dest[1] = (normalize || abs(source[1]) >= deadzone) ? (short)(-128 * (ny * n)) : 0;
+			dest[0] = (normalize || abs(source[0]) >= deadzone) ? (short)clamp((scale * (nx * n)), -127, 127) : 0;
+			dest[1] = (normalize || abs(source[1]) >= deadzone) ? (short)clamp((-scale * (ny * n)), -127, 127) : 0;
 		}
 	}
 
