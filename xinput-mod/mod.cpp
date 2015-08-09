@@ -58,11 +58,15 @@ extern "C"
 
 				// TODO: Not this
 				char wtf[255];
-				GetPrivateProfileStringA(section_cstr, "RumbleMultiplier", "1.0", wtf, 255, config_cstr);
-				float rumbleMultiplier = (float)atof(wtf);
+
+				GetPrivateProfileStringA(section_cstr, "RumbleFactor", "1.0", wtf, 255, config_cstr);
+				float rumbleFactor = (float)atof(wtf);
+
+				GetPrivateProfileStringA(section_cstr, "ScaleFactor", "1.5", wtf, 255, config_cstr);
+				float scaleFactor = (float)atof(wtf);
 
 				xinput::Settings* settings = &xinput::settings[i];
-				settings->apply(deadzoneL, deadzoneR, normalizeL, normalizeR, triggerThreshold, rumbleMultiplier);
+				settings->apply(deadzoneL, deadzoneR, normalizeL, normalizeR, triggerThreshold, rumbleFactor, scaleFactor);
 
 				PrintDebug("[XInput] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
 					settings->deadzoneL, settings->deadzoneR, settings->triggerThreshold);

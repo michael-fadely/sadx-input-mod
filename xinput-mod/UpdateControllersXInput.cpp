@@ -27,16 +27,18 @@ namespace xinput
 		triggerThreshold	= XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
 		normalizeL			= true;
 		normalizeR			= false;
-		rumbleMultiplier	= 1.0f;
+		rumbleFactor		= 1.0f;
+		scaleFactor			= 1.5f;
 	}
-	void Settings::apply(short deadzoneL, short deadzoneR, bool normalizeL, bool normalizeR, ushort triggerThreshold, float rumbleMultiplier)
+	void Settings::apply(short deadzoneL, short deadzoneR, bool normalizeL, bool normalizeR, uint8 triggerThreshold, float rumbleFactor, float scaleFactor)
 	{
-		this->deadzoneL			= min(SHRT_MAX, deadzoneL);
-		this->deadzoneR			= min(SHRT_MAX, deadzoneR);
+		this->deadzoneL			= clamp(deadzoneL, 0, SHRT_MAX);
+		this->deadzoneR			= clamp(deadzoneR, 0, SHRT_MAX);
 		this->normalizeL		= normalizeL;
 		this->normalizeR		= normalizeR;
-		this->triggerThreshold	= min(USHRT_MAX, triggerThreshold);
-		this->rumbleMultiplier	= rumbleMultiplier;
+		this->triggerThreshold	= min(UCHAR_MAX, triggerThreshold);
+		this->rumbleFactor		= rumbleFactor;
+		this->scaleFactor		= max(1.0f, scaleFactor);
 	}
 
 	Settings settings[XPAD_COUNT];
@@ -48,8 +50,6 @@ namespace xinput
 	Motor rumble[XPAD_COUNT];
 	uint rumble_l_elapsed[XPAD_COUNT];
 	uint rumble_r_elapsed[XPAD_COUNT];
-
-	float rumble_multi = 255.0;
 
 #pragma region Ingame Functions
 
@@ -67,10 +67,12 @@ namespace xinput
 			pad->Support = 0x3F07FEu;
 
 			// L Analog
-			ConvertAxes((short*)&pad->LeftStickX, (short*)&xpad->sThumbLX, settings[i].deadzoneL, settings[i].normalizeL);
+			ConvertAxes(i, (short*)&pad->LeftStickX, (short*)&xpad->sThumbLX,
+				settings[i].deadzoneL, settings[i].normalizeL);
 
 			// R Analog
-			ConvertAxes((short*)&pad->RightStickX, (short*)&xpad->sThumbRX, settings[i].deadzoneR, settings[i].normalizeR);
+			ConvertAxes(i, (short*)&pad->RightStickX, (short*)&xpad->sThumbRX,
+				settings[i].deadzoneR, settings[i].normalizeR);
 
 			// Trigger pressure
 			pad->LTriggerPressure = xpad->bLeftTrigger;
@@ -122,22 +124,22 @@ namespace xinput
 				if (i == 0 && xpad->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
 				{
 					if (pad->PressedButtons & Buttons_Up)
-						settings[i].rumbleMultiplier += 0.125f;
+						settings[i].rumbleFactor += 0.125f;
 					else if (pad->PressedButtons & Buttons_Down)
-						settings[i].rumbleMultiplier -= 0.125f;
+						settings[i].rumbleFactor -= 0.125f;
 
-					DisplayDebugStringFormatted(6, "Rumble multiplier (U/D): 255 * %f", settings[i].rumbleMultiplier);
+					DisplayDebugStringFormatted(6, "Rumble factor (U/D): %f", settings[i].rumbleFactor);
 				}
 			}
 #endif
 		}
 	}
 
-	void Rumble(short id, int a1, Motor motor)
+	void Rumble(ushort id, int a1, Motor motor)
 	{
 		short intensity = 4 * a1;
 
-		bool isWithinRange = (id >= 0 && id < XPAD_COUNT);
+		bool isWithinRange = (id < XPAD_COUNT);
 		Motor resultMotor = (isWithinRange) ? rumble[id] : Motor::None;
 
 		if (a1 > 0)
@@ -150,13 +152,14 @@ namespace xinput
 			if (a1 >= 1 && a1 <= 10)
 				m = max(0.2375f, intensity / 25.0f);
 			else
-				m = intensity / rumble_multi;
+				m = (float)intensity / 256.0f;
 
-			intensity = (short)(SHRT_MAX * max(0.0, min(1.0f, m)));
+			intensity = (short)(SHRT_MAX * clamp(m, 0.0f, 1.0f));
 
 			resultMotor = (Motor)(resultMotor | motor);
 		}
 
+		// TODO: Clean up logic here. id shouldn't be used before checking isWithinRange.
 		if (intensity == 0 || Controller_Enabled[id])
 		{
 			if (isWithinRange)
@@ -176,12 +179,12 @@ namespace xinput
 			}
 		}
 	}
-	void __cdecl RumbleLarge(int playerNumber, signed int intensity)
+	void __cdecl RumbleLarge(int playerNumber, int intensity)
 	{
 		if (!isCutscenePlaying && rumbleEnabled)
 			Rumble(playerNumber, clamp(intensity, 1, 255), Motor::Left);
 	}
-	void __cdecl RumbleSmall(int playerNumber, signed int a2, signed int a3, int a4)
+	void __cdecl RumbleSmall(int playerNumber, int a2, int a3, int a4)
 	{
 		if (!isCutscenePlaying && rumbleEnabled)
 		{
@@ -205,11 +208,12 @@ namespace xinput
 	/// <summary>
 	/// Converts from XInput (-32768 - 32767) to Dreamcast (-127 - 127) axes, including scaled deadzone.
 	/// </summary>
+	/// <param name="id">The controller ID (player number)</param>
 	/// <param name="dest">The destination axes (Dreamcast).</param>
 	/// <param name="source">The source axes (XInput).</param>
 	/// <param name="deadzone">The deadzone.</param>
 	/// <param name="normalize">If set to <c>true</c>, the deadzone is treated as radial. (e.g if the X axis exceeds deadzone, both X and Y axes are converted)</param>
-	void ConvertAxes(short dest[2], short source[2], short deadzone, bool normalize)
+	void ConvertAxes(ushort id, short dest[2], short source[2], short deadzone, bool normalize)
 	{
 		// This is being intentionally limited to -32767 instead of -32768
 		const float x = (float)clamp(source[0], -SHRT_MAX, SHRT_MAX);
@@ -218,8 +222,7 @@ namespace xinput
 		// Using this will deliberately put us outside the proper range,
 		// but this is unfortunately required for proper diagonal movement.
 		// TODO: Investigate fixing this without deliberately going out of range (which kills my beautiful perfectly radial magic).
-		// TODO: Make configurable.
-		static const short scale = (short)(128 * 1.5f);
+		const short factor = (short)(128 * settings[id].scaleFactor);
 
 		if (abs(source[0]) < deadzone && abs(source[1]) < deadzone)
 		{
@@ -227,14 +230,14 @@ namespace xinput
 		}
 		else
 		{
-			const float m	= sqrt(x * x + y * y);
-			const float nx	= (m < deadzone) ? 0 : x / m;
-			const float ny	= (m < deadzone) ? 0 : y / m;
+			const float m	= sqrt(x * x + y * y);			// Magnitude (length)
+			const float nx	= (m < deadzone) ? 0 : x / m;	// Normalized (X)
+			const float ny	= (m < deadzone) ? 0 : y / m;	// Normalized (Y)
 			const float n	= (min((float)SHRT_MAX, m) - deadzone) / ((float)SHRT_MAX - deadzone);
 
 			// In my testing, multiplying -128 - 128 results in 127 instead, which is the desired value.
-			dest[0] = (normalize || abs(source[0]) >= deadzone) ? (short)clamp((scale * (nx * n)), -127, 127) : 0;
-			dest[1] = (normalize || abs(source[1]) >= deadzone) ? (short)clamp((-scale * (ny * n)), -127, 127) : 0;
+			dest[0] = (normalize || abs(source[0]) >= deadzone) ? (short)clamp((factor * (nx * n)), -127, 127) : 0;
+			dest[1] = (normalize || abs(source[1]) >= deadzone) ? (short)clamp((-factor * (ny * n)), -127, 127) : 0;
 		}
 	}
 
@@ -295,7 +298,7 @@ namespace xinput
 	/// <param name="intensity">The intensity.</param>
 	inline void SetMotor(ushort id, Motor motor, short intensity)
 	{
-		float m = settings[id].rumbleMultiplier;
+		float m = settings[id].rumbleFactor;
 
 		if (motor & Motor::Left)
 		{
