@@ -12,7 +12,7 @@
 // Local stuff
 #include "typedefs.h"
 #include "FileExists.h"
-#include "UpdateControllersXInput.h"
+#include "Ingame.h"
 
 void* RumbleLarge_ptr		= (void*)0x004BCBC0;
 void* RumbleSmall_ptr		= (void*)0x004BCC10;
@@ -20,8 +20,8 @@ void* Rumble_ptr			= (void*)0x004BCB60; // Unused, but here so I don't lose it.
 void* UpdateControllers_ptr = (void*)0x0040F460; // Ditto
 
 PointerInfo jumps[] = {
-	{ RumbleLarge_ptr,			xinput::RumbleLarge },
-	{ RumbleSmall_ptr,			xinput::RumbleSmall }
+	{ RumbleLarge_ptr, xinput::RumbleLarge },
+	{ RumbleSmall_ptr, xinput::RumbleSmall }
 };
 
 std::string BuildConfigPath(const char* modpath)
@@ -51,8 +51,8 @@ extern "C"
 				int deadzoneL = GetPrivateProfileIntA(section_cstr, "DeadzoneL", XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, config_cstr);
 				int deadzoneR = GetPrivateProfileIntA(section_cstr, "DeadzoneR", XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, config_cstr);
 
-				bool normalizeL = GetPrivateProfileIntA(section_cstr, "NormalizeL", 1, config_cstr) != 0;
-				bool normalizeR = GetPrivateProfileIntA(section_cstr, "NormalizeR", 0, config_cstr) != 0;
+				bool radialL = GetPrivateProfileIntA(section_cstr, "RadialL", 1, config_cstr) != 0;
+				bool radialR = GetPrivateProfileIntA(section_cstr, "RadialR", 0, config_cstr) != 0;
 
 				int triggerThreshold = GetPrivateProfileIntA(section_cstr, "TriggerThreshold", XINPUT_GAMEPAD_TRIGGER_THRESHOLD, config_cstr);
 
@@ -66,7 +66,7 @@ extern "C"
 				float scaleFactor = (float)atof(wtf);
 
 				xinput::Settings* settings = &xinput::settings[i];
-				settings->apply(deadzoneL, deadzoneR, normalizeL, normalizeR, triggerThreshold, rumbleFactor, scaleFactor);
+				settings->apply(deadzoneL, deadzoneR, radialL, radialR, triggerThreshold, rumbleFactor, scaleFactor);
 
 				PrintDebug("[XInput] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
 					settings->deadzoneL, settings->deadzoneR, settings->triggerThreshold);

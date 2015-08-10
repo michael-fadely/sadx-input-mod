@@ -83,8 +83,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="FileExists.cpp" />
-    <ClCompile Include="UpdateControllersXInput.cpp" />
+    <ClCompile Include="Motor.cpp" />
+    <ClCompile Include="Ingame.cpp" />
     <ClCompile Include="mod.cpp" />
+    <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="mod.ini" />
@@ -95,9 +97,13 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Common.h" />
     <ClInclude Include="FileExists.h" />
+    <ClInclude Include="minmax.h" />
+    <ClInclude Include="Motor.h" />
     <ClInclude Include="typedefs.h" />
-    <ClInclude Include="UpdateControllersXInput.h" />
+    <ClInclude Include="Ingame.h" />
+    <ClInclude Include="Utility.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
