@@ -5,7 +5,7 @@
 // This namespace
 #include "Motor.h"
 #include "Ingame.h"
-#include "Utility.h"
+#include "Convert.h"
 
 DataPointer(int, isCutscenePlaying, 0x3B2A2E4);		// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
 DataPointer(char, rumbleEnabled, 0x00913B10);		// Not sure why this is a char and ^ is an int.

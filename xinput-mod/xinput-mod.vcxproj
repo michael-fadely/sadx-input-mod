@@ -86,7 +86,7 @@
     <ClCompile Include="Motor.cpp" />
     <ClCompile Include="Ingame.cpp" />
     <ClCompile Include="mod.cpp" />
-    <ClCompile Include="Utility.cpp" />
+    <ClCompile Include="Convert.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="mod.ini" />
@@ -103,7 +103,7 @@
     <ClInclude Include="Motor.h" />
     <ClInclude Include="typedefs.h" />
     <ClInclude Include="Ingame.h" />
-    <ClInclude Include="Utility.h" />
+    <ClInclude Include="Convert.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
