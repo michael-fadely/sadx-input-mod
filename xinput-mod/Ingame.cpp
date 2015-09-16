@@ -97,7 +97,7 @@ namespace xinput
 
 				DisplayDebugStringFormatted(8 + (3 * i), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
 					pad->HeldButtons, pad->LTriggerPressure, pad->RTriggerPressure, (m & Motor::Left), (m & Motor::Right) >> 1);
-				DisplayDebugStringFormatted(9 + (3 * i), "   LS: %04d/%04d RS: %04d/%04d",
+				DisplayDebugStringFormatted(9 + (3 * i), "   LS: % 4d/% 4d RS: % 4d/% 4d",
 					pad->LeftStickX, pad->LeftStickY, pad->RightStickX, pad->RightStickY);
 
 				if (i == 0 && xpad->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
