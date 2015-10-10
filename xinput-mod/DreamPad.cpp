@@ -4,14 +4,12 @@
 
 #include "DreamPad.h"
 
-DreamPad::DreamPad() : gamepad(nullptr), haptic(nullptr), effect({}), effect_id(-1),
-	rumbleTime_L(0), rumbleTime_S(0), rumbleState(Motor::None), pad({})
+DreamPad::DreamPad() : controller_id(-1), gamepad(nullptr), haptic(nullptr), effect({}),
+	effect_id(-1), rumbleTime_L(0), rumbleTime_S(0), rumbleState(Motor::None), pad({})
 {
 	effect.type = SDL_HAPTIC_SINE;
 	effect.leftright.type = SDL_HAPTIC_LEFTRIGHT;
-	effect.leftright.large_magnitude = 1;
-	effect.leftright.small_magnitude = 1;
-	effect.leftright.length = 1;
+	effect.leftright.length = SDL_HAPTIC_INFINITY;
 }
 
 /// <summary>
@@ -39,6 +37,7 @@ bool DreamPad::Open(int id)
 	if (joystick == nullptr)
 		return isConnected = false;
 
+	controller_id = id;
 	this->haptic = SDL_HapticOpenFromJoystick(joystick);
 
 	if (haptic == nullptr)
@@ -47,17 +46,6 @@ bool DreamPad::Open(int id)
 	if (SDL_HapticRumbleSupported(haptic))
 	{
 		effect_id = SDL_HapticNewEffect(haptic, &effect);
-		/*
-		if (SDL_HapticRumbleInit(haptic) != 0)
-		{
-			//PrintDebug("Haptic Rumble Init: %s\n", SDL_GetError());
-			SDL_HapticClose(haptic);
-			haptic = nullptr;
-		}
-		else
-		{
-			}
-		*/
 	}
 	else
 	{
@@ -89,6 +77,7 @@ void DreamPad::Close()
 	{
 		SDL_GameControllerClose(gamepad);
 		gamepad = nullptr;
+		controller_id = -1;
 	}
 
 	isConnected = false;

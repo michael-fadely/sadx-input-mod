@@ -32,6 +32,7 @@ public:
 
 private:
 	bool isConnected = false;
+	int controller_id;
 	SDL_GameController* gamepad;
 
 	SDL_Haptic* haptic;
