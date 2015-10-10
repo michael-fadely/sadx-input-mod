@@ -1,5 +1,6 @@
 #include <SADXModLoader/SADXEnums.h>
-#include "Common.h"
+#include <limits>
+#include "minmax.h"
 #include "Convert.h"
 
 namespace xinput

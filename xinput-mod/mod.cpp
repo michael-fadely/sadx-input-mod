@@ -59,7 +59,7 @@ extern "C"
 		uint connected = 0;
 		for (int i = 0; i < joyCount; i++)
 		{
-			if (controllers[i].Open(i))
+			if (DreamPad::Controllers[i].Open(i))
 				++connected;
 		}
 

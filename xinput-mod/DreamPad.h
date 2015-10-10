@@ -11,6 +11,8 @@ enum Motor : int8
 	Both
 };
 
+#define PAD_COUNT 4
+
 class DreamPad
 {
 public:
@@ -29,6 +31,8 @@ public:
 	void Copy(ControllerData& dest) const;
 
 	bool Connected() const { return isConnected; }
+
+	static DreamPad Controllers[PAD_COUNT];
 
 private:
 	bool isConnected = false;

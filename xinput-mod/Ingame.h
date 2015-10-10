@@ -1,9 +1,7 @@
 #pragma once
 
-#include "Common.h"
+#include "typedefs.h"
 #include "DreamPad.h"
-
-extern DreamPad controllers[PAD_COUNT];
 
 namespace xinput
 {

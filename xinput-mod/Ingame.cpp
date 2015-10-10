@@ -1,7 +1,8 @@
 ﻿// Other crap
 #include "SDL.h"
 #include <SADXModLoader.h>
-#include "Common.h"
+#include <limits>
+#include "minmax.h"
 
 // This namespace
 #include "Ingame.h"
@@ -15,8 +16,6 @@ DataArray(bool, Controller_Enabled, 0x00909FB4, 4);	// TODO: Figure out what tog
 #define XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE  7849
 #define XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE 8689
 #define XINPUT_GAMEPAD_TRIGGER_THRESHOLD    30
-
-DreamPad controllers[PAD_COUNT];
 
 namespace xinput
 {
@@ -56,14 +55,14 @@ namespace xinput
 		for (ushort i = 0; i < PAD_COUNT; i++)
 		{
 			ControllerData* pad = &ControllersRaw[i];
-			DreamPad* dpad = &controllers[i];
+			DreamPad* dpad = &DreamPad::Controllers[i];
 			dpad->Update();
 			dpad->Copy(ControllersRaw[i]);
 
 #ifdef _DEBUG
 			if (pad->HeldButtons & Buttons_C)
 			{
-				Motor m = controllers[i].GetActiveMotor();
+				Motor m = DreamPad::Controllers[i].GetActiveMotor();
 
 				DisplayDebugStringFormatted(8 + (3 * i), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
 					pad->HeldButtons, pad->LTriggerPressure, pad->RTriggerPressure, (m & Motor::Large), (m & Motor::Small) >> 1);
@@ -112,7 +111,7 @@ namespace xinput
 		}
 
 		if (Controller_Enabled[id] || scaled == 0)
-			controllers[id].SetActiveMotor(motor, scaled);
+			DreamPad::Controllers[id].SetActiveMotor(motor, scaled);
 	}
 	void __cdecl RumbleLarge(int playerNumber, int magnitude)
 	{
