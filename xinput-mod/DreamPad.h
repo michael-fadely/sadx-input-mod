@@ -18,7 +18,6 @@ class DreamPad
 public:
 	DreamPad();
 	~DreamPad();
-	
 	bool Open(int id);	
 	void Close();
 		
@@ -31,6 +30,25 @@ public:
 	void Copy(ControllerData& dest) const;
 
 	bool Connected() const { return isConnected; }
+	static int DigitalTrigger(ushort trigger, ushort threshold, int button);
+
+	struct Settings
+	{
+		Settings();
+
+		short	deadzoneL;			// Left stick deadzone
+		bool	radialL;			// Indicates if the stick is fully radial or semi-radial
+		short	deadzoneR;			// Right stick deadzone
+		bool	radialR;			// Indicates if the stick is fully radial or semi-radial
+		uint8	triggerThreshold;	// Trigger threshold
+		float	rumbleFactor;		// Rumble intensity multiplier (1.0 by default)
+		float	scaleFactor;		// Axis scale factor (1.5 (192) by default)
+
+		void apply(short deadzoneL, short deadzoneR,
+			bool radialL, bool radialR, uint8 triggerThreshold,
+			float rumbleFactor, float scaleFactor);
+	} settings;
+
 
 	static DreamPad Controllers[PAD_COUNT];
 

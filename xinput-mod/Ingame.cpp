@@ -13,40 +13,8 @@ DataPointer(int, isCutscenePlaying, 0x3B2A2E4);		// Fun fact: Freeze at 0 to avo
 DataPointer(char, rumbleEnabled, 0x00913B10);		// Not sure why this is a char and ^ is an int.
 DataArray(bool, Controller_Enabled, 0x00909FB4, 4);	// TODO: Figure out what toggles this for P2.
 
-#define XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE  7849
-#define XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE 8689
-#define XINPUT_GAMEPAD_TRIGGER_THRESHOLD    30
-
 namespace xinput
 {
-	Settings::Settings()
-	{
-		deadzoneL			= XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
-		deadzoneR			= XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
-		triggerThreshold	= XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-		radialL				= true;
-		radialR				= false;
-		rumbleFactor		= 1.0f;
-		scaleFactor			= 1.5f;
-	}
-	void Settings::apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, uint8 triggerThreshold, float rumbleFactor, float scaleFactor)
-	{
-		this->deadzoneL			= clamp(deadzoneL, (short)0, (short)SHRT_MAX);
-		this->deadzoneR			= clamp(deadzoneR, (short)0, (short)SHRT_MAX);
-		this->radialL			= radialL;
-		this->radialR			= radialR;
-		this->triggerThreshold	= min((uint8)UCHAR_MAX, triggerThreshold);
-		this->rumbleFactor		= rumbleFactor;
-		this->scaleFactor		= max(1.0f, scaleFactor);
-	}
-
-	Settings settings[PAD_COUNT];
-
-	static inline int DigitalTrigger(uint8 trigger, uint8 threshold, int button)
-	{
-		return (trigger > threshold) ? button : 0;
-	}
-
 #pragma region Ingame Functions
 
 	// TODO: Keyboard & Mouse
@@ -69,14 +37,14 @@ namespace xinput
 				DisplayDebugStringFormatted(9 + (3 * i), "   LS: % 4d/% 4d RS: % 4d/% 4d",
 					pad->LeftStickX, pad->LeftStickY, pad->RightStickX, pad->RightStickY);
 
-				if (i == 0 && pad->HeldButtons & Buttons_Z)
+				if (pad->HeldButtons & Buttons_Z)
 				{
 					if (pad->PressedButtons & Buttons_Up)
-						settings[i].rumbleFactor += 0.125f;
+						dpad->settings.rumbleFactor += 0.125f;
 					else if (pad->PressedButtons & Buttons_Down)
-						settings[i].rumbleFactor -= 0.125f;
+						dpad->settings.rumbleFactor -= 0.125f;
 
-					DisplayDebugStringFormatted(6, "Rumble factor (U/D): %f", settings[i].rumbleFactor);
+					DisplayDebugStringFormatted(10 + (3 * i), "\tRumble factor (U/D): %f", dpad->settings.rumbleFactor);
 				}
 			}
 #endif

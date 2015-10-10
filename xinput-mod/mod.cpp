@@ -51,20 +51,9 @@ extern "C"
 			MessageBoxA(nullptr, "Error initializing SDL. See debug message for details.", "SDL Init Error", 0);
 		}
 
-		int joyCount = SDL_NumJoysticks();
-
-		if (joyCount < 1)
-			return;
-
-		uint connected = 0;
-		for (int i = 0; i < joyCount; i++)
-		{
-			if (DreamPad::Controllers[i].Open(i))
-				++connected;
-		}
-
-		if (connected < 1)
-			return;
+		// TODO: Hot plugging!
+		for (int i = 0; i < SDL_NumJoysticks(); i++)
+			DreamPad::Controllers[i].Open(i);
 
 		std::string config = BuildConfigPath(path);
 
@@ -93,7 +82,7 @@ extern "C"
 				GetPrivateProfileStringA(section_cstr, "ScaleFactor", "1.5", wtf, 255, config_cstr);
 				float scaleFactor = (float)atof(wtf);
 
-				xinput::Settings* settings = &xinput::settings[i];
+				DreamPad::Settings* settings = &DreamPad::Controllers[i].settings;
 				settings->apply(deadzoneL, deadzoneR, radialL, radialR, triggerThreshold, rumbleFactor, scaleFactor);
 
 				PrintDebug("[XInput] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),

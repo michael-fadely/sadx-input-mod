@@ -1,8 +1,13 @@
 #include "SDL.h"
 #include "Convert.h"
 #include <limits.h>
+#include <Windows.h>
+#include <XInput.h> // for deadzone stuff
+#include "minmax.h"
 
 #include "DreamPad.h"
+
+DreamPad DreamPad::Controllers[PAD_COUNT];
 
 DreamPad::DreamPad() : controller_id(-1), gamepad(nullptr), haptic(nullptr), effect({}),
 	effect_id(-1), rumbleTime_L(0), rumbleTime_S(0), rumbleState(Motor::None), pad({})
@@ -10,6 +15,10 @@ DreamPad::DreamPad() : controller_id(-1), gamepad(nullptr), haptic(nullptr), eff
 	effect.type = SDL_HAPTIC_SINE;
 	effect.leftright.type = SDL_HAPTIC_LEFTRIGHT;
 	effect.leftright.length = SDL_HAPTIC_INFINITY;
+}
+DreamPad::~DreamPad()
+{
+	Close();
 }
 
 /// <summary>
@@ -107,17 +116,20 @@ void DreamPad::Poll()
 	axis[0] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
 	axis[1] = -SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
 
-	xinput::ConvertAxes(1.0f, &pad.LeftStickX, axis);
+	xinput::ConvertAxes(settings.scaleFactor, &pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
 
 	axis[0] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX);
 	axis[1] = -SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY);
 
-	xinput::ConvertAxes(1.0f, &pad.RightStickX, axis);
+	xinput::ConvertAxes(settings.scaleFactor, &pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
 
 	pad.LTriggerPressure = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
 	pad.RTriggerPressure = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
 
 	int buttons = 0;
+
+	buttons |= DigitalTrigger(pad.LTriggerPressure, settings.triggerThreshold, Buttons_L);
+	buttons |= DigitalTrigger(pad.RTriggerPressure, settings.triggerThreshold, Buttons_R);
 
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_A))
 		buttons |= Buttons_A;
@@ -177,7 +189,7 @@ void DreamPad::SetActiveMotor(Motor motor, short magnitude)
 	if (effect_id == -1 || haptic == nullptr)
 		return;
 
-	static const float f = 1.0f;
+	const float f = settings.rumbleFactor;
 
 	if (motor & Motor::Large)
 	{
@@ -207,7 +219,29 @@ void DreamPad::Copy(ControllerData& dest) const
 	dest = pad;
 }
 
-DreamPad::~DreamPad()
+inline int DreamPad::DigitalTrigger(ushort trigger, ushort threshold, int button)
 {
-	Close();
+	return (trigger > threshold) ? button : 0;
+}
+
+
+DreamPad::Settings::Settings()
+{
+	deadzoneL = XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
+	deadzoneR = XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
+	triggerThreshold = XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+	radialL = true;
+	radialR = false;
+	rumbleFactor = 1.0f;
+	scaleFactor = 1.5f;
+}
+void DreamPad::Settings::apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, uint8 triggerThreshold, float rumbleFactor, float scaleFactor)
+{
+	this->deadzoneL = clamp(deadzoneL, (short)0, (short)SHRT_MAX);
+	this->deadzoneR = clamp(deadzoneR, (short)0, (short)SHRT_MAX);
+	this->radialL = radialL;
+	this->radialR = radialR;
+	this->triggerThreshold = min((uint8)UCHAR_MAX, triggerThreshold);
+	this->rumbleFactor = rumbleFactor;
+	this->scaleFactor = max(1.0f, scaleFactor);
 }
