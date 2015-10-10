@@ -6,6 +6,8 @@
 #include <string>
 #include <sstream>	// because
 
+#include "SDL.h"
+
 // Mod loader
 #include <SADXModLoader.h>
 
@@ -34,15 +36,41 @@ std::string BuildConfigPath(const char* modpath)
 	return result.str();
 }
 
+#define XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE  7849
+#define XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE 8689
+#define XINPUT_GAMEPAD_TRIGGER_THRESHOLD    30
+
 extern "C"
 {
 	__declspec(dllexport) void Init(const char* path, const HelperFunctions& helperFunctions)
 	{
+		int init;
+		if ((init = SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC)) != 0)
+		{
+			PrintDebug("Unable to initialize SDL. Error code: %i\n", init);
+			MessageBoxA(nullptr, "Error initializing SDL. See debug message for details.", "SDL Init Error", 0);
+		}
+
+		int joyCount = SDL_NumJoysticks();
+
+		if (joyCount < 1)
+			return;
+
+		uint connected = 0;
+		for (int i = 0; i < joyCount; i++)
+		{
+			if (controllers[i].Open(i))
+				++connected;
+		}
+
+		if (connected < 1)
+			return;
+
 		std::string config = BuildConfigPath(path);
 
 		if (FileExists(config))
 		{
-			for (ushort i = 0; i < XPAD_COUNT; i++)
+			for (ushort i = 0; i < PAD_COUNT; i++)
 			{
 				std::string section = "Controller " + std::to_string(i + 1);
 				const char* section_cstr = section.c_str();

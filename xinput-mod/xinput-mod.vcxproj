@@ -105,6 +105,7 @@
     <ClInclude Include="FileExists.h" />
     <ClInclude Include="minmax.h" />
     <ClInclude Include="Motor.h" />
+    <ClInclude Include="SDL.h" />
     <ClInclude Include="typedefs.h" />
     <ClInclude Include="Ingame.h" />
     <ClInclude Include="Convert.h" />

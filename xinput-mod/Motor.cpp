@@ -1,3 +1,4 @@
+#if 0
 #include "Common.h"
 #include "Ingame.h"
 
@@ -57,3 +58,4 @@ namespace xinput
 			Rumble(id, 0, result);
 	}
 }
+#endif

@@ -1,17 +1,17 @@
-#define _TYPEDEF_Uint32
-#define _TYPEDEF_Sint32
-
-#include "DreamPad.h"
-#include <SDL.h>
+#include "SDL.h"
 #include "Convert.h"
 #include <limits.h>
+
+#include "DreamPad.h"
 
 DreamPad::DreamPad() : gamepad(nullptr), haptic(nullptr), effect({}), effect_id(-1),
 	rumbleTime_L(0), rumbleTime_S(0), rumbleState(Motor::None), pad({})
 {
 	effect.type = SDL_HAPTIC_SINE;
 	effect.leftright.type = SDL_HAPTIC_LEFTRIGHT;
-	effect.leftright.length = SDL_HAPTIC_INFINITY;
+	effect.leftright.large_magnitude = 1;
+	effect.leftright.small_magnitude = 1;
+	effect.leftright.length = 1;
 }
 
 /// <summary>
@@ -46,6 +46,8 @@ bool DreamPad::Open(int id)
 
 	if (SDL_HapticRumbleSupported(haptic))
 	{
+		effect_id = SDL_HapticNewEffect(haptic, &effect);
+		/*
 		if (SDL_HapticRumbleInit(haptic) != 0)
 		{
 			//PrintDebug("Haptic Rumble Init: %s\n", SDL_GetError());
@@ -54,8 +56,8 @@ bool DreamPad::Open(int id)
 		}
 		else
 		{
-			effect_id = SDL_HapticNewEffect(haptic, &effect);
-		}
+			}
+		*/
 	}
 	else
 	{
@@ -109,20 +111,22 @@ void DreamPad::Poll()
 	if (!isConnected)
 		return;
 
+	SDL_GameControllerUpdate();
+
 	short axis[2];
 
 	axis[0] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
-	axis[1] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
+	axis[1] = -SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
 
 	xinput::ConvertAxes(1.0f, &pad.LeftStickX, axis);
 
-	axis[0] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
-	axis[1] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
+	axis[0] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX);
+	axis[1] = -SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY);
 
 	xinput::ConvertAxes(1.0f, &pad.RightStickX, axis);
 
 	pad.LTriggerPressure = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
-	pad.LTriggerPressure = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+	pad.RTriggerPressure = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
 
 	int buttons = 0;
 
@@ -134,6 +138,9 @@ void DreamPad::Poll()
 		buttons |= Buttons_X;
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_Y))
 		buttons |= Buttons_Y;
+
+	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_START))
+		buttons |= Buttons_Start;
 
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_LEFTSHOULDER))
 		buttons |= Buttons_C;
@@ -199,6 +206,11 @@ void DreamPad::SetActiveMotor(Motor motor, short magnitude)
 
 	SDL_HapticUpdateEffect(haptic, effect_id, &effect);
 	SDL_HapticRunEffect(haptic, effect_id, 1);
+}
+
+Motor DreamPad::GetActiveMotor() const
+{
+	return rumbleState;
 }
 
 void DreamPad::Copy(ControllerData& dest) const

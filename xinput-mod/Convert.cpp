@@ -40,6 +40,7 @@ namespace xinput
 		dest[1] = (radial || abs(source[1]) >= deadzone) ? (short)clamp((short)(-factor * (ny * n)), (short)-127, (short)127) : 0;
 	}
 
+#if 0
 	/// <summary>
 	/// Converts XInput buttons to Dreamcast buttons.
 	/// </summary>
@@ -81,4 +82,5 @@ namespace xinput
 
 		return result;
 	}
+#endif
 }

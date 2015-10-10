@@ -1,5 +1,5 @@
 #pragma once
-#include <SDL.h>
+#include "SDL.h"
 #include <SADXModLoader.h>
 #include "typedefs.h"
 
@@ -24,6 +24,8 @@ public:
 	void Poll();
 	void UpdateMotor();
 	void SetActiveMotor(Motor motor, short magnitude);
+	Motor GetActiveMotor() const;
+
 	void Copy(ControllerData& dest) const;
 
 	bool Connected() const { return isConnected; }

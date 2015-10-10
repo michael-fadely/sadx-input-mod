@@ -1,15 +1,22 @@
 ﻿// Other crap
+#include "SDL.h"
 #include <SADXModLoader.h>
 #include "Common.h"
 
 // This namespace
-#include "Motor.h"
 #include "Ingame.h"
 #include "Convert.h"
+#include "DreamPad.h"
 
 DataPointer(int, isCutscenePlaying, 0x3B2A2E4);		// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
 DataPointer(char, rumbleEnabled, 0x00913B10);		// Not sure why this is a char and ^ is an int.
 DataArray(bool, Controller_Enabled, 0x00909FB4, 4);	// TODO: Figure out what toggles this for P2.
+
+#define XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE  7849
+#define XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE 8689
+#define XINPUT_GAMEPAD_TRIGGER_THRESHOLD    30
+
+DreamPad controllers[PAD_COUNT];
 
 namespace xinput
 {
@@ -34,7 +41,7 @@ namespace xinput
 		this->scaleFactor		= max(1.0f, scaleFactor);
 	}
 
-	Settings settings[XPAD_COUNT];
+	Settings settings[PAD_COUNT];
 
 	static inline int DigitalTrigger(uint8 trigger, uint8 threshold, int button)
 	{
@@ -46,61 +53,24 @@ namespace xinput
 	// TODO: Keyboard & Mouse
 	void __cdecl UpdateControllersXInput()
 	{
-		for (ushort i = 0; i < XPAD_COUNT; i++)
+		for (ushort i = 0; i < PAD_COUNT; i++)
 		{
 			ControllerData* pad = &ControllersRaw[i];
-			XINPUT_STATE state = {};
-			//XInputGetState(i, &state);
-			XINPUT_GAMEPAD* xpad = &state.Gamepad;
-
-			// Gotta get that enum set up for this.
-			pad->Support = 0x3F07FEu;
-
-			// Analog scale factor
-			const float scale = settings[i].scaleFactor;
-
-			// L Analog
-			ConvertAxes(scale, (short*)&pad->LeftStickX, (short*)&xpad->sThumbLX,
-				settings[i].deadzoneL, settings[i].radialL);
-
-			// R Analog
-			ConvertAxes(scale, (short*)&pad->RightStickX, (short*)&xpad->sThumbRX,
-				settings[i].deadzoneR, settings[i].radialR);
-
-			// Trigger pressure
-			pad->LTriggerPressure = xpad->bLeftTrigger;
-			pad->RTriggerPressure = xpad->bRightTrigger;
-
-			// Now, get the new buttons from the XInput xpad
-			pad->HeldButtons = ConvertButtons(xpad->wButtons);
-			pad->HeldButtons |= DigitalTrigger(xpad->bLeftTrigger, settings[i].triggerThreshold, Buttons_L)
-				| DigitalTrigger(xpad->bRightTrigger, settings[i].triggerThreshold, Buttons_R);
-
-			pad->NotHeldButtons = ~pad->HeldButtons;
-
-			// Now set the released buttons to the difference between
-			// the last and currently held buttons
-			pad->ReleasedButtons = pad->Old & (pad->HeldButtons ^ pad->Old);
-
-			// Do some fancy math to "press" only the necessary buttons
-			pad->PressedButtons = pad->HeldButtons & (pad->HeldButtons ^ pad->Old);
-
-			// Set the "last held" to held
-			pad->Old = pad->HeldButtons;
-
-			UpdateMotor(i);
+			DreamPad* dpad = &controllers[i];
+			dpad->Update();
+			dpad->Copy(ControllersRaw[i]);
 
 #ifdef _DEBUG
-			if (xpad->wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)
+			if (pad->HeldButtons & Buttons_C)
 			{
-				Motor m = GetActiveMotor(i);
+				Motor m = controllers[i].GetActiveMotor();
 
 				DisplayDebugStringFormatted(8 + (3 * i), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
-					pad->HeldButtons, pad->LTriggerPressure, pad->RTriggerPressure, (m & Motor::Left), (m & Motor::Right) >> 1);
+					pad->HeldButtons, pad->LTriggerPressure, pad->RTriggerPressure, (m & Motor::Large), (m & Motor::Small) >> 1);
 				DisplayDebugStringFormatted(9 + (3 * i), "   LS: % 4d/% 4d RS: % 4d/% 4d",
 					pad->LeftStickX, pad->LeftStickY, pad->RightStickX, pad->RightStickY);
 
-				if (i == 0 && xpad->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
+				if (i == 0 && pad->HeldButtons & Buttons_Z)
 				{
 					if (pad->PressedButtons & Buttons_Up)
 						settings[i].rumbleFactor += 0.125f;
@@ -116,9 +86,9 @@ namespace xinput
 
 	void Rumble(ushort id, int magnitude, Motor motor)
 	{
-		if (id >= XPAD_COUNT)
+		if (id >= PAD_COUNT)
 		{
-			for (ushort i = 0; i < XPAD_COUNT; i++)
+			for (ushort i = 0; i < PAD_COUNT; i++)
 				Rumble(id, magnitude, motor);
 
 			return;
@@ -142,12 +112,12 @@ namespace xinput
 		}
 
 		if (Controller_Enabled[id] || scaled == 0)
-			SetActiveMotor(id, motor, scaled);
+			controllers[id].SetActiveMotor(motor, scaled);
 	}
 	void __cdecl RumbleLarge(int playerNumber, int magnitude)
 	{
 		if (!isCutscenePlaying && rumbleEnabled)
-			Rumble(playerNumber, clamp(magnitude, 1, 255), Motor::Left);
+			Rumble(playerNumber, clamp(magnitude, 1, 255), Motor::Large);
 	}
 	void __cdecl RumbleSmall(int playerNumber, int a2, int a3, int a4)
 	{
@@ -162,7 +132,7 @@ namespace xinput
 
 			int _a3 = clamp(a3, 7, 59);
 
-			Rumble(playerNumber, max(1, a4 * _a3 / (4 * _a2)), Motor::Right);
+			Rumble(playerNumber, max(1, a4 * _a3 / (4 * _a2)), Motor::Small);
 		}
 	}
 

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Common.h"
-#include "Motor.h"
+#include "DreamPad.h"
+
+extern DreamPad controllers[PAD_COUNT];
 
 namespace xinput
 {
@@ -23,7 +25,7 @@ namespace xinput
 			float rumbleFactor, float scaleFactor);
 	};
 
-	extern Settings settings[XPAD_COUNT];
+	extern Settings settings[PAD_COUNT];
 
 	// Ingame functions
 	void __cdecl UpdateControllersXInput();
