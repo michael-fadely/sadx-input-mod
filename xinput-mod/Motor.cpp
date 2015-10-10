@@ -31,7 +31,7 @@ namespace xinput
 			rumbleState[id] = (Motor)((magnitude > 0) ? rumbleState[id] | motor : rumbleState[id] & ~Motor::Right);
 		}
 
-		XInputSetState(id, &vibration[id]);
+		//XInputSetState(id, &vibration[id]);
 	}
 
 	Motor GetActiveMotor(ushort id)

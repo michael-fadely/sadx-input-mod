@@ -84,6 +84,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DreamPad.cpp" />
     <ClCompile Include="FileExists.cpp" />
     <ClCompile Include="Motor.cpp" />
     <ClCompile Include="Ingame.cpp" />
@@ -100,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h" />
+    <ClInclude Include="DreamPad.h" />
     <ClInclude Include="FileExists.h" />
     <ClInclude Include="minmax.h" />
     <ClInclude Include="Motor.h" />

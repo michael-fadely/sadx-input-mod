@@ -50,7 +50,7 @@ namespace xinput
 		{
 			ControllerData* pad = &ControllersRaw[i];
 			XINPUT_STATE state = {};
-			XInputGetState(i, &state);
+			//XInputGetState(i, &state);
 			XINPUT_GAMEPAD* xpad = &state.Gamepad;
 
 			// Gotta get that enum set up for this.
