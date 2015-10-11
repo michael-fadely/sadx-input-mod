@@ -1,7 +1,6 @@
 #include "stdafx.h"
 // Microsoft stuff
 #include <Windows.h>
-#include <XInput.h>
 #include <direct.h>	// for _getcwd
 
 // Standard library
@@ -53,19 +52,19 @@ extern "C"
 
 		if (FileExists(config))
 		{
-			for (ushort i = 0; i < PAD_COUNT; i++)
+			for (ushort i = 0; i < GAMEPAD_COUNT; i++)
 			{
 				std::string section = "Controller " + std::to_string(i + 1);
 				const char* section_cstr = section.c_str();
 				const char* config_cstr = config.c_str();
 
-				int deadzoneL = GetPrivateProfileIntA(section_cstr, "DeadzoneL", XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, config_cstr);
-				int deadzoneR = GetPrivateProfileIntA(section_cstr, "DeadzoneR", XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, config_cstr);
+				int deadzoneL = GetPrivateProfileIntA(section_cstr, "DeadzoneL", GAMEPAD_LEFT_THUMB_DEADZONE, config_cstr);
+				int deadzoneR = GetPrivateProfileIntA(section_cstr, "DeadzoneR", GAMEPAD_RIGHT_THUMB_DEADZONE, config_cstr);
 
 				bool radialL = GetPrivateProfileIntA(section_cstr, "RadialL", 1, config_cstr) != 0;
 				bool radialR = GetPrivateProfileIntA(section_cstr, "RadialR", 0, config_cstr) != 0;
 
-				int triggerThreshold = GetPrivateProfileIntA(section_cstr, "TriggerThreshold", XINPUT_GAMEPAD_TRIGGER_THRESHOLD, config_cstr);
+				int triggerThreshold = GetPrivateProfileIntA(section_cstr, "TriggerThreshold", GAMEPAD_TRIGGER_THRESHOLD, config_cstr);
 
 				// TODO: Not this
 				char wtf[255];

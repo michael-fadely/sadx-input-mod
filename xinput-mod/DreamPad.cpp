@@ -3,12 +3,11 @@
 #include "Convert.h"
 #include <limits.h>
 #include <Windows.h>
-#include <XInput.h> // for deadzone stuff
 #include "minmax.h"
 
 #include "DreamPad.h"
 
-DreamPad DreamPad::Controllers[PAD_COUNT];
+DreamPad DreamPad::Controllers[GAMEPAD_COUNT];
 
 DreamPad::DreamPad() : controller_id(-1), gamepad(nullptr), haptic(nullptr), effect({}),
 	effect_id(-1), rumbleTime_L(0), rumbleTime_S(0), rumbleState(Motor::None), pad({})
@@ -231,9 +230,9 @@ inline int DreamPad::DigitalTrigger(ushort trigger, ushort threshold, int button
 
 DreamPad::Settings::Settings()
 {
-	deadzoneL = XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
-	deadzoneR = XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
-	triggerThreshold = XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+	deadzoneL = GAMEPAD_LEFT_THUMB_DEADZONE;
+	deadzoneR = GAMEPAD_RIGHT_THUMB_DEADZONE;
+	triggerThreshold = GAMEPAD_TRIGGER_THRESHOLD;
 	radialL = true;
 	radialR = false;
 	rumbleFactor = 1.0f;

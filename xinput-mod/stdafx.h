@@ -1,5 +1,7 @@
 #pragma once
 
+#define WIN32_LEAN_AND_MEAN
+
 #include "Convert.h"
 #include "DreamPad.h"
 #include "FileExists.h"
@@ -9,7 +11,6 @@
 #include "typedefs.h"
 #include <SADXModLoader.h>
 #include <Windows.h>
-#include <XInput.h>
 #include <algorithm>
 #include <cstdint>
 #include <direct.h>

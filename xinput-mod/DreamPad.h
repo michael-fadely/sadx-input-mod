@@ -1,4 +1,11 @@
 #pragma once
+
+#define GAMEPAD_COUNT 4
+// XInput default deadzones blatantly copied, pasted, and renamed.
+#define GAMEPAD_LEFT_THUMB_DEADZONE  7849
+#define GAMEPAD_RIGHT_THUMB_DEADZONE 8689
+#define GAMEPAD_TRIGGER_THRESHOLD    30
+
 #include "SDL.h"
 #include <SADXModLoader.h>
 #include "typedefs.h"
@@ -10,8 +17,6 @@ enum Motor : int8
 	Small,
 	Both
 };
-
-#define PAD_COUNT 4
 
 class DreamPad
 {
@@ -53,7 +58,7 @@ public:
 
 
 	static int DigitalTrigger(ushort trigger, ushort threshold, int button);
-	static DreamPad Controllers[PAD_COUNT];
+	static DreamPad Controllers[GAMEPAD_COUNT];
 
 private:
 	bool isConnected = false;

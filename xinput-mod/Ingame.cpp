@@ -20,7 +20,7 @@ namespace xinput
 	// TODO: Keyboard & Mouse. Now I have no excuse.
 	void __cdecl UpdateControllersXInput()
 	{
-		for (ushort i = 0; i < PAD_COUNT; i++)
+		for (ushort i = 0; i < GAMEPAD_COUNT; i++)
 		{
 			SDL_Event event;
 			while (SDL_PollEvent(&event))
@@ -32,8 +32,8 @@ namespace xinput
 
 					case SDL_CONTROLLERDEVICEADDED:
 					{
-						int which = clamp(event.cdevice.which, 0, PAD_COUNT);
-						for (uint j = 0; j < PAD_COUNT; j++)
+						int which = event.cdevice.which;
+						for (uint j = 0; j < GAMEPAD_COUNT; j++)
 						{
 							// Checking for both in cases like the DualShock 4 and DS4Windows where the controller might be "connected"
 							// twice with the same ID. DreamPad::Open automatically closes if already open.
@@ -48,8 +48,8 @@ namespace xinput
 
 					case SDL_CONTROLLERDEVICEREMOVED:
 					{
-						int which = clamp(event.cdevice.which, 0, PAD_COUNT);
-						for (uint j = 0; j < PAD_COUNT; j++)
+						int which = event.cdevice.which;
+						for (uint j = 0; j < GAMEPAD_COUNT; j++)
 						{
 							if (DreamPad::Controllers[j].ControllerID() == which)
 							{
@@ -93,9 +93,9 @@ namespace xinput
 
 	void Rumble(ushort id, int magnitude, Motor motor)
 	{
-		if (id >= PAD_COUNT)
+		if (id >= GAMEPAD_COUNT)
 		{
-			for (ushort i = 0; i < PAD_COUNT; i++)
+			for (ushort i = 0; i < GAMEPAD_COUNT; i++)
 				Rumble(id, magnitude, motor);
 
 			return;
