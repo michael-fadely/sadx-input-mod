@@ -30,7 +30,7 @@ bool DreamPad::Open(int id)
 	if (isConnected)
 		Close();
 
-	this->gamepad = SDL_GameControllerOpen(id);
+	gamepad = SDL_GameControllerOpen(id);
 
 	if (gamepad == nullptr)
 		return isConnected = false;
@@ -43,13 +43,13 @@ bool DreamPad::Open(int id)
 		| PDD_DEV_SUPPORT_ST | PDD_DEV_SUPPORT_KU | PDD_DEV_SUPPORT_KD | PDD_DEV_SUPPORT_KL | PDD_DEV_SUPPORT_KR
 		| PDD_DEV_SUPPORT_AX1 | PDD_DEV_SUPPORT_AY1 | PDD_DEV_SUPPORT_AX2 | PDD_DEV_SUPPORT_AY2);
 
-	SDL_Joystick* joystick = SDL_GameControllerGetJoystick(this->gamepad);
+	SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad);
 
 	if (joystick == nullptr)
 		return isConnected = false;
 
 	controller_id = id;
-	this->haptic = SDL_HapticOpenFromJoystick(joystick);
+	haptic = SDL_HapticOpenFromJoystick(joystick);
 
 	if (haptic == nullptr)
 		return isConnected = true;
