@@ -123,8 +123,11 @@ void DreamPad::Poll()
 
 	xinput::ConvertAxes(settings.scaleFactor, &pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
 
-	pad.LTriggerPressure = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
-	pad.RTriggerPressure = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+	short lt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
+	short rt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+
+	pad.LTriggerPressure = (short)(255.0f * ((float)lt / (float)SHRT_MAX));
+	pad.RTriggerPressure = (short)(255.0f * ((float)rt / (float)SHRT_MAX));;
 
 	int buttons = 0;
 
