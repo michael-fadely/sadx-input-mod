@@ -41,7 +41,6 @@ extern "C"
 {
 	__declspec(dllexport) void Init(const char* path, const HelperFunctions& helperFunctions)
 	{
-		// TODO: Either link dynamically or statically link with SDL.
 		int init;
 		if ((init = SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC | SDL_INIT_EVENTS)) != 0)
 		{
