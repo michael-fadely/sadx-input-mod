@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "SDL.h"
 #include "Convert.h"
 #include <limits.h>

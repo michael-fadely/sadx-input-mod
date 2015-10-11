@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include <SADXModLoader/SADXEnums.h>
 #include <limits>
 #include "minmax.h"

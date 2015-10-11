@@ -1,3 +1,4 @@
+#include "stdafx.h"
 // Microsoft stuff
 #include <Windows.h>
 #include <XInput.h>

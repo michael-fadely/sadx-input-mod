@@ -1,4 +1,5 @@
-﻿// Other crap
+﻿#include "stdafx.h"
+// Other crap
 #include "SDL.h"
 #include <SADXModLoader.h>
 #include <limits>
