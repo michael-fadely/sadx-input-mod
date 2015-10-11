@@ -12,9 +12,8 @@ DreamPad DreamPad::Controllers[GAMEPAD_COUNT];
 DreamPad::DreamPad() : controller_id(-1), gamepad(nullptr), haptic(nullptr), effect({}),
 	effect_id(-1), rumbleTime_L(0), rumbleTime_S(0), rumbleState(Motor::None), pad({})
 {
-	effect.type = SDL_HAPTIC_SINE;
+	// TODO: Properly detect supported rumble types
 	effect.leftright.type = SDL_HAPTIC_LEFTRIGHT;
-	effect.leftright.length = SDL_HAPTIC_INFINITY;
 }
 DreamPad::~DreamPad()
 {
