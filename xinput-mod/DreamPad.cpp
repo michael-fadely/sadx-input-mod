@@ -36,8 +36,11 @@ bool DreamPad::Open(int id)
 	if (gamepad == nullptr)
 		return isConnected = false;
 
-	pad.Support = (PDD_DEV_SUPPORT_TA | PDD_DEV_SUPPORT_TB | PDD_DEV_SUPPORT_TC | PDD_DEV_SUPPORT_TD
-		| PDD_DEV_SUPPORT_TX | PDD_DEV_SUPPORT_TY | PDD_DEV_SUPPORT_TZ | PDD_DEV_SUPPORT_AR | PDD_DEV_SUPPORT_AL
+	pad.Support = (PDD_DEV_SUPPORT_TA | PDD_DEV_SUPPORT_TB | PDD_DEV_SUPPORT_TX | PDD_DEV_SUPPORT_TY
+#ifdef EXTENDED_BUTTONS
+		| PDD_DEV_SUPPORT_TC | PDD_DEV_SUPPORT_TD | PDD_DEV_SUPPORT_TZ
+#endif
+		| PDD_DEV_SUPPORT_AR | PDD_DEV_SUPPORT_AL
 		| PDD_DEV_SUPPORT_ST | PDD_DEV_SUPPORT_KU | PDD_DEV_SUPPORT_KD | PDD_DEV_SUPPORT_KL | PDD_DEV_SUPPORT_KR
 		| PDD_DEV_SUPPORT_AX1 | PDD_DEV_SUPPORT_AY1 | PDD_DEV_SUPPORT_AX2 | PDD_DEV_SUPPORT_AY2);
 
@@ -146,12 +149,14 @@ void DreamPad::Poll()
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_START))
 		buttons |= Buttons_Start;
 
+#ifdef EXTENDED_BUTTONS
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_LEFTSHOULDER))
 		buttons |= Buttons_C;
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_BACK))
 		buttons |= Buttons_D;
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER))
 		buttons |= Buttons_Z;
+#endif
 
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP))
 		buttons |= Buttons_Up;
