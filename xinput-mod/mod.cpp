@@ -1,5 +1,6 @@
 // Microsoft stuff
 #include <Windows.h>
+#include <XInput.h>
 #include <direct.h>	// for _getcwd
 
 // Standard library
@@ -36,24 +37,17 @@ std::string BuildConfigPath(const char* modpath)
 	return result.str();
 }
 
-#define XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE  7849
-#define XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE 8689
-#define XINPUT_GAMEPAD_TRIGGER_THRESHOLD    30
-
 extern "C"
 {
 	__declspec(dllexport) void Init(const char* path, const HelperFunctions& helperFunctions)
 	{
+		// TODO: Either link dynamically or statically link with SDL.
 		int init;
-		if ((init = SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC)) != 0)
+		if ((init = SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC | SDL_INIT_EVENTS)) != 0)
 		{
 			PrintDebug("Unable to initialize SDL. Error code: %i\n", init);
 			MessageBoxA(nullptr, "Error initializing SDL. See debug message for details.", "SDL Init Error", 0);
 		}
-
-		// TODO: Hot plugging!
-		for (int i = 0; i < SDL_NumJoysticks(); i++)
-			DreamPad::Controllers[i].Open(i);
 
 		std::string config = BuildConfigPath(path);
 

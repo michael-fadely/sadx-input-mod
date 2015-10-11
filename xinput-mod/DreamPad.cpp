@@ -86,9 +86,9 @@ void DreamPad::Close()
 	{
 		SDL_GameControllerClose(gamepad);
 		gamepad = nullptr;
-		controller_id = -1;
 	}
 
+	controller_id = -1;
 	isConnected = false;
 }
 
@@ -210,11 +210,6 @@ void DreamPad::SetActiveMotor(Motor motor, short magnitude)
 
 	SDL_HapticUpdateEffect(haptic, effect_id, &effect);
 	SDL_HapticRunEffect(haptic, effect_id, 1);
-}
-
-Motor DreamPad::GetActiveMotor() const
-{
-	return rumbleState;
 }
 
 void DreamPad::Copy(ControllerData& dest) const

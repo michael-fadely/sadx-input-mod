@@ -6,7 +6,6 @@
 
 // This namespace
 #include "Ingame.h"
-#include "Convert.h"
 #include "DreamPad.h"
 
 DataPointer(int, isCutscenePlaying, 0x3B2A2E4);		// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
@@ -17,11 +16,52 @@ namespace xinput
 {
 #pragma region Ingame Functions
 
-	// TODO: Keyboard & Mouse
+	// TODO: Keyboard & Mouse. Now I have no excuse.
 	void __cdecl UpdateControllersXInput()
 	{
 		for (ushort i = 0; i < PAD_COUNT; i++)
 		{
+			SDL_Event event;
+			while (SDL_PollEvent(&event))
+			{
+				switch (event.type)
+				{
+					case SDL_CONTROLLERDEVICEADDED:
+					{
+						int which = clamp(event.cdevice.which, 0, PAD_COUNT);
+						for (uint j = 0; j < PAD_COUNT; j++)
+						{
+							// Checking for both in cases like the DualShock 4 and DS4Windows where the controller might be "connected"
+							// twice with the same ID. DreamPad::Open automatically closes if already open.
+							if (!DreamPad::Controllers[j].Connected() || DreamPad::Controllers[j].ControllerID() == which)
+							{
+								DreamPad::Controllers[j].Open(which);
+								break;
+							}
+						}
+						break;
+					}
+
+					case SDL_CONTROLLERDEVICEREMOVED:
+					{
+						int which = clamp(event.cdevice.which, 0, PAD_COUNT);
+						for (uint j = 0; j < PAD_COUNT; j++)
+						{
+							if (DreamPad::Controllers[j].ControllerID() == which)
+							{
+								DreamPad::Controllers[j].Close();
+								break;
+							}
+						}
+						break;
+					}
+
+					default:
+						PrintDebug("Unhandled event: %d\n", event.type);
+						break;
+				}
+			}
+
 			ControllerData* pad = &ControllersRaw[i];
 			DreamPad* dpad = &DreamPad::Controllers[i];
 			dpad->Update();
@@ -44,7 +84,7 @@ namespace xinput
 					else if (pad->PressedButtons & Buttons_Down)
 						dpad->settings.rumbleFactor -= 0.125f;
 
-					DisplayDebugStringFormatted(10 + (3 * i), "\tRumble factor (U/D): %f", dpad->settings.rumbleFactor);
+					DisplayDebugStringFormatted(10 + (3 * i), "    Rumble factor (U/D): %f", dpad->settings.rumbleFactor);
 				}
 			}
 #endif

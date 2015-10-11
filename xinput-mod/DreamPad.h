@@ -18,19 +18,21 @@ class DreamPad
 public:
 	DreamPad();
 	~DreamPad();
-	bool Open(int id);	
+
+	bool Open(int id);
 	void Close();
-		
+
 	void Update();
 	void Poll();
 	void UpdateMotor();
+
+	// Poor man's properties
+	Motor GetActiveMotor() const { return rumbleState; }
 	void SetActiveMotor(Motor motor, short magnitude);
-	Motor GetActiveMotor() const;
+	bool Connected() const { return isConnected; }
+	int ControllerID() const { return controller_id; }
 
 	void Copy(ControllerData& dest) const;
-
-	bool Connected() const { return isConnected; }
-	static int DigitalTrigger(ushort trigger, ushort threshold, int button);
 
 	struct Settings
 	{
@@ -50,6 +52,7 @@ public:
 	} settings;
 
 
+	static int DigitalTrigger(ushort trigger, ushort threshold, int button);
 	static DreamPad Controllers[PAD_COUNT];
 
 private:
