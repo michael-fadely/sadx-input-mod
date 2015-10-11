@@ -26,6 +26,9 @@ namespace xinput
 			{
 				switch (event.type)
 				{
+					default:
+						break;
+
 					case SDL_CONTROLLERDEVICEADDED:
 					{
 						int which = clamp(event.cdevice.which, 0, PAD_COUNT);
@@ -55,10 +58,6 @@ namespace xinput
 						}
 						break;
 					}
-
-					default:
-						PrintDebug("Unhandled event: %d\n", event.type);
-						break;
 				}
 			}
 
