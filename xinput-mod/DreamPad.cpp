@@ -97,12 +97,12 @@ void DreamPad::Poll()
 	axis[0] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
 	axis[1] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
 
-	ConvertAxes(settings.scaleFactor, &pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
+	ConvertAxes(&pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
 
 	axis[0] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX);
 	axis[1] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY);
 
-	ConvertAxes(settings.scaleFactor, &pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
+	ConvertAxes(&pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
 
 	short lt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
 	short rt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
@@ -207,7 +207,7 @@ inline int DreamPad::DigitalTrigger(ushort trigger, ushort threshold, int button
 	return (trigger > threshold) ? button : 0;
 }
 
-void DreamPad::ConvertAxes(float scaleFactor, short dest[2], short source[2], short deadzone, bool radial)
+void DreamPad::ConvertAxes(short* dest, short* source, short deadzone, bool radial) const
 {
 	if (abs(source[0]) < deadzone && abs(source[1]) < deadzone)
 	{
@@ -222,7 +222,7 @@ void DreamPad::ConvertAxes(float scaleFactor, short dest[2], short source[2], sh
 	// Doing this with the default value (1.5) will deliberately put us outside the proper range,
 	// but this is unfortunately required for proper diagonal movement. That's a pretty conservative default, too.
 	// TODO: Investigate fixing this without deliberately going out of range (which kills my beautiful perfectly radial magic).
-	const short factor = (short)(128 * scaleFactor);
+	const short factor = (short)(128 * settings.scaleFactor);
 
 	const float m = sqrt(x * x + y * y);
 

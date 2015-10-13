@@ -70,12 +70,11 @@ public:
 	/// <summary>
 	/// Converts from SDL (-32768 to 32767) to Dreamcast (-127 to 127) axes, including scaled deadzone.
 	/// </summary>
-	/// <param name="scaleFactor">The analog scale factor.</param>
 	/// <param name="dest">The destination axes (Dreamcast).</param>
 	/// <param name="source">The source axes (SDL).</param>
 	/// <param name="deadzone">The deadzone.</param>
 	/// <param name="radial">If set to <c>true</c>, the deadzone is treated as fully radial. (i.e one axis exceeding deadzone implies the other)</param>
-	static void ConvertAxes(float scaleFactor, short dest[2], short source[2], short deadzone, bool radial);	
+	void ConvertAxes(short* dest, short* source, short deadzone, bool radial) const;	
 	/// <summary>
 	/// Handles certain SDL events (such as controller connect and disconnect).
 	/// </summary>

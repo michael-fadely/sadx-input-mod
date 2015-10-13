@@ -12,12 +12,14 @@ DataPointer(int, isCutscenePlaying, 0x3B2A2E4);		// Fun fact: Freeze at 0 to avo
 DataPointer(char, rumbleEnabled, 0x00913B10);		// Not sure why this is a char and ^ is an int.
 DataArray(bool, Controller_Enabled, 0x00909FB4, 4);	// TODO: Figure out what toggles this for P2.
 
+#define OFFSET(x, y) (x << 16 | y)
+
 namespace xinput
 {
 #pragma region Ingame Functions
 
 	// TODO: Keyboard & Mouse. Now I have no excuse.
-	void __cdecl UpdateControllersXInput()
+	void UpdateControllersXInput()
 	{
 		DreamPad::ProcessEvents();
 
@@ -28,18 +30,18 @@ namespace xinput
 			if (!dpad->Connected())
 				continue;
 
-			ControllerData* pad = &ControllersRaw[i];
 			dpad->Poll();
 			dpad->Copy(ControllersRaw[i]);
 
 #if  defined(_DEBUG) && defined(EXTENDED_BUTTONS)
+			ControllerData* pad = &ControllersRaw[i];
 			if (pad->HeldButtons & Buttons_C)
 			{
 				Motor m = DreamPad::Controllers[i].GetActiveMotor();
 
-				DisplayDebugStringFormatted(8 + (3 * i), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
+				DisplayDebugStringFormatted(OFFSET(0, 8 + (3 * i)), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
 					pad->HeldButtons, pad->LTriggerPressure, pad->RTriggerPressure, (m & Motor::Large), (m & Motor::Small) >> 1);
-				DisplayDebugStringFormatted(9 + (3 * i), "   LS: % 4d/% 4d RS: % 4d/% 4d",
+				DisplayDebugStringFormatted(OFFSET(4, 9 + (3 * i)), "LS: % 4d/% 4d RS: % 4d/% 4d",
 					pad->LeftStickX, pad->LeftStickY, pad->RightStickX, pad->RightStickY);
 
 				if (pad->HeldButtons & Buttons_Z)
@@ -49,7 +51,7 @@ namespace xinput
 					else if (pad->PressedButtons & Buttons_Down)
 						dpad->settings.rumbleFactor -= 0.125f;
 
-					DisplayDebugStringFormatted(10 + (3 * i), "    Rumble factor (U/D): %f", dpad->settings.rumbleFactor);
+					DisplayDebugStringFormatted(OFFSET(4, 10 + (3 * i)), "Rumble factor (U/D): %f", dpad->settings.rumbleFactor);
 				}
 			}
 #endif
