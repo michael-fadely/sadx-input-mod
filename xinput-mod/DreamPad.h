@@ -24,10 +24,19 @@ public:
 	DreamPad();
 	~DreamPad();
 
+	/// <summary>
+	/// Opens the specified controller ID.
+	/// </summary>
+	/// <param name="id">Controller ID to open.</param>
+	/// <returns><c>true</c> on success. Note that haptic can fail and the function will still return true.</returns>
 	bool Open(int id);
+	/// <summary>
+	/// Closes this instance.
+	/// </summary>
 	void Close();
-
-	void Update();
+	/// <summary>
+	/// Polls input for this instance.
+	/// </summary>
 	void Poll();
 	void UpdateMotor();
 
@@ -58,6 +67,15 @@ public:
 
 
 	static int DigitalTrigger(ushort trigger, ushort threshold, int button);
+	/// <summary>
+	/// Converts from SDL (-32768 to 32767) to Dreamcast (-127 to 127) axes, including scaled deadzone.
+	/// </summary>
+	/// <param name="scaleFactor">The analog scale factor.</param>
+	/// <param name="dest">The destination axes (Dreamcast).</param>
+	/// <param name="source">The source axes (SDL).</param>
+	/// <param name="deadzone">The deadzone.</param>
+	/// <param name="radial">If set to <c>true</c>, the deadzone is treated as fully radial. (i.e one axis exceeding deadzone implies the other)</param>
+	static void ConvertAxes(float scaleFactor, short dest[2], short source[2], short deadzone, bool radial);
 	static DreamPad Controllers[GAMEPAD_COUNT];
 
 private:

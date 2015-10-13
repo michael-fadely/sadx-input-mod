@@ -24,9 +24,6 @@
     <ClCompile Include="Ingame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Convert.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DreamPad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -50,9 +47,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Ingame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Convert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DreamPad.h">

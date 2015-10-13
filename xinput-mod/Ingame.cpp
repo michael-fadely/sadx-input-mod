@@ -64,7 +64,7 @@ namespace xinput
 
 			ControllerData* pad = &ControllersRaw[i];
 			DreamPad* dpad = &DreamPad::Controllers[i];
-			dpad->Update();
+			dpad->Poll();
 			dpad->Copy(ControllersRaw[i]);
 
 #ifdef _DEBUG

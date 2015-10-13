@@ -2,7 +2,6 @@
 
 #define WIN32_LEAN_AND_MEAN
 
-#include "Convert.h"
 #include "DreamPad.h"
 #include "FileExists.h"
 #include "Ingame.h"

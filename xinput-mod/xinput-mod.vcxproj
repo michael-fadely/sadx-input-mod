@@ -88,7 +88,6 @@
     <ClCompile Include="FileExists.cpp" />
     <ClCompile Include="Ingame.cpp" />
     <ClCompile Include="mod.cpp" />
-    <ClCompile Include="Convert.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -110,7 +109,6 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="typedefs.h" />
     <ClInclude Include="Ingame.h" />
-    <ClInclude Include="Convert.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

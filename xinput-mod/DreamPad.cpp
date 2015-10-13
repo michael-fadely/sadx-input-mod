@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "SDL.h"
-#include "Convert.h"
 #include <limits.h>
 #include <Windows.h>
 #include "minmax.h"
@@ -20,11 +19,6 @@ DreamPad::~DreamPad()
 	Close();
 }
 
-/// <summary>
-/// Opens the specified controller ID.
-/// </summary>
-/// <param name="id">Controller ID to open.</param>
-/// <returns><c>true</c> on success. Note that haptic can fail and the function will still return true.</returns>
 bool DreamPad::Open(int id)
 {
 	if (isConnected)
@@ -35,12 +29,12 @@ bool DreamPad::Open(int id)
 	if (gamepad == nullptr)
 		return isConnected = false;
 
-	pad.Support = (PDD_DEV_SUPPORT_TA | PDD_DEV_SUPPORT_TB | PDD_DEV_SUPPORT_TX | PDD_DEV_SUPPORT_TY
+	pad.Support = (PDD_DEV_SUPPORT_TA | PDD_DEV_SUPPORT_TB | PDD_DEV_SUPPORT_TX | PDD_DEV_SUPPORT_TY | PDD_DEV_SUPPORT_ST
 #ifdef EXTENDED_BUTTONS
 		| PDD_DEV_SUPPORT_TC | PDD_DEV_SUPPORT_TD | PDD_DEV_SUPPORT_TZ
 #endif
 		| PDD_DEV_SUPPORT_AR | PDD_DEV_SUPPORT_AL
-		| PDD_DEV_SUPPORT_ST | PDD_DEV_SUPPORT_KU | PDD_DEV_SUPPORT_KD | PDD_DEV_SUPPORT_KL | PDD_DEV_SUPPORT_KR
+		| PDD_DEV_SUPPORT_KU | PDD_DEV_SUPPORT_KD | PDD_DEV_SUPPORT_KL | PDD_DEV_SUPPORT_KR
 		| PDD_DEV_SUPPORT_AX1 | PDD_DEV_SUPPORT_AY1 | PDD_DEV_SUPPORT_AX2 | PDD_DEV_SUPPORT_AY2);
 
 	SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad);
@@ -67,9 +61,6 @@ bool DreamPad::Open(int id)
 	return isConnected = true;
 }
 
-/// <summary>
-/// Closes this instance.
-/// </summary>
 void DreamPad::Close()
 {
 	if (!isConnected)
@@ -94,18 +85,6 @@ void DreamPad::Close()
 	isConnected = false;
 }
 
-/// <summary>
-/// Calls Poll and UpdateMotor automatically.
-/// </summary>
-void DreamPad::Update()
-{
-	Poll();
-	UpdateMotor();
-}
-
-/// <summary>
-/// Polls input for this instance.
-/// </summary>
 void DreamPad::Poll()
 {
 	if (!isConnected)
@@ -118,12 +97,12 @@ void DreamPad::Poll()
 	axis[0] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
 	axis[1] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
 
-	xinput::ConvertAxes(settings.scaleFactor, &pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
+	ConvertAxes(settings.scaleFactor, &pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
 
 	axis[0] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX);
 	axis[1] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY);
 
-	xinput::ConvertAxes(settings.scaleFactor, &pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
+	ConvertAxes(settings.scaleFactor, &pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
 
 	short lt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
 	short rt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
@@ -171,6 +150,8 @@ void DreamPad::Poll()
 	pad.ReleasedButtons	= pad.Old & (buttons ^ pad.Old);
 	pad.PressedButtons	= buttons & (buttons ^ pad.Old);
 	pad.Old				= pad.HeldButtons;
+
+	UpdateMotor();
 }
 
 void DreamPad::UpdateMotor()
@@ -225,6 +206,35 @@ inline int DreamPad::DigitalTrigger(ushort trigger, ushort threshold, int button
 {
 	return (trigger > threshold) ? button : 0;
 }
+
+void DreamPad::ConvertAxes(float scaleFactor, short dest[2], short source[2], short deadzone, bool radial)
+{
+	if (abs(source[0]) < deadzone && abs(source[1]) < deadzone)
+	{
+		dest[0] = dest[1] = 0;
+		return;
+	}
+
+	// This is being intentionally limited to -32767 instead of -32768
+	const float x = (float)clamp(source[0], (short)-SHRT_MAX, (short)SHRT_MAX);
+	const float y = (float)-clamp(source[1], (short)-SHRT_MAX, (short)SHRT_MAX);
+
+	// Doing this with the default value (1.5) will deliberately put us outside the proper range,
+	// but this is unfortunately required for proper diagonal movement. That's a pretty conservative default, too.
+	// TODO: Investigate fixing this without deliberately going out of range (which kills my beautiful perfectly radial magic).
+	const short factor = (short)(128 * scaleFactor);
+
+	const float m = sqrt(x * x + y * y);
+
+	const float nx = (m < deadzone) ? 0 : x / m;	// Normalized (X)
+	const float ny = (m < deadzone) ? 0 : y / m;	// Normalized (Y)
+	const float n = (min((float)SHRT_MAX, m) - deadzone) / ((float)SHRT_MAX - deadzone);
+
+	// In my testing, multiplying -128 to 128 results in 127 instead, which is the desired value.
+	dest[0] = (radial || abs(source[0]) >= deadzone) ? (short)clamp((short)(factor * (nx * n)), (short)-127, (short)127) : 0;
+	dest[1] = (radial || abs(source[1]) >= deadzone) ? (short)clamp((short)(-factor * (ny * n)), (short)-127, (short)127) : 0;
+}
+
 
 
 DreamPad::Settings::Settings()
