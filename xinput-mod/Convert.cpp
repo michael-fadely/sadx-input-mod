@@ -1,13 +1,12 @@
 #include "stdafx.h"
-#include <SADXModLoader/SADXEnums.h>
-#include <limits>
+#include <limits.h>
 #include "minmax.h"
 #include "Convert.h"
 
 namespace xinput
 {
 	/// <summary>
-	/// Converts from XInput (-32768 - 32767) to Dreamcast (-127 - 127) axes, including scaled deadzone.
+	/// Converts from XInput (-32768 to 32767) to Dreamcast (-127 to 127) axes, including scaled deadzone.
 	/// </summary>
 	/// <param name="scaleFactor">The analog scale factor.</param>
 	/// <param name="dest">The destination axes (Dreamcast).</param>
@@ -24,9 +23,9 @@ namespace xinput
 
 		// This is being intentionally limited to -32767 instead of -32768
 		const float x = (float)clamp(source[0], (short)-SHRT_MAX, (short)SHRT_MAX);
-		const float y = (float)clamp(source[1], (short)-SHRT_MAX, (short)SHRT_MAX);
+		const float y = (float)-clamp(source[1], (short)-SHRT_MAX, (short)SHRT_MAX);
 
-		// Magnitude (length)	// Doing this with the default value (1.5) will deliberately put us outside the proper range,
+		// Doing this with the default value (1.5) will deliberately put us outside the proper range,
 		// but this is unfortunately required for proper diagonal movement. That's a pretty conservative default, too.
 		// TODO: Investigate fixing this without deliberately going out of range (which kills my beautiful perfectly radial magic).
 		const short factor = (short)(128 * scaleFactor);
@@ -37,7 +36,7 @@ namespace xinput
 		const float ny = (m < deadzone) ? 0 : y / m;	// Normalized (Y)
 		const float n = (min((float)SHRT_MAX, m) - deadzone) / ((float)SHRT_MAX - deadzone);
 
-		// In my testing, multiplying -128 - 128 results in 127 instead, which is the desired value.
+		// In my testing, multiplying -128 to 128 results in 127 instead, which is the desired value.
 		dest[0] = (radial || abs(source[0]) >= deadzone) ? (short)clamp((short)(factor * (nx * n)), (short)-127, (short)127) : 0;
 		dest[1] = (radial || abs(source[1]) >= deadzone) ? (short)clamp((short)(-factor * (ny * n)), (short)-127, (short)127) : 0;
 	}
