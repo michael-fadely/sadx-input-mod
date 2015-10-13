@@ -235,6 +235,51 @@ void DreamPad::ConvertAxes(float scaleFactor, short dest[2], short source[2], sh
 	dest[1] = (radial || abs(source[1]) >= deadzone) ? (short)clamp((short)(-factor * (ny * n)), (short)-127, (short)127) : 0;
 }
 
+/// <summary>
+/// Handles certain SDL events (such as controller connect and disconnect).
+/// </summary>
+void DreamPad::ProcessEvents()
+{
+	SDL_Event event;
+	while (SDL_PollEvent(&event))
+	{
+		switch (event.type)
+		{
+			default:
+				break;
+
+			case SDL_CONTROLLERDEVICEADDED:
+			{
+				int which = event.cdevice.which;
+				for (uint i = 0; i < GAMEPAD_COUNT; i++)
+				{
+					// Checking for both in cases like the DualShock 4 and DS4Windows where the controller might be "connected"
+					// twice with the same ID. DreamPad::Open automatically closes if already open.
+					if (!Controllers[i].Connected() || Controllers[i].ControllerID() == which)
+					{
+						Controllers[i].Open(which);
+						break;
+					}
+				}
+				break;
+			}
+
+			case SDL_CONTROLLERDEVICEREMOVED:
+			{
+				int which = event.cdevice.which;
+				for (uint i = 0; i < GAMEPAD_COUNT; i++)
+				{
+					if (Controllers[i].ControllerID() == which)
+					{
+						Controllers[i].Close();
+						break;
+					}
+				}
+				break;
+			}
+		}
+	}
+}
 
 
 DreamPad::Settings::Settings()

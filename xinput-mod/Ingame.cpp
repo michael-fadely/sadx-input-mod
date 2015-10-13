@@ -1,8 +1,7 @@
 ﻿#include "stdafx.h"
 // Other crap
-#include "SDL.h"
 #include <SADXModLoader.h>
-#include <limits>
+#include <limits.h>
 #include "minmax.h"
 
 // This namespace
@@ -20,54 +19,20 @@ namespace xinput
 	// TODO: Keyboard & Mouse. Now I have no excuse.
 	void __cdecl UpdateControllersXInput()
 	{
+		DreamPad::ProcessEvents();
+
 		for (ushort i = 0; i < GAMEPAD_COUNT; i++)
 		{
-			SDL_Event event;
-			while (SDL_PollEvent(&event))
-			{
-				switch (event.type)
-				{
-					default:
-						break;
-
-					case SDL_CONTROLLERDEVICEADDED:
-					{
-						int which = event.cdevice.which;
-						for (uint j = 0; j < GAMEPAD_COUNT; j++)
-						{
-							// Checking for both in cases like the DualShock 4 and DS4Windows where the controller might be "connected"
-							// twice with the same ID. DreamPad::Open automatically closes if already open.
-							if (!DreamPad::Controllers[j].Connected() || DreamPad::Controllers[j].ControllerID() == which)
-							{
-								DreamPad::Controllers[j].Open(which);
-								break;
-							}
-						}
-						break;
-					}
-
-					case SDL_CONTROLLERDEVICEREMOVED:
-					{
-						int which = event.cdevice.which;
-						for (uint j = 0; j < GAMEPAD_COUNT; j++)
-						{
-							if (DreamPad::Controllers[j].ControllerID() == which)
-							{
-								DreamPad::Controllers[j].Close();
-								break;
-							}
-						}
-						break;
-					}
-				}
-			}
+			DreamPad* dpad = &DreamPad::Controllers[i];
+			// HACK This enables use of the keyboard and mouse if no controllers are connected.
+			if (!dpad->Connected())
+				continue;
 
 			ControllerData* pad = &ControllersRaw[i];
-			DreamPad* dpad = &DreamPad::Controllers[i];
 			dpad->Poll();
 			dpad->Copy(ControllersRaw[i]);
 
-#ifdef _DEBUG
+#if  defined(_DEBUG) && defined(EXTENDED_BUTTONS)
 			if (pad->HeldButtons & Buttons_C)
 			{
 				Motor m = DreamPad::Controllers[i].GetActiveMotor();

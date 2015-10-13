@@ -20,11 +20,14 @@
 void* RumbleLarge_ptr		= (void*)0x004BCBC0;
 void* RumbleSmall_ptr		= (void*)0x004BCC10;
 void* Rumble_ptr			= (void*)0x004BCB60; // Unused, but here so I don't lose it.
-void* UpdateControllers_ptr = (void*)0x0040F460; // Ditto
+void* UpdateControllers_ptr = (void*)0x0040F460;
 
 PointerInfo jumps[] = {
 	{ RumbleLarge_ptr, xinput::RumbleLarge },
-	{ RumbleSmall_ptr, xinput::RumbleSmall }
+	{ RumbleSmall_ptr, xinput::RumbleSmall },
+	// Used to skip over the standard controller update function.
+	// This has no effect on the OnInput hook.
+	//{ UpdateControllers_ptr, (void*)0x0040FDB3 }
 };
 
 std::string BuildConfigPath(const char* modpath)
