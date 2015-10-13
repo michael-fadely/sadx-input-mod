@@ -76,6 +76,9 @@ public:
 	/// <param name="deadzone">The deadzone.</param>
 	/// <param name="radial">If set to <c>true</c>, the deadzone is treated as fully radial. (i.e one axis exceeding deadzone implies the other)</param>
 	static void ConvertAxes(float scaleFactor, short dest[2], short source[2], short deadzone, bool radial);	
+	/// <summary>
+	/// Handles certain SDL events (such as controller connect and disconnect).
+	/// </summary>
 	static void ProcessEvents();
 	static DreamPad Controllers[GAMEPAD_COUNT];
 

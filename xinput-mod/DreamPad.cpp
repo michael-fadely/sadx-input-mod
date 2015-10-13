@@ -235,9 +235,6 @@ void DreamPad::ConvertAxes(float scaleFactor, short dest[2], short source[2], sh
 	dest[1] = (radial || abs(source[1]) >= deadzone) ? (short)clamp((short)(-factor * (ny * n)), (short)-127, (short)127) : 0;
 }
 
-/// <summary>
-/// Handles certain SDL events (such as controller connect and disconnect).
-/// </summary>
 void DreamPad::ProcessEvents()
 {
 	SDL_Event event;
