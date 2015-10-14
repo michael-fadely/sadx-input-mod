@@ -34,12 +34,12 @@ PointerInfo calls[] = {
 	{ (void*)0x0040FEE6, input::WriteAnalogsWrapper }
 };
 
-std::string BuildConfigPath(const char* modpath)
+std::string BuildModPath(const char* modpath, const char* path)
 {
 	std::stringstream result;
 	char workingdir[FILENAME_MAX];
 
-	result << _getcwd(workingdir, FILENAME_MAX) << "\\" << modpath << "\\xinput.ini";
+	result << _getcwd(workingdir, FILENAME_MAX) << "\\" << modpath << "\\" << path;
 
 	return result.str();
 }
@@ -62,10 +62,17 @@ extern "C"
 		if ((init = SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC | SDL_INIT_EVENTS)) != 0)
 		{
 			PrintDebug("Unable to initialize SDL. Error code: %i\n", init);
-			MessageBoxA(nullptr, "Error initializing SDL. See debug message for details.", "SDL Init Error", 0);
+			MessageBoxA(nullptr, "Error initializing SDL. See debug message for details.",
+				"SDL Init Error", MB_OK | MB_ICONERROR);
+			return;
 		}
 
-		std::string config = BuildConfigPath(path);
+		std::string dbpath = BuildModPath(path, "gamecontrollerdb.txt");
+
+		if (FileExists(dbpath))
+			SDL_GameControllerAddMappingsFromFile(dbpath.c_str());
+
+		std::string config = BuildModPath(path, "xinput.ini");
 
 		if (FileExists(config))
 		{

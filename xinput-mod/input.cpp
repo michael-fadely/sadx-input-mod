@@ -10,7 +10,7 @@
 
 DataPointer(int, isCutscenePlaying, 0x3B2A2E4);		// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
 DataPointer(char, rumbleEnabled, 0x00913B10);		// Not sure why this is a char and ^ is an int.
-DataArray(bool, Controller_Enabled, 0x00909FB4, 4);	// TODO: Figure out what toggles this for P2.
+DataArray(bool, Controller_Enabled, 0x00909FB4, 8);	// TODO: Figure out what toggles this for P2.
 
 VoidFunc(WriteAnalogs, 0x0040F170);
 DataArray(float, NormalizedAnalogs, 0x03B0E7A4, 0);
@@ -30,7 +30,7 @@ namespace input
 		for (ushort i = 0; i < GAMEPAD_COUNT; i++)
 		{
 			DreamPad* dpad = &DreamPad::Controllers[i];
-			// HACK This enables use of the keyboard and mouse if no controllers are connected.
+			// HACK: This enables use of the keyboard and mouse if no controllers are connected.
 			if (!dpad->Connected())
 				continue;
 

@@ -1,6 +1,7 @@
 #pragma once
 
-#define GAMEPAD_COUNT 4
+// No longer limiting to 4 since XInput is no longer the deciding factor.
+#define GAMEPAD_COUNT 8
 // XInput default deadzones blatantly copied, pasted, and renamed.
 #define GAMEPAD_LEFT_THUMB_DEADZONE  7849
 #define GAMEPAD_RIGHT_THUMB_DEADZONE 8689
