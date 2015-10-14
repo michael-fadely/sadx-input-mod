@@ -86,7 +86,7 @@
   <ItemGroup>
     <ClCompile Include="DreamPad.cpp" />
     <ClCompile Include="FileExists.cpp" />
-    <ClCompile Include="Ingame.cpp" />
+    <ClCompile Include="input.cpp" />
     <ClCompile Include="mod.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -108,7 +108,7 @@
     <ClInclude Include="SDL.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="typedefs.h" />
-    <ClInclude Include="Ingame.h" />
+    <ClInclude Include="input.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

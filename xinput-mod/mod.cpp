@@ -15,7 +15,7 @@
 // Local stuff
 #include "typedefs.h"
 #include "FileExists.h"
-#include "Ingame.h"
+#include "input.h"
 
 void* RumbleLarge_ptr		= (void*)0x004BCBC0;
 void* RumbleSmall_ptr		= (void*)0x004BCC10;

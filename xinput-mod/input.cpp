@@ -5,7 +5,7 @@
 #include "minmax.h"
 
 // This namespace
-#include "Ingame.h"
+#include "input.h"
 #include "DreamPad.h"
 
 DataPointer(int, isCutscenePlaying, 0x3B2A2E4);		// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.

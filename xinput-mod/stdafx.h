@@ -4,7 +4,7 @@
 
 #include "DreamPad.h"
 #include "FileExists.h"
-#include "Ingame.h"
+#include "input.h"
 #include "SDL.h"
 #include "minmax.h"
 #include "typedefs.h"
