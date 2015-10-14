@@ -37,7 +37,7 @@ namespace xinput
 			dpad->Poll();
 			dpad->Copy(ControllersRaw[i]);
 
-#if  defined(_DEBUG) && defined(EXTENDED_BUTTONS)
+#if defined(_DEBUG) && defined(EXTENDED_BUTTONS)
 			ControllerData* pad = &ControllersRaw[i];
 			if (pad->HeldButtons & Buttons_C)
 			{
