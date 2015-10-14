@@ -18,12 +18,12 @@ DataPointer(char, ControlEnabled, 0x00909FB0);
 
 #define OFFSET(x, y) (x << 16 | y)
 
-namespace xinput
+namespace input
 {
 #pragma region Ingame Functions
 
 	// TODO: Keyboard & Mouse. Now I have no excuse.
-	void UpdateControllersXInput()
+	void PollControllers()
 	{
 		DreamPad::ProcessEvents();
 

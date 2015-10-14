@@ -22,24 +22,16 @@ void* RumbleSmall_ptr		= (void*)0x004BCC10;
 void* Rumble_ptr			= (void*)0x004BCB60; // Unused, but here so I don't lose it.
 void* UpdateControllers_ptr = (void*)0x0040F460;
 
-uint8 patch[] = {
-	0xDD, 0xD8, 0x90, 0x90, 0x90, 0x90, 0x90
-};
-
-PatchInfo patches[] = {
-	{ (void*)0x0040F312, patch, 7 }
-};
-
 PointerInfo jumps[] = {
-	{ RumbleLarge_ptr, xinput::RumbleLarge },
-	{ RumbleSmall_ptr, xinput::RumbleSmall },
+	{ RumbleLarge_ptr, input::RumbleLarge },
+	{ RumbleSmall_ptr, input::RumbleSmall },
 	// Used to skip over the standard controller update function.
 	// This has no effect on the OnInput hook.
 	//{ UpdateControllers_ptr, (void*)0x0040FDB3 }
 };
 
 PointerInfo calls[] = {
-	{ (void*)0x0040FEE6, xinput::WriteAnalogsWrapper }
+	{ (void*)0x0040FEE6, input::WriteAnalogsWrapper }
 };
 
 std::string BuildConfigPath(const char* modpath)
@@ -56,9 +48,13 @@ extern "C"
 {
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
 
-	//__declspec(dllexport) PatchList		Patches[]	= { { arrayptrandlength(patches) } };
 	__declspec(dllexport) PointerList	Jumps[] = { { arrayptrandlength(jumps) } };
 	__declspec(dllexport) PointerList	Calls[] = { { arrayptrandlength(calls) } };
+
+	__declspec(dllexport) void OnInput()
+	{
+		input::PollControllers();
+	}
 
 	__declspec(dllexport) void Init(const char* path, const HelperFunctions& helperFunctions)
 	{
@@ -102,10 +98,5 @@ extern "C"
 		}
 
 		PrintDebug("[XInput] Initialization complete.\n");
-	}
-
-	__declspec(dllexport) void OnInput()
-	{
-		xinput::UpdateControllersXInput();
 	}
 }

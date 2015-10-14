@@ -3,12 +3,12 @@
 #include "typedefs.h"
 #include "DreamPad.h"
 
-namespace xinput
+namespace input
 {
 	// Ingame functions
-	void UpdateControllersXInput();
+	void PollControllers();
 	void WriteAnalogsWrapper();
+	void Rumble(ushort id, int magnitude, Motor motor);
 	void __cdecl RumbleLarge(int playerNumber, int magnitude);
 	void __cdecl RumbleSmall(int playerNumber, int a2, int a3, int a4);
-	void Rumble(ushort id, int magnitude, Motor motor);
 }

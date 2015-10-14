@@ -75,6 +75,7 @@ public:
 	/// <param name="deadzone">The deadzone.</param>
 	/// <param name="radial">If set to <c>true</c>, the deadzone is treated as fully radial. (i.e one axis exceeding deadzone implies the other)</param>
 	float ConvertAxes(short* dest, short* source, short deadzone, bool radial) const;	
+
 	/// <summary>
 	/// Handles certain SDL events (such as controller connect and disconnect).
 	/// </summary>
@@ -89,10 +90,8 @@ private:
 	SDL_Haptic* haptic;
 	SDL_HapticEffect effect;
 	int effect_id;
-	uint rumbleTime_L;
-	uint rumbleTime_S;
+	uint rumbleTime_L, rumbleTime_S;
 	Motor rumble_state;
-
 
 	ControllerData pad;
 	float normalized_L, normalized_R;
