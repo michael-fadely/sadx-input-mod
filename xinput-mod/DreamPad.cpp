@@ -9,7 +9,8 @@
 DreamPad DreamPad::Controllers[GAMEPAD_COUNT];
 
 DreamPad::DreamPad() : controller_id(-1), gamepad(nullptr), haptic(nullptr), effect({}),
-	effect_id(-1), rumbleTime_L(0), rumbleTime_S(0), rumbleState(Motor::None), pad({})
+	effect_id(-1), rumbleTime_L(0), rumbleTime_S(0), rumble_state(Motor::None), pad({}),
+	normalized_L(0.0f), normalized_R(0.0f)
 {
 	// TODO: Properly detect supported rumble types
 	effect.leftright.type = SDL_HAPTIC_LEFTRIGHT;
@@ -21,13 +22,13 @@ DreamPad::~DreamPad()
 
 bool DreamPad::Open(int id)
 {
-	if (isConnected)
+	if (connected)
 		Close();
 
 	gamepad = SDL_GameControllerOpen(id);
 
 	if (gamepad == nullptr)
-		return isConnected = false;
+		return connected = false;
 
 	pad.Support = (PDD_DEV_SUPPORT_TA | PDD_DEV_SUPPORT_TB | PDD_DEV_SUPPORT_TX | PDD_DEV_SUPPORT_TY | PDD_DEV_SUPPORT_ST
 #ifdef EXTENDED_BUTTONS
@@ -40,13 +41,13 @@ bool DreamPad::Open(int id)
 	SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad);
 
 	if (joystick == nullptr)
-		return isConnected = false;
+		return connected = false;
 
 	controller_id = id;
 	haptic = SDL_HapticOpenFromJoystick(joystick);
 
 	if (haptic == nullptr)
-		return isConnected = true;
+		return connected = true;
 
 	if (SDL_HapticRumbleSupported(haptic))
 	{
@@ -58,12 +59,12 @@ bool DreamPad::Open(int id)
 		haptic = nullptr;
 	}
 
-	return isConnected = true;
+	return connected = true;
 }
 
 void DreamPad::Close()
 {
-	if (!isConnected)
+	if (!connected)
 		return;
 
 	if (haptic != nullptr)
@@ -82,12 +83,12 @@ void DreamPad::Close()
 	}
 
 	controller_id = -1;
-	isConnected = false;
+	connected = false;
 }
 
 void DreamPad::Poll()
 {
-	if (!isConnected)
+	if (!connected)
 		return;
 
 	SDL_GameControllerUpdate();
@@ -97,12 +98,12 @@ void DreamPad::Poll()
 	axis[0] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
 	axis[1] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
 
-	ConvertAxes(&pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
+	normalized_L = ConvertAxes(&pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
 
 	axis[0] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX);
 	axis[1] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY);
 
-	ConvertAxes(&pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
+	normalized_R = ConvertAxes(&pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
 
 	short lt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
 	short rt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
@@ -156,7 +157,7 @@ void DreamPad::Poll()
 
 void DreamPad::UpdateMotor()
 {
-	if (effect_id == -1 || haptic == nullptr || rumbleState == Motor::None)
+	if (effect_id == -1 || haptic == nullptr || rumble_state == Motor::None)
 		return;
 
 	Motor turn_off = Motor::None;
@@ -183,14 +184,14 @@ void DreamPad::SetActiveMotor(Motor motor, short magnitude)
 	{
 		effect.leftright.large_magnitude = (short)min(SHRT_MAX, (int)(magnitude * f));
 		rumbleTime_L = GetTickCount();
-		rumbleState = (Motor)((magnitude > 0) ? rumbleState | motor : rumbleState & ~Motor::Large);
+		rumble_state = (Motor)((magnitude > 0) ? rumble_state | motor : rumble_state & ~Motor::Large);
 	}
 
 	if (motor & Motor::Small)
 	{
 		effect.leftright.small_magnitude = (short)min(SHRT_MAX, (int)(magnitude * (2 + f)));
 		rumbleTime_S = GetTickCount();
-		rumbleState = (Motor)((magnitude > 0) ? rumbleState | motor : rumbleState & ~Motor::Small);
+		rumble_state = (Motor)((magnitude > 0) ? rumble_state | motor : rumble_state & ~Motor::Small);
 	}
 
 	SDL_HapticUpdateEffect(haptic, effect_id, &effect);
@@ -207,32 +208,29 @@ inline int DreamPad::DigitalTrigger(ushort trigger, ushort threshold, int button
 	return (trigger > threshold) ? button : 0;
 }
 
-void DreamPad::ConvertAxes(short* dest, short* source, short deadzone, bool radial) const
+float DreamPad::ConvertAxes(short* dest, short* source, short deadzone, bool radial) const
 {
 	if (abs(source[0]) < deadzone && abs(source[1]) < deadzone)
 	{
 		dest[0] = dest[1] = 0;
-		return;
+		return 0.0f;
 	}
 
 	// This is being intentionally limited to -32767 instead of -32768
 	const float x = (float)clamp(source[0], (short)-SHRT_MAX, (short)SHRT_MAX);
 	const float y = (float)-clamp(source[1], (short)-SHRT_MAX, (short)SHRT_MAX);
 
-	// Doing this with the default value (1.5) will deliberately put us outside the proper range,
-	// but this is unfortunately required for proper diagonal movement. That's a pretty conservative default, too.
-	// TODO: Investigate fixing this without deliberately going out of range (which kills my beautiful perfectly radial magic).
-	const short factor = (short)(128 * settings.scaleFactor);
-
 	const float m = sqrt(x * x + y * y);
 
-	const float nx = (m < deadzone) ? 0 : x / m;	// Normalized (X)
-	const float ny = (m < deadzone) ? 0 : y / m;	// Normalized (Y)
-	const float n = (min((float)SHRT_MAX, m) - deadzone) / ((float)SHRT_MAX - deadzone);
+	const float nx	= (m < deadzone) ? 0 : x / m;	// Normalized (X)
+	const float ny	= (m < deadzone) ? 0 : y / m;	// Normalized (Y)
+	const float n	= (min((float)SHRT_MAX, m) - deadzone) / ((float)SHRT_MAX - deadzone);
 
 	// In my testing, multiplying -128 to 128 results in 127 instead, which is the desired value.
-	dest[0] = (radial || abs(source[0]) >= deadzone) ? (short)clamp((short)(factor * (nx * n)), (short)-127, (short)127) : 0;
-	dest[1] = (radial || abs(source[1]) >= deadzone) ? (short)clamp((short)(-factor * (ny * n)), (short)-127, (short)127) : 0;
+	dest[0] = (radial || abs(source[0]) >= deadzone) ? (short)clamp((short)(128 * (nx * n)), (short)-127, (short)127) : 0;
+	dest[1] = (radial || abs(source[1]) >= deadzone) ? (short)clamp((short)(-128 * (ny * n)), (short)-127, (short)127) : 0;
+
+	return n;
 }
 
 void DreamPad::ProcessEvents()
@@ -281,21 +279,19 @@ void DreamPad::ProcessEvents()
 
 DreamPad::Settings::Settings()
 {
-	deadzoneL = GAMEPAD_LEFT_THUMB_DEADZONE;
-	deadzoneR = GAMEPAD_RIGHT_THUMB_DEADZONE;
-	triggerThreshold = GAMEPAD_TRIGGER_THRESHOLD;
-	radialL = true;
-	radialR = false;
-	rumbleFactor = 1.0f;
-	scaleFactor = 1.5f;
+	deadzoneL			= GAMEPAD_LEFT_THUMB_DEADZONE;
+	deadzoneR			= GAMEPAD_RIGHT_THUMB_DEADZONE;
+	triggerThreshold	= GAMEPAD_TRIGGER_THRESHOLD;
+	radialL				= true;
+	radialR				= false;
+	rumbleFactor		= 1.0f;
 }
-void DreamPad::Settings::apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, uint8 triggerThreshold, float rumbleFactor, float scaleFactor)
+void DreamPad::Settings::apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, uint8 triggerThreshold, float rumbleFactor)
 {
-	this->deadzoneL = clamp(deadzoneL, (short)0, (short)SHRT_MAX);
-	this->deadzoneR = clamp(deadzoneR, (short)0, (short)SHRT_MAX);
-	this->radialL = radialL;
-	this->radialR = radialR;
-	this->triggerThreshold = min((uint8)UCHAR_MAX, triggerThreshold);
-	this->rumbleFactor = rumbleFactor;
-	this->scaleFactor = max(1.0f, scaleFactor);
+	this->deadzoneL			= clamp(deadzoneL, (short)0, (short)SHRT_MAX);
+	this->deadzoneR			= clamp(deadzoneR, (short)0, (short)SHRT_MAX);
+	this->radialL			= radialL;
+	this->radialR			= radialR;
+	this->triggerThreshold	= min((uint8)UCHAR_MAX, triggerThreshold);
+	this->rumbleFactor		= rumbleFactor;
 }

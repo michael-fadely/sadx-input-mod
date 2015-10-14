@@ -12,6 +12,10 @@ DataPointer(int, isCutscenePlaying, 0x3B2A2E4);		// Fun fact: Freeze at 0 to avo
 DataPointer(char, rumbleEnabled, 0x00913B10);		// Not sure why this is a char and ^ is an int.
 DataArray(bool, Controller_Enabled, 0x00909FB4, 4);	// TODO: Figure out what toggles this for P2.
 
+VoidFunc(WriteAnalogs, 0x0040F170);
+DataArray(float, NormalizedAnalogs, 0x03B0E7A4, 0);
+DataPointer(char, ControlEnabled, 0x00909FB0);
+
 #define OFFSET(x, y) (x << 16 | y)
 
 namespace xinput
@@ -55,6 +59,25 @@ namespace xinput
 				}
 			}
 #endif
+		}
+	}
+
+	void WriteAnalogsWrapper()
+	{
+		WriteAnalogs();
+
+		for (uint i = 0; i < 8; i++)
+		{
+			if (!ControlEnabled || !Controller_Enabled[i])
+				continue;
+
+			if (i < GAMEPAD_COUNT && DreamPad::Controllers[i].Connected())
+			{
+				// SADX's internal deadzone is 12 of 127. It doesn't set the relative forward direction
+				// unless this is exceeded in WriteAnalogs(), so the analog shouldn't be set otherwise.
+				if (abs(ControllersRaw[i].LeftStickX) > 12 || abs(ControllersRaw[i].LeftStickY) > 12)
+					NormalizedAnalogs[2 * i] = DreamPad::Controllers[i].NormalizedL();
+			}
 		}
 	}
 

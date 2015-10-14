@@ -22,12 +22,24 @@ void* RumbleSmall_ptr		= (void*)0x004BCC10;
 void* Rumble_ptr			= (void*)0x004BCB60; // Unused, but here so I don't lose it.
 void* UpdateControllers_ptr = (void*)0x0040F460;
 
+uint8 patch[] = {
+	0xDD, 0xD8, 0x90, 0x90, 0x90, 0x90, 0x90
+};
+
+PatchInfo patches[] = {
+	{ (void*)0x0040F312, patch, 7 }
+};
+
 PointerInfo jumps[] = {
 	{ RumbleLarge_ptr, xinput::RumbleLarge },
 	{ RumbleSmall_ptr, xinput::RumbleSmall },
 	// Used to skip over the standard controller update function.
 	// This has no effect on the OnInput hook.
 	//{ UpdateControllers_ptr, (void*)0x0040FDB3 }
+};
+
+PointerInfo calls[] = {
+	{ (void*)0x0040FEE6, xinput::WriteAnalogsWrapper }
 };
 
 std::string BuildConfigPath(const char* modpath)
@@ -42,6 +54,12 @@ std::string BuildConfigPath(const char* modpath)
 
 extern "C"
 {
+	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
+
+	//__declspec(dllexport) PatchList		Patches[]	= { { arrayptrandlength(patches) } };
+	__declspec(dllexport) PointerList	Jumps[] = { { arrayptrandlength(jumps) } };
+	__declspec(dllexport) PointerList	Calls[] = { { arrayptrandlength(calls) } };
+
 	__declspec(dllexport) void Init(const char* path, const HelperFunctions& helperFunctions)
 	{
 		int init;
@@ -75,11 +93,8 @@ extern "C"
 				GetPrivateProfileStringA(section_cstr, "RumbleFactor", "1.0", wtf, 255, config_cstr);
 				float rumbleFactor = (float)atof(wtf);
 
-				GetPrivateProfileStringA(section_cstr, "ScaleFactor", "1.5", wtf, 255, config_cstr);
-				float scaleFactor = (float)atof(wtf);
-
 				DreamPad::Settings* settings = &DreamPad::Controllers[i].settings;
-				settings->apply(deadzoneL, deadzoneR, radialL, radialR, triggerThreshold, rumbleFactor, scaleFactor);
+				settings->apply(deadzoneL, deadzoneR, radialL, radialR, triggerThreshold, rumbleFactor);
 
 				PrintDebug("[XInput] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
 					settings->deadzoneL, settings->deadzoneR, settings->triggerThreshold);
@@ -93,7 +108,4 @@ extern "C"
 	{
 		xinput::UpdateControllersXInput();
 	}
-
-	__declspec(dllexport) PointerList Jumps[] = { { arrayptrandlength(jumps) } };
-	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
 }

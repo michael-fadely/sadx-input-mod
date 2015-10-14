@@ -41,10 +41,12 @@ public:
 	void UpdateMotor();
 
 	// Poor man's properties
-	Motor GetActiveMotor() const { return rumbleState; }
+	Motor GetActiveMotor() const { return rumble_state; }
 	void SetActiveMotor(Motor motor, short magnitude);
-	bool Connected() const { return isConnected; }
+	bool Connected() const { return connected; }
 	int ControllerID() const { return controller_id; }
+	float NormalizedL() const { return normalized_L; }
+	float NormalizedR() const { return normalized_R; }
 
 	void Copy(ControllerData& dest) const;
 
@@ -58,11 +60,9 @@ public:
 		bool	radialR;			// Indicates if the stick is fully radial or semi-radial
 		uint8	triggerThreshold;	// Trigger threshold
 		float	rumbleFactor;		// Rumble intensity multiplier (1.0 by default)
-		float	scaleFactor;		// Axis scale factor (1.5 (192) by default)
 
 		void apply(short deadzoneL, short deadzoneR,
-			bool radialL, bool radialR, uint8 triggerThreshold,
-			float rumbleFactor, float scaleFactor);
+			bool radialL, bool radialR, uint8 triggerThreshold, float rumbleFactor);
 	} settings;
 
 
@@ -74,7 +74,7 @@ public:
 	/// <param name="source">The source axes (SDL).</param>
 	/// <param name="deadzone">The deadzone.</param>
 	/// <param name="radial">If set to <c>true</c>, the deadzone is treated as fully radial. (i.e one axis exceeding deadzone implies the other)</param>
-	void ConvertAxes(short* dest, short* source, short deadzone, bool radial) const;	
+	float ConvertAxes(short* dest, short* source, short deadzone, bool radial) const;	
 	/// <summary>
 	/// Handles certain SDL events (such as controller connect and disconnect).
 	/// </summary>
@@ -82,7 +82,7 @@ public:
 	static DreamPad Controllers[GAMEPAD_COUNT];
 
 private:
-	bool isConnected = false;
+	bool connected = false;
 	int controller_id;
 	SDL_GameController* gamepad;
 
@@ -91,9 +91,11 @@ private:
 	int effect_id;
 	uint rumbleTime_L;
 	uint rumbleTime_S;
-	Motor rumbleState;
+	Motor rumble_state;
+
 
 	ControllerData pad;
+	float normalized_L, normalized_R;
 };
 
 enum PDD_DEV_SUPPORT : uint32_t
