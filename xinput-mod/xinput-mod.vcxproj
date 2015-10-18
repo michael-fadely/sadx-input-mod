@@ -63,6 +63,9 @@
       <AdditionalDependencies>version.lib;imm32.lib;winmm.lib;SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>xcopy /Y /D "$(ProjectDir)mod.ini" "$(OutDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -82,6 +85,9 @@
       <AdditionalDependencies>version.lib;imm32.lib;winmm.lib;SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>xcopy /Y /D "$(ProjectDir)mod.ini" "$(OutDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DreamPad.cpp" />
@@ -95,11 +101,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="mod.ini" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="mod.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DreamPad.h" />
