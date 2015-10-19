@@ -62,10 +62,8 @@ namespace input
 		}
 	}
 
-	void WriteAnalogsWrapper()
+	void FixAnalogs()
 	{
-		WriteAnalogs();
-
 		for (uint i = 0; i < 8; i++)
 		{
 			if (!ControlEnabled || !Controller_Enabled[i])
@@ -78,6 +76,15 @@ namespace input
 				if (abs(ControllersRaw[i].LeftStickX) > 12 || abs(ControllersRaw[i].LeftStickY) > 12)
 					NormalizedAnalogs[2 * i] = DreamPad::Controllers[i].NormalizedL();
 			}
+		}
+	}
+
+	void __declspec(naked) WriteAnalogs_Hook()
+	{
+		__asm
+		{
+			call FixAnalogs
+			ret
 		}
 	}
 

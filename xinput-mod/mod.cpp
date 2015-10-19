@@ -21,17 +21,15 @@ void* RumbleLarge_ptr		= (void*)0x004BCBC0;
 void* RumbleSmall_ptr		= (void*)0x004BCC10;
 void* Rumble_ptr			= (void*)0x004BCB60; // Unused, but here so I don't lose it.
 void* UpdateControllers_ptr = (void*)0x0040F460;
+void* AnalogHook_ptr		= (void*)0x0040F343;
 
 PointerInfo jumps[] = {
 	{ RumbleLarge_ptr, input::RumbleLarge },
 	{ RumbleSmall_ptr, input::RumbleSmall },
+	{ AnalogHook_ptr, input::WriteAnalogs_Hook }
 	// Used to skip over the standard controller update function.
 	// This has no effect on the OnInput hook.
 	//{ UpdateControllers_ptr, (void*)0x0040FDB3 }
-};
-
-PointerInfo calls[] = {
-	{ (void*)0x0040FEE6, input::WriteAnalogsWrapper }
 };
 
 std::string BuildModPath(const char* modpath, const char* path)
@@ -47,9 +45,7 @@ std::string BuildModPath(const char* modpath, const char* path)
 extern "C"
 {
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
-
 	__declspec(dllexport) PointerList Jumps[] = { { arrayptrandlength(jumps) } };
-	__declspec(dllexport) PointerList Calls[] = { { arrayptrandlength(calls) } };
 
 	__declspec(dllexport) void OnInput()
 	{
