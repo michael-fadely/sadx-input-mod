@@ -48,8 +48,8 @@ extern "C"
 {
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
 
-	__declspec(dllexport) PointerList	Jumps[] = { { arrayptrandlength(jumps) } };
-	__declspec(dllexport) PointerList	Calls[] = { { arrayptrandlength(calls) } };
+	__declspec(dllexport) PointerList Jumps[] = { { arrayptrandlength(jumps) } };
+	__declspec(dllexport) PointerList Calls[] = { { arrayptrandlength(calls) } };
 
 	__declspec(dllexport) void OnInput()
 	{
@@ -72,7 +72,7 @@ extern "C"
 		if (FileExists(dbpath))
 			SDL_GameControllerAddMappingsFromFile(dbpath.c_str());
 
-		std::string config = BuildModPath(path, "xinput.ini");
+		std::string config = BuildModPath(path, "config.ini");
 
 		if (FileExists(config))
 		{
@@ -99,11 +99,11 @@ extern "C"
 				DreamPad::Settings* settings = &DreamPad::Controllers[i].settings;
 				settings->apply(deadzoneL, deadzoneR, radialL, radialR, triggerThreshold, rumbleFactor);
 
-				PrintDebug("[XInput] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
+				PrintDebug("[Input] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
 					settings->deadzoneL, settings->deadzoneR, settings->triggerThreshold);
 			}
 		}
 
-		PrintDebug("[XInput] Initialization complete.\n");
+		PrintDebug("[Input] Initialization complete.\n");
 	}
 }
