@@ -79,7 +79,7 @@ namespace input
 				const ControllerData& pad = dreamPad.DreamcastData();
 				// SADX's internal deadzone is 12 of 127. It doesn't set the relative forward direction
 				// unless this is exceeded in WriteAnalogs(), so the analog shouldn't be set otherwise.
-				if (abs(pad.LeftStickX > 12 || abs(pad.LeftStickY) > 12))
+				if (abs(pad.LeftStickX) > 12 || abs(pad.LeftStickY) > 12)
 					NormalizedAnalogs[2 * i] = dreamPad.NormalizedL();
 			}
 		}
