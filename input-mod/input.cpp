@@ -8,15 +8,20 @@
 #include "input.h"
 #include "DreamPad.h"
 
+struct AnalogThing
+{
+	int		angle;
+	float	magnitude;
+};
+
+VoidFunc(WriteAnalogs, 0x0040F170);
+
 DataPointer(int, isCutscenePlaying, 0x3B2A2E4);		// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
 DataPointer(char, rumbleEnabled, 0x00913B10);		// Not sure why this is a char and ^ is an int.
 DataArray(bool, Controller_Enabled, 0x00909FB4, 8);	// TODO: Figure out what toggles this for P2.
 
-VoidFunc(WriteAnalogs, 0x0040F170);
-DataArray(float, NormalizedAnalogs, 0x03B0E7A4, 0);
+DataArray(AnalogThing, NormalizedAnalogs, 0x03B0E7A0, 8);
 DataPointer(char, ControlEnabled, 0x00909FB0);
-
-#define OFFSET(x, y) ((x << 16) | (y))
 
 namespace input
 {
@@ -43,9 +48,9 @@ namespace input
 			{
 				Motor m = DreamPad::Controllers[i].GetActiveMotor();
 
-				DisplayDebugStringFormatted(OFFSET(0, 8 + (3 * i)), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
+				DisplayDebugStringFormatted(NJM_LOCATION(0, 8 + (3 * i)), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
 					pad->HeldButtons, pad->LTriggerPressure, pad->RTriggerPressure, (m & Motor::Large), (m & Motor::Small) >> 1);
-				DisplayDebugStringFormatted(OFFSET(4, 9 + (3 * i)), "LS: % 4d/% 4d RS: % 4d/% 4d",
+				DisplayDebugStringFormatted(NJM_LOCATION(4, 9 + (3 * i)), "LS: % 4d/% 4d RS: % 4d/% 4d",
 					pad->LeftStickX, pad->LeftStickY, pad->RightStickX, pad->RightStickY);
 
 				if (pad->HeldButtons & Buttons_Z)
@@ -55,7 +60,7 @@ namespace input
 					else if (pad->PressedButtons & Buttons_Down)
 						dpad->settings.rumbleFactor -= 0.125f;
 
-					DisplayDebugStringFormatted(OFFSET(4, 10 + (3 * i)), "Rumble factor (U/D): %f", dpad->settings.rumbleFactor);
+					DisplayDebugStringFormatted(NJM_LOCATION(4, 10 + (3 * i)), "Rumble factor (U/D): %f", dpad->settings.rumbleFactor);
 				}
 			}
 #endif
@@ -80,7 +85,7 @@ namespace input
 				// SADX's internal deadzone is 12 of 127. It doesn't set the relative forward direction
 				// unless this is exceeded in WriteAnalogs(), so the analog shouldn't be set otherwise.
 				if (abs(pad.LeftStickX) > 12 || abs(pad.LeftStickY) > 12)
-					NormalizedAnalogs[2 * i] = dreamPad.NormalizedL();
+					NormalizedAnalogs[i].magnitude = dreamPad.NormalizedL();
 			}
 		}
 	}
