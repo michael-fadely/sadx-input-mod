@@ -47,7 +47,9 @@ public:
 	bool Connected() const { return connected; }
 	int ControllerID() const { return controller_id; }
 	float NormalizedL() const { return normalized_L; }
-	float NormalizedR() const { return normalized_R; }
+	float NormalizedR() const { return normalized_R; }	
+	// SDL -> Dreamcast converted input data (ControllerData).
+	const ControllerData& DreamcastData() const { return pad; }
 
 	void Copy(ControllerData& dest) const;
 

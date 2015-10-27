@@ -16,7 +16,7 @@ VoidFunc(WriteAnalogs, 0x0040F170);
 DataArray(float, NormalizedAnalogs, 0x03B0E7A4, 0);
 DataPointer(char, ControlEnabled, 0x00909FB0);
 
-#define OFFSET(x, y) (x << 16 | y)
+#define OFFSET(x, y) ((x << 16) | (y))
 
 namespace input
 {
@@ -64,17 +64,23 @@ namespace input
 
 	void FixAnalogs()
 	{
+		if (!ControlEnabled)
+			return;
+
 		for (uint i = 0; i < 8; i++)
 		{
-			if (!ControlEnabled || !Controller_Enabled[i])
+			if (!Controller_Enabled[i])
 				continue;
 
-			if (i < GAMEPAD_COUNT && DreamPad::Controllers[i].Connected())
+			const DreamPad& dreamPad = DreamPad::Controllers[i];
+
+			if (i < GAMEPAD_COUNT && dreamPad.Connected())
 			{
+				const ControllerData& pad = dreamPad.DreamcastData();
 				// SADX's internal deadzone is 12 of 127. It doesn't set the relative forward direction
 				// unless this is exceeded in WriteAnalogs(), so the analog shouldn't be set otherwise.
-				if (abs(ControllersRaw[i].LeftStickX) > 12 || abs(ControllersRaw[i].LeftStickY) > 12)
-					NormalizedAnalogs[2 * i] = DreamPad::Controllers[i].NormalizedL();
+				if (abs(pad.LeftStickX > 12 || abs(pad.LeftStickY) > 12))
+					NormalizedAnalogs[2 * i] = dreamPad.NormalizedL();
 			}
 		}
 	}
