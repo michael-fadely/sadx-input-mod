@@ -1,11 +1,14 @@
 #pragma once
 
-// No longer limiting to 4 since XInput is no longer the deciding factor.
-#define GAMEPAD_COUNT 8
+// This class is based loosely on this gist: https://gist.github.com/urkle/6701236
+// That code doesn't actually compile due to name discrepancies, but it was a good starting point.
+
 // XInput default deadzones blatantly copied, pasted, and renamed.
 #define GAMEPAD_LEFT_THUMB_DEADZONE  7849
 #define GAMEPAD_RIGHT_THUMB_DEADZONE 8689
 #define GAMEPAD_TRIGGER_THRESHOLD    30
+// Limit is now 8, the maximum supported by the game. XInput is no longer a limiting factor.
+#define GAMEPAD_COUNT 8
 
 #include "SDL.h"
 #include <SADXModLoader.h>
