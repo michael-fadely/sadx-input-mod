@@ -17,16 +17,18 @@
 #include "FileExists.h"
 #include "input.h"
 
-void* RumbleLarge_ptr		= (void*)0x004BCBC0;
-void* RumbleSmall_ptr		= (void*)0x004BCC10;
-void* Rumble_ptr			= (void*)0x004BCB60; // Unused, but here so I don't lose it.
-void* UpdateControllers_ptr = (void*)0x0040F460;
-void* AnalogHook_ptr		= (void*)0x0040F343;
+void* RumbleLarge_ptr			= (void*)0x004BCBC0;
+void* RumbleSmall_ptr			= (void*)0x004BCC10;
+void* Rumble_ptr				= (void*)0x004BCB60; // Unused, but here so I don't lose it.
+void* UpdateControllers_ptr		= (void*)0x0040F460;
+void* AnalogHook_ptr			= (void*)0x0040F343;
+void* InitRawControllers_ptr	= (void*)0x0040F451; // End of function (hook)
 
 PointerInfo jumps[] = {
 	{ RumbleLarge_ptr, input::RumbleLarge },
 	{ RumbleSmall_ptr, input::RumbleSmall },
-	{ AnalogHook_ptr, input::WriteAnalogs_Hook }
+	{ AnalogHook_ptr, input::WriteAnalogs_Hook },
+	{ InitRawControllers_ptr, input::RedirectRawControllers_Hook }
 	// Used to skip over the standard controller update function.
 	// This has no effect on the OnInput hook.
 	//{ UpdateControllers_ptr, (void*)0x0040FDB3 }
@@ -62,6 +64,27 @@ extern "C"
 				"SDL Init Error", MB_OK | MB_ICONERROR);
 			return;
 		}
+
+		// EnableControl
+		WriteData((bool**)0x40EF80, &input::_ControllerEnabled[0]);
+		WriteData((bool**)0x40EF86, &input::_ControllerEnabled[1]);
+		WriteData((bool**)0x40EF90, input::_ControllerEnabled);
+
+		// DisableControl
+		WriteData((bool**)0x40EFB0, &input::_ControllerEnabled[0]);
+		WriteData((bool**)0x40EFB6, &input::_ControllerEnabled[1]);
+		WriteData((bool**)0x40EFC0, input::_ControllerEnabled);
+
+		// IsControllerEnabled
+		WriteData((bool**)0x40FE0D, input::_ControllerEnabled);
+
+		// Control
+		WriteData((bool**)0x40EFD8, input::_ControllerEnabled);
+		WriteData((bool**)0x40FE2F, &input::_ControllerEnabled[1]);
+
+		// WriteAnalogs
+		WriteData((bool**)0x40F30C, input::_ControllerEnabled);
+
 
 		std::string dbpath = BuildModPath(path, "gamecontrollerdb.txt");
 

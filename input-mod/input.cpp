@@ -16,18 +16,20 @@ struct AnalogThing
 	float	magnitude;
 };
 
-DataArray(AnalogThing,	NormalizedAnalogs,	0x03B0E7A0, 8);
-DataArray(bool,			ControllerEnabled,	0x00909FB4, 4);
-DataPointer(int,		isCutscenePlaying,	0x3B2A2E4);		// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
-DataPointer(bool,		rumbleEnabled,		0x00913B10);
-DataPointer(bool,		ControlEnabled,		0x00909FB0);
+DataArray(AnalogThing,		NormalizedAnalogs,	0x03B0E7A0, 8);
+DataArray(bool,				ControllerEnabled,	0x00909FB4, 4);
+DataArray(ControllerData*,	ControllerPointers, 0x03B0E77C, 8);
+DataArray(ControllerData,	Controllers,		0x03B0E7F0, 8);
 
-// TODO: Look into a larger, custom raw input array, and replace remaining references to ControllersRaw with it.
-// Ditto for ControllerEnabled array.
+DataPointer(int,	isCutscenePlaying,	0x3B2A2E4);		// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
+DataPointer(bool,	rumbleEnabled,		0x00913B10);
+DataPointer(bool,	ControlEnabled,		0x00909FB0);
+
 
 namespace input
 {
-#pragma region Ingame Functions
+	ControllerData RawInput[GAMEPAD_COUNT];
+	bool _ControllerEnabled[GAMEPAD_COUNT];
 
 	// TODO: Keyboard & Mouse. Now I have no excuse.
 	void PollControllers()
@@ -36,16 +38,28 @@ namespace input
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
+			// Since RawInput replaces ControllersRaw in ControllerPointers,
+			// we copy the data from ControllersRaw first in the event that the controller
+			// isn't connected and the keyboard is to be used.
+			if (i == 0)
+				RawInput[i] = ControllersRaw[i];
+
 			DreamPad* dpad = &DreamPad::Controllers[i];
+
 			// HACK: This enables use of the keyboard and mouse if no controllers are connected.
 			if (!dpad->Connected())
 				continue;
 
 			dpad->Poll();
-			dpad->Copy(ControllersRaw[i]);
+			dpad->Copy(RawInput[i]);
+
+			// Compatibility for mods who use ControllersRaw directly.
+			// This will only copy the first four controllers.
+			if (i < ControllersRaw_Length)
+				ControllersRaw[i] = RawInput[i];
 
 #if defined(_DEBUG) && defined(EXTENDED_BUTTONS)
-			ControllerData* pad = &ControllersRaw[i];
+			ControllerData* pad = &RawInput[i];
 			if (pad->HeldButtons & Buttons_C)
 			{
 				Motor m = DreamPad::Controllers[i].GetActiveMotor();
@@ -76,12 +90,12 @@ namespace input
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
-			if (i >= ControllerEnabled_Length || !ControllerEnabled[i])
+			if (!_ControllerEnabled[i])
 				continue;
 
 			const DreamPad& dreamPad = DreamPad::Controllers[i];
 
-			if (i < GAMEPAD_COUNT && dreamPad.Connected())
+			if (dreamPad.Connected())
 			{
 				const ControllerData& pad = dreamPad.DreamcastData();
 				// SADX's internal deadzone is 12 of 127. It doesn't set the relative forward direction
@@ -128,11 +142,8 @@ namespace input
 			scaled = (short)(SHRT_MAX * clamp(m, 0.0f, 1.0f));
 		}
 
-		if (id < ControllerEnabled_Length)
-		{
-			if (ControllerEnabled[id] || scaled == 0)
-				DreamPad::Controllers[id].SetActiveMotor(motor, scaled);
-		}
+		if (_ControllerEnabled[id] || scaled == 0)
+			DreamPad::Controllers[id].SetActiveMotor(motor, scaled);
 	}
 	void __cdecl RumbleLarge(int playerNumber, int magnitude)
 	{
@@ -156,6 +167,18 @@ namespace input
 		}
 	}
 
-#pragma endregion
+	void RedirectRawControllers()
+	{
+		for (uint i = 0; i < GAMEPAD_COUNT; i++)
+			ControllerPointers[i] = &RawInput[i];
+	}
 
+	void __declspec(naked) RedirectRawControllers_Hook()
+	{
+		__asm
+		{
+			call RedirectRawControllers
+			ret
+		}
+	}
 }

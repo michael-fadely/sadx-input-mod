@@ -259,6 +259,7 @@ void DreamPad::ProcessEvents()
 				break;
 			}
 
+			// TODO: Zero out raw input structure on disconnect.
 			case SDL_CONTROLLERDEVICEREMOVED:
 			{
 				int which = event.cdevice.which;

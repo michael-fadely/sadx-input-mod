@@ -7,9 +7,8 @@
 #define GAMEPAD_LEFT_THUMB_DEADZONE  7849
 #define GAMEPAD_RIGHT_THUMB_DEADZONE 8689
 #define GAMEPAD_TRIGGER_THRESHOLD    30
-// Sonic Team seemed indecisive on the number of controllers.
-// Layer 1 has 4, layer 2 has 8.
-#define GAMEPAD_COUNT 4
+// Limit is now 8, the maximum supported by the game (depending on where you look; sometimes it's 4). XInput is no longer a limiting factor.
+#define GAMEPAD_COUNT 8
 
 #include "SDL.h"
 #include <SADXModLoader.h>
