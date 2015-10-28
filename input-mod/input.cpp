@@ -8,20 +8,22 @@
 #include "input.h"
 #include "DreamPad.h"
 
+VoidFunc(WriteAnalogs, 0x0040F170);
+
 struct AnalogThing
 {
 	int		angle;
 	float	magnitude;
 };
 
-VoidFunc(WriteAnalogs, 0x0040F170);
+DataArray(AnalogThing,	NormalizedAnalogs,	0x03B0E7A0, 8);
+DataArray(bool,			ControllerEnabled,	0x00909FB4, 4);
+DataPointer(int,		isCutscenePlaying,	0x3B2A2E4);		// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
+DataPointer(bool,		rumbleEnabled,		0x00913B10);
+DataPointer(bool,		ControlEnabled,		0x00909FB0);
 
-DataPointer(int, isCutscenePlaying, 0x3B2A2E4);		// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
-DataPointer(char, rumbleEnabled, 0x00913B10);		// Not sure why this is a char and ^ is an int.
-DataArray(bool, Controller_Enabled, 0x00909FB4, 8);	// TODO: Figure out what toggles this for P2.
-
-DataArray(AnalogThing, NormalizedAnalogs, 0x03B0E7A0, 8);
-DataPointer(char, ControlEnabled, 0x00909FB0);
+// TODO: Look into a larger, custom raw input array, and replace remaining references to ControllersRaw with it.
+// Ditto for ControllerEnabled array.
 
 namespace input
 {
@@ -32,7 +34,7 @@ namespace input
 	{
 		DreamPad::ProcessEvents();
 
-		for (ushort i = 0; i < GAMEPAD_COUNT; i++)
+		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
 			DreamPad* dpad = &DreamPad::Controllers[i];
 			// HACK: This enables use of the keyboard and mouse if no controllers are connected.
@@ -72,9 +74,9 @@ namespace input
 		if (!ControlEnabled)
 			return;
 
-		for (uint i = 0; i < 8; i++)
+		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
-			if (!Controller_Enabled[i])
+			if (i >= ControllerEnabled_Length || !ControllerEnabled[i])
 				continue;
 
 			const DreamPad& dreamPad = DreamPad::Controllers[i];
@@ -104,7 +106,7 @@ namespace input
 		if (id >= GAMEPAD_COUNT)
 		{
 			for (ushort i = 0; i < GAMEPAD_COUNT; i++)
-				Rumble(id, magnitude, motor);
+				Rumble(i, magnitude, motor);
 
 			return;
 		}
@@ -126,8 +128,11 @@ namespace input
 			scaled = (short)(SHRT_MAX * clamp(m, 0.0f, 1.0f));
 		}
 
-		if (Controller_Enabled[id] || scaled == 0)
-			DreamPad::Controllers[id].SetActiveMotor(motor, scaled);
+		if (id < ControllerEnabled_Length)
+		{
+			if (ControllerEnabled[id] || scaled == 0)
+				DreamPad::Controllers[id].SetActiveMotor(motor, scaled);
+		}
 	}
 	void __cdecl RumbleLarge(int playerNumber, int magnitude)
 	{
