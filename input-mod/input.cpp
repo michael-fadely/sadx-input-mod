@@ -16,15 +16,7 @@ struct AnalogThing
 	float	magnitude;
 };
 
-DataArray(AnalogThing,		NormalizedAnalogs,	0x03B0E7A0, 8);
-DataArray(bool,				ControllerEnabled,	0x00909FB4, 4);
-DataArray(ControllerData*,	ControllerPointers, 0x03B0E77C, 8);
-DataArray(ControllerData,	Controllers,		0x03B0E7F0, 8);
-
-DataPointer(int,	isCutscenePlaying,	0x3B2A2E4);		// Fun fact: Freeze at 0 to avoid cutscenes. 4 bytes from here is the cutscene to play.
-DataPointer(bool,	rumbleEnabled,		0x00913B10);
-DataPointer(bool,	ControlEnabled,		0x00909FB0);
-
+DataArray(AnalogThing, NormalizedAnalogs, 0x03B0E7A0, 8);
 
 namespace input
 {
@@ -147,12 +139,12 @@ namespace input
 	}
 	void __cdecl RumbleLarge(int playerNumber, int magnitude)
 	{
-		if (!isCutscenePlaying && rumbleEnabled)
+		if (!CutscenePlaying && RumbleEnabled)
 			Rumble(playerNumber, clamp(magnitude, 1, 255), Motor::Large);
 	}
 	void __cdecl RumbleSmall(int playerNumber, int a2, int a3, int a4)
 	{
-		if (!isCutscenePlaying && rumbleEnabled)
+		if (!CutscenePlaying && RumbleEnabled)
 		{
 			int _a2 = clamp(a2, -4, 4);
 
