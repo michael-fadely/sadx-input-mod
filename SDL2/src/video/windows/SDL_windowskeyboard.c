@@ -124,7 +124,7 @@ WIN_UpdateKeymap()
         /* If this key is one of the non-mappable keys, ignore it */
         /* Not mapping numbers fixes the French layout, giving numeric keycodes for the number keys, which is the expected behavior */
         if ((keymap[scancode] & SDLK_SCANCODE_MASK) ||
-			/*  scancode == SDL_SCANCODE_GRAVE || */ /* Uncomment this line to re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
+            /*  scancode == SDL_SCANCODE_GRAVE || */ /* Uncomment this line to re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
             (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0) ) {
             continue;
         }
@@ -402,7 +402,7 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
     INT err = 0;
     BOOL vertical = FALSE;
     UINT maxuilen = 0;
-	static OSVERSIONINFOA osversion;
+    static OSVERSIONINFOA osversion;
 
     if (videodata->ime_uiless)
         return;
@@ -738,7 +738,7 @@ IME_SendEditingEvent(SDL_VideoData *videodata)
         SDL_wcslcpy(buffer, videodata->ime_composition, size);
     }
     s = WIN_StringToUTF8(buffer);
-    SDL_SendEditingText(s, videodata->ime_cursor + SDL_wcslen(videodata->ime_readingstring), 0);
+    SDL_SendEditingText(s, videodata->ime_cursor + (int)SDL_wcslen(videodata->ime_readingstring), 0);
     SDL_free(s);
 }
 
@@ -1403,7 +1403,7 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
         if (!*s)
             break;
 
-        GetTextExtentPoint32W(hdc, s, SDL_wcslen(s), &candsizes[i]);
+        GetTextExtentPoint32W(hdc, s, (int)SDL_wcslen(s), &candsizes[i]);
         maxcandsize.cx = SDL_max(maxcandsize.cx, candsizes[i].cx);
         maxcandsize.cy = SDL_max(maxcandsize.cy, candsizes[i].cy);
 
@@ -1495,7 +1495,7 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
         }
 
         DrawRect(hdc, left, top, right, bottom, candborder);
-        ExtTextOutW(hdc, left + candborder + candpadding, top + candborder + candpadding, 0, NULL, s, SDL_wcslen(s), NULL);
+        ExtTextOutW(hdc, left + candborder + candpadding, top + candborder + candpadding, 0, NULL, s, (int)SDL_wcslen(s), NULL);
     }
     StopDrawToBitmap(hdc, &hbm);
 

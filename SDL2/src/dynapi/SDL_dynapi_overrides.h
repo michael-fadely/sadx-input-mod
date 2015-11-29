@@ -505,6 +505,7 @@
 #define SDL_GetNumVideoDisplays SDL_GetNumVideoDisplays_REAL
 #define SDL_GetDisplayName SDL_GetDisplayName_REAL
 #define SDL_GetDisplayBounds SDL_GetDisplayBounds_REAL
+#define SDL_GetDisplayDPI SDL_GetDisplayDPI_REAL
 #define SDL_GetNumDisplayModes SDL_GetNumDisplayModes_REAL
 #define SDL_GetDisplayMode SDL_GetDisplayMode_REAL
 #define SDL_GetDesktopDisplayMode SDL_GetDesktopDisplayMode_REAL
@@ -593,3 +594,4 @@
 #define SDL_ClearQueuedAudio SDL_ClearQueuedAudio_REAL
 #define SDL_GetGrabbedWindow SDL_GetGrabbedWindow_REAL
 #define SDL_SetWindowsMessageHook SDL_SetWindowsMessageHook_REAL
+#define SDL_JoystickCurrentPowerLevel SDL_JoystickCurrentPowerLevel_REAL
