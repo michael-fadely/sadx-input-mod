@@ -85,7 +85,9 @@ extern "C"
 		// WriteAnalogs
 		WriteData((bool**)0x40F30C, input::_ControllerEnabled);
 
-
+		input::_ControllerEnabled[0] = true;
+		input::_ControllerEnabled[1] = true;
+		
 		std::string dbpath = BuildModPath(path, "gamecontrollerdb.txt");
 
 		if (FileExists(dbpath))
