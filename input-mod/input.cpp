@@ -107,55 +107,91 @@ namespace input
 		}
 	}
 
-	void Rumble(ushort id, int magnitude, Motor motor)
+	void Rumble_Load(Uint32 port, Uint32 time, Motor motor)
 	{
-		if (id >= GAMEPAD_COUNT)
+		if (port >= GAMEPAD_COUNT)
 		{
 			for (ushort i = 0; i < GAMEPAD_COUNT; i++)
-				Rumble(i, magnitude, motor);
+				Rumble_Load(i, time, motor);
 
 			return;
 		}
 
-		short scaled = 4 * magnitude;
+		PrintDebug("[%u] Rumble Time: 4 * %i (%i)\n", port, time, 4 * time);
+		DreamPad::Controllers[port].SetActiveMotor(motor, time * 4);
+	}
+	void __cdecl RumbleA(Uint32 port, Uint32 time)
+	{
+		Uint32 _time; // eax@4
 
-		if (magnitude > 0)
+		// Only continue if the calling player(?) is Player 1 (0)
+		if (!CutscenePlaying && RumbleEnabled && !port)
 		{
-			float m;
-
-			// RumbleLarge only ever passes in a value in that is <= 10,
-			// and scaling that to 2 bytes is super annoying, so here's
-			// some arbitrary values to increase the intensity.
-			if (magnitude >= 1 && magnitude <= 10)
-				m = max(0.2375f, scaled / 25.0f);
+			_time = time;
+			if (time <= 255)
+			{
+				// If the intensity is <= 0, set to the default of 1
+				if (time < 0 || time < 1)
+				{
+					_time = 1;
+				}
+				Rumble_Load(port, _time, Motor::Large);
+			}
 			else
-				m = (float)scaled / 256.0f;
-
-			scaled = (short)(SHRT_MAX * clamp(m, 0.0f, 1.0f));
+			{
+				Rumble_Load(port, 0xFFu, Motor::Large);
+			}
 		}
+	}
+	void __cdecl RumbleB(Uint32 port, Uint32 time, int a3, int a4)
+	{
+		Uint32 idk; // ecx@4
+		int _a3; // eax@12
+		int _time; // eax@16
 
-		if (_ControllerEnabled[id] || scaled == 0)
-			DreamPad::Controllers[id].SetActiveMotor(motor, scaled);
-	}
-	void __cdecl RumbleLarge(int playerNumber, int magnitude)
-	{
-		if (!CutscenePlaying && RumbleEnabled)
-			Rumble(playerNumber, clamp(magnitude, 1, 255), Motor::Large);
-	}
-	void __cdecl RumbleSmall(int playerNumber, int a2, int a3, int a4)
-	{
-		if (!CutscenePlaying && RumbleEnabled)
+		if (!CutscenePlaying && RumbleEnabled && !port)
 		{
-			int _a2 = clamp(a2, -4, 4);
-
-			if (_a2 == 1)
-				_a2 = 2;
-			else if (_a2 == -1)
-				_a2 = -2;
-
-			int _a3 = clamp(a3, 7, 59);
-
-			Rumble(playerNumber, max(1, a4 * _a3 / (4 * _a2)), Motor::Small);
+			idk = time;
+			if ((signed int)time <= 4)
+			{
+				if ((signed int)time >= -4)
+				{
+					if (time == 1)
+					{
+						idk = 2;
+					}
+					else if (time == -1)
+					{
+						idk = -2;
+					}
+				}
+				else
+				{
+					idk = -4;
+				}
+			}
+			else
+			{
+				idk = 4;
+			}
+			_a3 = a3;
+			if (a3 <= 59)
+			{
+				if (a3 < 7)
+				{
+					_a3 = 7;
+				}
+			}
+			else
+			{
+				_a3 = 59;
+			}
+			_time = a4 * _a3 / (signed int)(4 * idk);
+			if (_time <= 0)
+			{
+				_time = 1;
+			}
+			Rumble_Load(port, _time, Motor::Small);
 		}
 	}
 

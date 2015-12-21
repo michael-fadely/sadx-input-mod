@@ -46,7 +46,7 @@ public:
 
 	// Poor man's properties
 	Motor GetActiveMotor() const { return rumble_state; }
-	void SetActiveMotor(Motor motor, short magnitude);
+	void SetActiveMotor(Motor motor, Uint32 time);
 	bool Connected() const { return connected; }
 	int ControllerID() const { return controller_id; }
 	float NormalizedL() const { return normalized_L; }
@@ -96,7 +96,7 @@ private:
 	SDL_Haptic* haptic;
 	SDL_HapticEffect effect;
 	int effect_id;
-	uint rumbleTime_L, rumbleTime_S;
+	uint rumbleStart_L, rumbleDuration_L, rumbleStart_S, rumbleDuration_S;
 	Motor rumble_state;
 
 	ControllerData pad;

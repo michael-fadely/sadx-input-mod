@@ -8,9 +8,9 @@
 
 DreamPad DreamPad::Controllers[GAMEPAD_COUNT];
 
-DreamPad::DreamPad() : controller_id(-1), gamepad(nullptr), haptic(nullptr), effect({}),
-	effect_id(-1), rumbleTime_L(0), rumbleTime_S(0), rumble_state(Motor::None), pad({}),
-	normalized_L(0.0f), normalized_R(0.0f)
+DreamPad::DreamPad() : controller_id(-1), gamepad(nullptr), haptic(nullptr), effect({}), effect_id(-1),
+	rumbleStart_L(0), rumbleDuration_L(0), rumbleStart_S(0), rumbleDuration_S(0), rumble_state(Motor::None),
+	pad({}), normalized_L(0.0f), normalized_R(0.0f)
 {
 	// TODO: Properly detect supported rumble types
 	effect.leftright.type = SDL_HAPTIC_LEFTRIGHT;
@@ -163,35 +163,38 @@ void DreamPad::UpdateMotor()
 	Motor turn_off = Motor::None;
 	uint now = GetTickCount();
 
-	if (now - rumbleTime_L >= 250)
+	if (now - rumbleStart_L >= rumbleDuration_L)
 		turn_off = (Motor)(turn_off | Motor::Large);
 
-	if (now - rumbleTime_S >= 1000)
+	if (now - rumbleStart_S >= rumbleDuration_S)
 		turn_off = (Motor)(turn_off | Motor::Small);
 
 	if (turn_off != Motor::None)
 		SetActiveMotor(turn_off, 0);
 }
 
-void DreamPad::SetActiveMotor(Motor motor, short magnitude)
+void DreamPad::SetActiveMotor(Motor motor, Uint32 time)
 {
 	if (effect_id == -1 || haptic == nullptr)
 		return;
 
 	const float f = settings.rumbleFactor;
+	const bool disable = time < 1;
 
 	if (motor & Motor::Large)
 	{
-		effect.leftright.large_magnitude = (short)min(SHRT_MAX, (int)(magnitude * f));
-		rumbleTime_L = GetTickCount();
-		rumble_state = (Motor)((magnitude > 0) ? rumble_state | motor : rumble_state & ~Motor::Large);
+		effect.leftright.large_magnitude = !disable ? (ushort)(USHRT_MAX * f) : 0;
+		rumbleStart_L = GetTickCount();
+		rumbleDuration_L = (uint)((1000.0 / 60.0) * time);
+		rumble_state = (Motor)(!disable ? rumble_state | motor : rumble_state & ~Motor::Large);
 	}
 
 	if (motor & Motor::Small)
 	{
-		effect.leftright.small_magnitude = (short)min(SHRT_MAX, (int)(magnitude * (2 + f)));
-		rumbleTime_S = GetTickCount();
-		rumble_state = (Motor)((magnitude > 0) ? rumble_state | motor : rumble_state & ~Motor::Small);
+		effect.leftright.small_magnitude = !disable ? (ushort)(USHRT_MAX * f) : 0;
+		rumbleStart_S = GetTickCount();
+		rumbleDuration_S = (uint)((1000.0 / 60.0) * time);
+		rumble_state = (Motor)(!disable ? rumble_state | motor : rumble_state & ~Motor::Small);
 	}
 
 	SDL_HapticUpdateEffect(haptic, effect_id, &effect);

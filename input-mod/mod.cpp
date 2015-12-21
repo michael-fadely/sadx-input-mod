@@ -17,16 +17,16 @@
 #include "FileExists.h"
 #include "input.h"
 
-void* RumbleLarge_ptr			= (void*)0x004BCBC0;
-void* RumbleSmall_ptr			= (void*)0x004BCC10;
+void* RumbleA_ptr				= (void*)0x004BCBC0;
+void* RumbleB_ptr				= (void*)0x004BCC10;
 void* Rumble_ptr				= (void*)0x004BCB60; // Unused, but here so I don't lose it.
 void* UpdateControllers_ptr		= (void*)0x0040F460;
 void* AnalogHook_ptr			= (void*)0x0040F343;
 void* InitRawControllers_ptr	= (void*)0x0040F451; // End of function (hook)
 
 PointerInfo jumps[] = {
-	{ RumbleLarge_ptr, input::RumbleLarge },
-	{ RumbleSmall_ptr, input::RumbleSmall },
+	{ RumbleA_ptr, input::RumbleA },
+	{ RumbleB_ptr, input::RumbleB },
 	{ AnalogHook_ptr, input::WriteAnalogs_Hook },
 	{ InitRawControllers_ptr, input::RedirectRawControllers_Hook }
 	// Used to skip over the standard controller update function.
@@ -115,7 +115,7 @@ extern "C"
 				char wtf[255];
 
 				GetPrivateProfileStringA(section_cstr, "RumbleFactor", "1.0", wtf, 255, config_cstr);
-				float rumbleFactor = (float)atof(wtf);
+				float rumbleFactor = min(1.0f, (float)atof(wtf));
 
 				DreamPad::Settings* settings = &DreamPad::Controllers[i].settings;
 				settings->apply(deadzoneL, deadzoneR, radialL, radialR, triggerThreshold, rumbleFactor);
