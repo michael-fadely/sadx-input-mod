@@ -125,13 +125,11 @@ namespace input
 	{
 		Uint32 _time; // eax@4
 
-		// Only continue if the calling player(?) is Player 1 (0)
 		if (!CutscenePlaying && RumbleEnabled && _ControllerEnabled[port])
 		{
 			_time = time;
 			if (time <= 255)
 			{
-				// If the intensity is <= 0, set to the default of 1
 				if (time < 0 || time < 1)
 				{
 					_time = 1;
