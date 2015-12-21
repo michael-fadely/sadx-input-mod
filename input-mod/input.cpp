@@ -117,15 +117,16 @@ namespace input
 			return;
 		}
 
-		PrintDebug("[%u] Rumble Time: 4 * %i (%i)\n", port, time, 4 * time);
-		DreamPad::Controllers[port].SetActiveMotor(motor, time * 4);
+		Uint32 multiplied = time * 4;
+		PrintDebug("[%u] Rumble Time: %i * 4 (%i frames(?), %ums)\n", port, time, multiplied, (Uint32)((1000.0 / 60.0) * multiplied));
+		DreamPad::Controllers[port].SetActiveMotor(motor, multiplied);
 	}
 	void __cdecl RumbleA(Uint32 port, Uint32 time)
 	{
 		Uint32 _time; // eax@4
 
 		// Only continue if the calling player(?) is Player 1 (0)
-		if (!CutscenePlaying && RumbleEnabled && !port)
+		if (!CutscenePlaying && RumbleEnabled && _ControllerEnabled[port])
 		{
 			_time = time;
 			if (time <= 255)
@@ -149,7 +150,7 @@ namespace input
 		int _a3; // eax@12
 		int _time; // eax@16
 
-		if (!CutscenePlaying && RumbleEnabled && !port)
+		if (!CutscenePlaying && RumbleEnabled && _ControllerEnabled[port])
 		{
 			idk = time;
 			if ((signed int)time <= 4)
