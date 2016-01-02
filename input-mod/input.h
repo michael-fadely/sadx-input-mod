@@ -15,4 +15,5 @@ namespace input
 
 	extern ControllerData RawInput[GAMEPAD_COUNT];
 	extern bool _ControllerEnabled[GAMEPAD_COUNT];
+	extern bool debug;
 }

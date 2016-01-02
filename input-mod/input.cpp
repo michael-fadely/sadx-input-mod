@@ -22,6 +22,7 @@ namespace input
 {
 	ControllerData RawInput[GAMEPAD_COUNT];
 	bool _ControllerEnabled[GAMEPAD_COUNT];
+	bool debug = false;
 
 	// TODO: Keyboard & Mouse. Now I have no excuse.
 	void PollControllers()
@@ -50,10 +51,10 @@ namespace input
 			if (i < ControllersRaw_Length)
 				ControllersRaw[i] = RawInput[i];
 
-#if defined(_DEBUG) && defined(EXTENDED_BUTTONS)
-			ControllerData* pad = &RawInput[i];
-			if (pad->HeldButtons & Buttons_C)
+#ifdef EXTENDED_BUTTONS
+			if (debug && RawInput[i].HeldButtons & Buttons_C)
 			{
+				ControllerData* pad = &RawInput[i];
 				Motor m = DreamPad::Controllers[i].GetActiveMotor();
 
 				DisplayDebugStringFormatted(NJM_LOCATION(0, 8 + (3 * i)), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
