@@ -296,6 +296,6 @@ void DreamPad::Settings::apply(short deadzoneL, short deadzoneR, bool radialL, b
 	this->deadzoneR			= clamp(deadzoneR, (short)0, (short)SHRT_MAX);
 	this->radialL			= radialL;
 	this->radialR			= radialR;
-	this->triggerThreshold	= min((uint8)UCHAR_MAX, triggerThreshold);
+	this->triggerThreshold	= triggerThreshold;
 	this->rumbleFactor		= rumbleFactor;
 }
