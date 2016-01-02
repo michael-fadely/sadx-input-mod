@@ -120,7 +120,8 @@ namespace input
 		}
 
 		Uint32 multiplied = time * 4;
-		PrintDebug("[%u] Rumble Time: %i * 4 (%i frames(?), %ums)\n", port, time, multiplied, (Uint32)((1000.0 / 60.0) * multiplied));
+		if (debug)
+			PrintDebug("[%u] Rumble Time: %i * 4 (%i frames(?), %ums)\n", port, time, multiplied, (Uint32)((1000.0 / 60.0) * multiplied));
 		DreamPad::Controllers[port].SetActiveMotor(motor, multiplied);
 	}
 	void __cdecl RumbleA(Uint32 port, Uint32 time)
