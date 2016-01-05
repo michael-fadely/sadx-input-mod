@@ -76,10 +76,10 @@ extern "C"
 		WriteData((bool**)0x40EFC0, input::_ControllerEnabled);
 
 		// IsControllerEnabled
-		WriteData((bool**)0x40FE0D, input::_ControllerEnabled);
+		WriteData((bool**)0x40EFD8, input::_ControllerEnabled);
 
 		// Control
-		WriteData((bool**)0x40EFD8, input::_ControllerEnabled);
+		WriteData((bool**)0x40FE0D, input::_ControllerEnabled);
 		WriteData((bool**)0x40FE2F, &input::_ControllerEnabled[1]);
 
 		// WriteAnalogs
