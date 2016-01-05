@@ -28,7 +28,9 @@ PointerInfo jumps[] = {
 	{ RumbleA_ptr, input::RumbleA },
 	{ RumbleB_ptr, input::RumbleB },
 	{ AnalogHook_ptr, input::WriteAnalogs_Hook },
-	{ InitRawControllers_ptr, input::RedirectRawControllers_Hook }
+	{ InitRawControllers_ptr, input::RedirectRawControllers_Hook },
+	{ EnableController, input::EnableController_hook },
+	{ DisableController, input::DisableController_hook }
 	// Used to skip over the standard controller update function.
 	// This has no effect on the OnInput hook.
 	//{ UpdateControllers_ptr, (void*)0x0040FDB3 }

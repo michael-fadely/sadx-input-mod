@@ -211,4 +211,44 @@ namespace input
 			ret
 		}
 	}
+
+	void EnableController_hook(Uint8 index)
+	{
+		// default behavior 
+		if (index > 1)
+		{
+			_ControllerEnabled[0] = true;
+			_ControllerEnabled[1] = true;
+		}
+
+		if (index > GAMEPAD_COUNT)
+		{
+			for (Uint32 i = 0; i < min(index, (Uint8)GAMEPAD_COUNT); i++)
+				EnableController_hook(i);
+		}
+		else
+		{
+			_ControllerEnabled[index] = true;
+		}
+	}
+
+	void DisableController_hook(Uint8 index)
+	{
+		// default behavior 
+		if (index > 1)
+		{
+			_ControllerEnabled[0] = false;
+			_ControllerEnabled[1] = false;
+		}
+
+		if (index > GAMEPAD_COUNT)
+		{
+			for (Uint32 i = 0; i < min(index, (Uint8)GAMEPAD_COUNT); i++)
+				DisableController_hook(i);
+		}
+		else
+		{
+			_ControllerEnabled[index] = false;
+		}
+	}
 }

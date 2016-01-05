@@ -12,6 +12,8 @@ namespace input
 	void __cdecl RumbleA(Uint32 port, Uint32 time);
 	void __cdecl RumbleB(Uint32 port, Uint32 time, int a3, int a4);
 	void RedirectRawControllers_Hook();
+	void __cdecl EnableController_hook(Uint8 index);
+	void __cdecl DisableController_hook(Uint8 index);
 
 	extern ControllerData RawInput[GAMEPAD_COUNT];
 	extern bool _ControllerEnabled[GAMEPAD_COUNT];
