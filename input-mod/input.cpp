@@ -110,7 +110,7 @@ namespace input
 
 	void Rumble_Load(Uint32 port, Uint32 time, Motor motor)
 	{
-		// TODO: Take advantage of the built in rumble manager object
+		// TODO: Take advantage of the built in rumble manager object. See pbVibMxStart, pdVibMxStop in disassembly, and sg_pdvib.h
 		if (port >= GAMEPAD_COUNT)
 		{
 			for (ushort i = 0; i < GAMEPAD_COUNT; i++)
