@@ -95,7 +95,14 @@ extern "C"
 		std::string dbpath = BuildModPath(path, "gamecontrollerdb.txt");
 
 		if (FileExists(dbpath))
-			SDL_GameControllerAddMappingsFromFile(dbpath.c_str());
+		{
+			int result = SDL_GameControllerAddMappingsFromFile(dbpath.c_str());
+
+			if (result == -1)
+				PrintDebug("[input] Error loading gamecontrollerdb: %s\n", SDL_GetError());
+			else
+				PrintDebug("[input] Controller mappings loaded: %i\n", result);
+		}
 
 		std::string config = BuildModPath(path, "config.ini");
 
