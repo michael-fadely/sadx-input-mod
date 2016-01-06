@@ -16,6 +16,7 @@
 #include "typedefs.h"
 #include "FileExists.h"
 #include "input.h"
+#include "rumble.h"
 
 void* RumbleA_ptr				= (void*)0x004BCBC0;
 void* RumbleB_ptr				= (void*)0x004BCC10;
@@ -25,12 +26,13 @@ void* AnalogHook_ptr			= (void*)0x0040F343;
 void* InitRawControllers_ptr	= (void*)0x0040F451; // End of function (hook)
 
 PointerInfo jumps[] = {
-	{ RumbleA_ptr, input::RumbleA },
-	{ RumbleB_ptr, input::RumbleB },
-	{ AnalogHook_ptr, input::WriteAnalogs_Hook },
-	{ InitRawControllers_ptr, input::RedirectRawControllers_Hook },
-	{ EnableController, input::EnableController_hook },
-	{ DisableController, input::DisableController_hook }
+	{ rumble::pdVibMxStop, rumble::pdVibMxStop_hook },
+	{ RumbleA_ptr,				rumble::RumbleA },
+	{ RumbleB_ptr,				rumble::RumbleB },
+	{ AnalogHook_ptr,			input::WriteAnalogs_Hook },
+	{ InitRawControllers_ptr,	input::RedirectRawControllers_Hook },
+	{ EnableController,			input::EnableController_hook },
+	{ DisableController,		input::DisableController_hook }
 	// Used to skip over the standard controller update function.
 	// This has no effect on the OnInput hook.
 	//{ UpdateControllers_ptr, (void*)0x0040FDB3 }
@@ -100,7 +102,7 @@ extern "C"
 		if (FileExists(config))
 		{
 			const char* config_cstr = config.c_str();
-			input::debug = GetPrivateProfileIntA("Config", "Debug", _DEBUG != 0, config_cstr);
+			input::debug = GetPrivateProfileIntA("Config", "Debug", _DEBUG != 0, config_cstr) != 0;
 
 			for (ushort i = 0; i < GAMEPAD_COUNT; i++)
 			{

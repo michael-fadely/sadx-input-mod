@@ -151,8 +151,6 @@ void DreamPad::Poll()
 	pad.ReleasedButtons	= pad.Old & (buttons ^ pad.Old);
 	pad.PressedButtons	= buttons & (buttons ^ pad.Old);
 	pad.Old				= pad.HeldButtons;
-
-	UpdateMotor();
 }
 
 void DreamPad::UpdateMotor()
