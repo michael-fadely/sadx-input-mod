@@ -99,7 +99,7 @@ extern "C"
 			int result = SDL_GameControllerAddMappingsFromFile(dbpath.c_str());
 
 			if (result == -1)
-				PrintDebug("[input] Error loading gamecontrollerdb: %s\n", SDL_GetError());
+				PrintDebug("[Input] Error loading gamecontrollerdb: %s\n", SDL_GetError());
 			else
 				PrintDebug("[input] Controller mappings loaded: %i\n", result);
 		}
