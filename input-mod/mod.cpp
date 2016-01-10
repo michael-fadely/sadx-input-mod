@@ -101,7 +101,7 @@ extern "C"
 			if (result == -1)
 				PrintDebug("[Input] Error loading gamecontrollerdb: %s\n", SDL_GetError());
 			else
-				PrintDebug("[input] Controller mappings loaded: %i\n", result);
+				PrintDebug("[Input] Controller mappings loaded: %i\n", result);
 		}
 
 		std::string config = BuildModPath(path, "config.ini");
