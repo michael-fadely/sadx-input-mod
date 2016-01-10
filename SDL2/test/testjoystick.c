@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -246,7 +246,7 @@ main(int argc, char *argv[])
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);	
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Initialize SDL (Note: video is required to start event loop) */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
@@ -265,6 +265,7 @@ main(int argc, char *argv[])
                     SDL_GetError());
         } else {
             char guid[64];
+            SDL_assert(SDL_JoystickFromInstanceID(SDL_JoystickInstanceID(joystick)) == joystick);
             SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick),
                                       guid, sizeof (guid));
             SDL_Log("       axes: %d\n", SDL_JoystickNumAxes(joystick));
@@ -292,6 +293,9 @@ main(int argc, char *argv[])
         device = atoi(argv[1]);
 #endif
         joystick = SDL_JoystickOpen(device);
+        if (joystick != NULL) {
+            SDL_assert(SDL_JoystickFromInstanceID(SDL_JoystickInstanceID(joystick)) == joystick);
+        }
 
         while ( keepGoing ) {
             if (joystick == NULL) {
@@ -317,6 +321,9 @@ main(int argc, char *argv[])
                     keepGoing = SDL_FALSE;
                 } else if (event.type == SDL_JOYDEVICEADDED) {
                     joystick = SDL_JoystickOpen(device);
+                    if (joystick != NULL) {
+                        SDL_assert(SDL_JoystickFromInstanceID(SDL_JoystickInstanceID(joystick)) == joystick);
+                    }
                     break;
                 }
             }
