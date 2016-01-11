@@ -12,7 +12,7 @@ VoidFunc(WriteAnalogs, 0x0040F170);
 
 struct AnalogThing
 {
-	int		angle;
+	Angle	angle;
 	float	magnitude;
 };
 
