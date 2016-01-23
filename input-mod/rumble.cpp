@@ -5,10 +5,6 @@
 #include "input.h"
 #include "rumble.h"
 
-// HACK: Update mod loader
-#define UnknownA_ptr field_28
-#define UnknownB_ptr field_2C
-
 namespace rumble
 {
 	Sint32 __cdecl pdVibMxStop_hook(Uint32 port)
@@ -23,7 +19,7 @@ namespace rumble
 		ObjUnknownB* v1 = (ObjUnknownB*)_this->UnknownB_ptr;
 		PDS_VIBPARAM* param = (PDS_VIBPARAM*)_this->UnknownA_ptr;
 
-		if (v1->field_0-- <= 0)
+		if (v1->Time-- <= 0)
 		{
 			DreamPad::Controllers[param->unit].SetActiveMotor((Motor)param->reserved[0], 0);
 			DeleteObject_(_this);
@@ -44,12 +40,12 @@ namespace rumble
 			return;
 		}
 
-		ObjectMaster* _this = LoadObject(LoadObj_UnknownB, 0, Rumble_Main_hook);
+		ObjectMaster* _this = LoadObject(LoadObjFlags_UnknownB, 0, Rumble_Main_hook);
 
 		if (_this == nullptr)
 			return;
 
-		((ObjUnknownB*)_this->UnknownB_ptr)->field_0 = 4 * time;
+		((ObjUnknownB*)_this->UnknownB_ptr)->Time = 4 * time;
 		PDS_VIBPARAM* param = (PDS_VIBPARAM*)AllocateMemory(sizeof(PDS_VIBPARAM));
 
 		if (param)

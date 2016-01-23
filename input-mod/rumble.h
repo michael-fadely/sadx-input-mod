@@ -24,23 +24,21 @@ namespace rumble
 											 /* Reserved                       */
 	} PDS_VIBPARAM;
 
-	// HACK: Update mod loader
-	enum LoadObj : __int8
+	enum LoadObjFlags : __int8
 	{
-		LoadObj_CharObj2 = 0x1,
-		LoadObj_CharObj1 = 0x2,
-		LoadObj_UnknownA = 0x4,
-		LoadObj_UnknownB = 0x8,
+		LoadObjFlags_CharObj2 = 0x1,
+		LoadObjFlags_CharObj1 = 0x2,
+		LoadObjFlags_UnknownA = 0x4,
+		LoadObjFlags_UnknownB = 0x8,
 	};
 
-	// HACK: Update mod loader
 #pragma pack(push, 1)
 	struct ObjUnknownB
 	{
-		int field_0;
+		int Time;
 		int Index;
 		int Mode;
-		int field_12;
+		int field_C;
 	};
 #pragma pack(pop)
 
