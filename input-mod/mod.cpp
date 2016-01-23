@@ -108,8 +108,14 @@ extern "C"
 
 		if (FileExists(config))
 		{
+#ifdef _DEBUG
+			bool debug_default = true;
+#else
+			bool debug_default = false;
+#endif
+
 			const char* config_cstr = config.c_str();
-			input::debug = GetPrivateProfileIntA("Config", "Debug", _DEBUG != 0, config_cstr) != 0;
+			input::debug = GetPrivateProfileIntA("Config", "Debug", (int)debug_default, config_cstr) != 0;
 
 			for (ushort i = 0; i < GAMEPAD_COUNT; i++)
 			{
