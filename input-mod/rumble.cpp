@@ -7,6 +7,8 @@
 
 namespace rumble
 {
+	bool cutsceneRumble = true;
+
 	Sint32 __cdecl pdVibMxStop_hook(Uint32 port)
 	{
 		for (Uint32 i = 0; i < GAMEPAD_COUNT; i++)
@@ -69,7 +71,10 @@ namespace rumble
 
 	void __cdecl RumbleA(Uint32 port, Uint32 time)
 	{
-		if (!CutscenePlaying && RumbleEnabled && input::_ControllerEnabled[port])
+		if (!cutsceneRumble && CutscenePlaying)
+			return;
+
+		if (RumbleEnabled && input::_ControllerEnabled[port])
 			Rumble_Load_hook(port, clamp(time, 1u, 255u), Motor::Large);
 	}
 
@@ -79,7 +84,10 @@ namespace rumble
 		int _a3; // eax@12
 		int _time; // eax@16
 
-		if (!CutscenePlaying && RumbleEnabled && input::_ControllerEnabled[port])
+		if (!cutsceneRumble && CutscenePlaying)
+			return;
+
+		if (RumbleEnabled && input::_ControllerEnabled[port])
 		{
 			idk = time;
 			if ((signed int)time <= 4)
