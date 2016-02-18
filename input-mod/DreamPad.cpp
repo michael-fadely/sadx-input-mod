@@ -153,28 +153,13 @@ void DreamPad::Poll()
 	pad.Old				= pad.HeldButtons;
 }
 
-void DreamPad::UpdateMotor()
-{
-	if (effect_id == -1 || haptic == nullptr || rumble_state == Motor::None)
-		return;
-
-	Motor turn_off = Motor::None;
-	uint now = GetTickCount();
-
-	if (now - rumbleStart_L >= rumbleDuration_L)
-		turn_off = (Motor)(turn_off | Motor::Large);
-
-	if (now - rumbleStart_S >= rumbleDuration_S)
-		turn_off = (Motor)(turn_off | Motor::Small);
-
-	if (turn_off != Motor::None)
-		SetActiveMotor(turn_off, 0);
-}
-
 void DreamPad::SetActiveMotor(Motor motor, Uint32 time)
 {
 	if (effect_id == -1 || haptic == nullptr)
 		return;
+
+	if (settings.megaRumble)
+		motor = Motor::Both;
 
 	const float f = settings.rumbleFactor;
 	const bool disable = time < 1;
@@ -288,7 +273,7 @@ DreamPad::Settings::Settings()
 	radialR				= false;
 	rumbleFactor		= 1.0f;
 }
-void DreamPad::Settings::apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, uint8 triggerThreshold, float rumbleFactor)
+void DreamPad::Settings::apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, uint8 triggerThreshold, float rumbleFactor, bool megaRumble)
 {
 	this->deadzoneL			= clamp(deadzoneL, (short)0, (short)SHRT_MAX);
 	this->deadzoneR			= clamp(deadzoneR, (short)0, (short)SHRT_MAX);
@@ -296,4 +281,5 @@ void DreamPad::Settings::apply(short deadzoneL, short deadzoneR, bool radialL, b
 	this->radialR			= radialR;
 	this->triggerThreshold	= triggerThreshold;
 	this->rumbleFactor		= rumbleFactor;
+	this->megaRumble		= megaRumble;
 }

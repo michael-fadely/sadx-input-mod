@@ -42,7 +42,6 @@ public:
 	/// Polls input for this instance.
 	/// </summary>
 	void Poll();
-	void UpdateMotor();
 
 	// Poor man's properties
 	Motor GetActiveMotor() const { return rumble_state; }
@@ -66,9 +65,10 @@ public:
 		bool	radialR;			// Indicates if the stick is fully radial or semi-radial
 		uint8	triggerThreshold;	// Trigger threshold
 		float	rumbleFactor;		// Rumble intensity multiplier (1.0 by default)
-
+		bool	megaRumble;			// Always fire both motors
+		
 		void apply(short deadzoneL, short deadzoneR,
-			bool radialL, bool radialR, uint8 triggerThreshold, float rumbleFactor);
+			bool radialL, bool radialR, uint8 triggerThreshold, float rumbleFactor, bool megaRumble);
 	} settings;
 
 

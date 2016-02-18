@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <SADXModLoader.h>
+
 namespace rumble
 {
 	enum PDD_VIB_FLAG

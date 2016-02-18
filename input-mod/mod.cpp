@@ -136,8 +136,10 @@ extern "C"
 				GetPrivateProfileStringA(section_cstr, "RumbleFactor", "1.0", wtf, 255, config_cstr);
 				float rumbleFactor = min(1.0f, (float)atof(wtf));
 
+				bool megaRumble = GetPrivateProfileIntA(section_cstr, "MegaRumble", 0, config_cstr) != 0;
+
 				DreamPad::Settings* settings = &DreamPad::Controllers[i].settings;
-				settings->apply(deadzoneL, deadzoneR, radialL, radialR, triggerThreshold, rumbleFactor);
+				settings->apply(deadzoneL, deadzoneR, radialL, radialR, triggerThreshold, rumbleFactor, megaRumble);
 
 				if (input::debug)
 				{
