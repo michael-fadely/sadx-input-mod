@@ -273,7 +273,8 @@ DreamPad::Settings::Settings()
 	radialR				= false;
 	rumbleFactor		= 1.0f;
 }
-void DreamPad::Settings::apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, uint8 triggerThreshold, float rumbleFactor, bool megaRumble)
+void DreamPad::Settings::apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, uint8 triggerThreshold,
+	float rumbleFactor, bool megaRumble, ushort rumbleMinTime)
 {
 	this->deadzoneL			= clamp(deadzoneL, (short)0, (short)SHRT_MAX);
 	this->deadzoneR			= clamp(deadzoneR, (short)0, (short)SHRT_MAX);
@@ -282,4 +283,5 @@ void DreamPad::Settings::apply(short deadzoneL, short deadzoneR, bool radialL, b
 	this->triggerThreshold	= triggerThreshold;
 	this->rumbleFactor		= rumbleFactor;
 	this->megaRumble		= megaRumble;
+	this->rumbleMinTime		= rumbleMinTime;
 }

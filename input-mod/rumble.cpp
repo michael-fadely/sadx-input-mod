@@ -2,6 +2,7 @@
 
 #include <SADXModLoader.h>
 
+#include "minmax.h"
 #include "input.h"
 #include "rumble.h"
 
@@ -47,7 +48,7 @@ namespace rumble
 		if (_this == nullptr)
 			return;
 
-		((ObjUnknownB*)_this->UnknownB_ptr)->Time = 4 * time;
+		((ObjUnknownB*)_this->UnknownB_ptr)->Time = max(4 * time, (uint)(DreamPad::Controllers[port].settings.rumbleMinTime / (1000.0f / 60.0f)));
 		PDS_VIBPARAM* param = (PDS_VIBPARAM*)AllocateMemory(sizeof(PDS_VIBPARAM));
 
 		if (param)
