@@ -52,4 +52,5 @@ namespace rumble
 	void __cdecl Rumble_Load_hook(Uint32 port, Uint32 time, Motor motor);
 	void __cdecl RumbleA(Uint32 port, Uint32 time);
 	void __cdecl RumbleB(Uint32 port, Uint32 time, int a3, int a4);
+	void DefaultRumble();
 }

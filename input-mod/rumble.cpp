@@ -133,4 +133,14 @@ namespace rumble
 			Rumble_Load_hook(port, _time, Motor::Small);
 		}
 	}
+
+	static const void* loc_0042D534 = (const void*)0x0042D534;
+	void __declspec(naked) DefaultRumble()
+	{
+		__asm
+		{
+			mov [esp + 0000026Ah], 1
+			jmp loc_0042D534
+		}
+	}
 }
