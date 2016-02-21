@@ -26,7 +26,7 @@ void* AnalogHook_ptr			= (void*)0x0040F343;
 void* InitRawControllers_ptr	= (void*)0x0040F451; // End of function (hook)
 
 PointerInfo jumps[] = {
-	{ rumble::pdVibMxStop, rumble::pdVibMxStop_hook },
+	{ rumble::pdVibMxStop,		rumble::pdVibMxStop_hook },
 	{ RumbleA_ptr,				rumble::RumbleA },
 	{ RumbleB_ptr,				rumble::RumbleB },
 	{ AnalogHook_ptr,			input::WriteAnalogs_Hook },

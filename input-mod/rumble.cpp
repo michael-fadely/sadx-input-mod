@@ -139,7 +139,7 @@ namespace rumble
 	{
 		__asm
 		{
-			mov [esp + 0000026Ah], 1
+			mov [esp + 26Ah], 1
 			jmp loc_0042D534
 		}
 	}
