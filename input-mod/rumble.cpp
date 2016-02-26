@@ -10,6 +10,8 @@ namespace rumble
 {
 	bool cutsceneRumble = true;
 
+	static ObjectMaster* Instances[2] = {};
+
 	Sint32 __cdecl pdVibMxStop_hook(Uint32 port)
 	{
 		for (Uint32 i = 0; i < GAMEPAD_COUNT; i++)
@@ -17,31 +19,45 @@ namespace rumble
 		return 0;
 	}
 
-	void __cdecl Rumble_Main_hook(ObjectMaster* _this)
+	static void __cdecl Rumble_Main_hook(ObjectMaster* _this)
 	{
 		ObjUnknownB* v1 = (ObjUnknownB*)_this->UnknownB_ptr;
 		PDS_VIBPARAM* param = (PDS_VIBPARAM*)_this->UnknownA_ptr;
 		Motor motor = (Motor)param->reserved[0];
 		DreamPad& pad = DreamPad::Controllers[param->unit];
 
+		if (!v1->Mode)
+		{
+			Uint32 time = (Uint32)(v1->Time * (1000.0f / (60.0f / (float)FrameIncrement)));
+
+			if (input::debug)
+				PrintDebug("[Input] [%u] Rumble %u: %s, %u frames (%ums)\n", FrameCounter, param->unit, (motor == Motor::Small ? "R" : "L"), v1->Time, time);
+
+			pad.SetActiveMotor(motor, time);
+			v1->Mode = 1;
+		}
+
 		if (v1->Time-- <= 0)
 		{
-			pad.SetActiveMotor(motor, 0);
 			DeleteObject_(_this);
+			pad.SetActiveMotor(motor, 0);
 		}
-		else if (!(pad.GetActiveMotor() & motor))
-		{
-			pad.SetActiveMotor((Motor)param->reserved[0], (Uint32)(v1->Time * (1000.0 / (60.0 / FrameIncrement))));
-		}
+
 	}
 
-	void __cdecl Rumble_Load_hook(Uint32 port, Uint32 time, Motor motor)
+	static void __cdecl Rumble_Delete(ObjectMaster* _this)
+	{
+		PDS_VIBPARAM* param = (PDS_VIBPARAM*)_this->UnknownA_ptr;
+		Motor motor = (Motor)param->reserved[0];
+		Instances[(int)motor - 1] = nullptr;
+	}
+
+	static void __cdecl Rumble_Load_hook(Uint32 port, Uint32 time, Motor motor)
 	{
 		if (port >= GAMEPAD_COUNT)
 		{
 			for (ushort i = 0; i < GAMEPAD_COUNT; i++)
 				Rumble_Load_hook(i, time, motor);
-
 			return;
 		}
 
@@ -50,7 +66,8 @@ namespace rumble
 		if (_this == nullptr)
 			return;
 
-		((ObjUnknownB*)_this->UnknownB_ptr)->Time = max(4 * time, (uint)(DreamPad::Controllers[port].settings.rumbleMinTime / (1000.0f / (60.0f / FrameIncrement))));
+		Uint32 time_scaled = max(4 * time, (uint)(DreamPad::Controllers[port].settings.rumbleMinTime / (1000.0f / 60.0f)));
+		((ObjUnknownB*)_this->UnknownB_ptr)->Time = time_scaled;
 		PDS_VIBPARAM* param = (PDS_VIBPARAM*)AllocateMemory(sizeof(PDS_VIBPARAM));
 
 		if (param)
@@ -64,7 +81,12 @@ namespace rumble
 			// hax
 			param->reserved[0] = motor;
 
+			_this->DeleteSub = Rumble_Delete;
 			_this->UnknownA_ptr = param;
+
+			int i = (int)motor - 1;
+			if (Instances[i] != nullptr)
+				DeleteObject_(Instances[i]);
 		}
 		else
 		{
