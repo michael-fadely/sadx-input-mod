@@ -40,6 +40,7 @@ namespace rumble
 
 			pad.SetActiveMotor(motor, time);
 			v1->Mode = 1;
+			Instances[(int)motor - 1] = _this;
 		}
 
 		if (v1->Time-- <= 0)
