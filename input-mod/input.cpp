@@ -6,6 +6,7 @@
 
 // This namespace
 #include "input.h"
+#include "rumble.h"
 #include "DreamPad.h"
 
 VoidFunc(WriteAnalogs, 0x0040F170);
@@ -64,12 +65,17 @@ namespace input
 
 				if (pad->HeldButtons & Buttons_Z)
 				{
-					if (pad->PressedButtons & Buttons_Up)
+					int pressed = pad->PressedButtons;
+					if (pressed & Buttons_Up)
 						dpad->settings.rumbleFactor += 0.125f;
-					else if (pad->PressedButtons & Buttons_Down)
+					else if (pressed & Buttons_Down)
 						dpad->settings.rumbleFactor -= 0.125f;
+					else if (pressed & Buttons_Left)
+						rumble::RumbleA(i, 0);
+					else if (pressed & Buttons_Right)
+						rumble::RumbleB(i, 7, 59, 6);
 
-					DisplayDebugStringFormatted(NJM_LOCATION(4, 10 + (3 * i)), "Rumble factor (U/D): %f", dpad->settings.rumbleFactor);
+					DisplayDebugStringFormatted(NJM_LOCATION(4, 10 + (3 * i)), "Rumble factor (U/D): %f (L/R to test)", dpad->settings.rumbleFactor);
 				}
 			}
 #endif

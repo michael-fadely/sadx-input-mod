@@ -154,4 +154,10 @@ extern "C"
 
 		PrintDebug("[Input] Initialization complete.\n");
 	}
+
+	__declspec(dllexport) void OnExit()
+	{
+		for (auto& i : DreamPad::Controllers)
+			i.Close();
+	}
 }

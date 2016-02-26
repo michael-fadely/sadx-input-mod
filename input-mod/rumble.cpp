@@ -18,7 +18,7 @@ namespace rumble
 		{
 			DreamPad& pad = DreamPad::Controllers[i];
 			if (pad.GetActiveMotor() != Motor::None)
-				pad.SetActiveMotor(Motor::Both, 0);
+				pad.SetActiveMotor(Motor::Both, false);
 		}
 		
 		return 0;
@@ -33,12 +33,7 @@ namespace rumble
 
 		if (!v1->Mode)
 		{
-			Uint32 time = (Uint32)(v1->Time * (1000.0f / (60.0f / (float)FrameIncrement)));
-
-			if (input::debug)
-				PrintDebug("[Input] [%u] Rumble %u: %s, %u frames (%ums)\n", FrameCounter, param->unit, (motor == Motor::Small ? "R" : "L"), v1->Time, time);
-
-			pad.SetActiveMotor(motor, time);
+			pad.SetActiveMotor(motor, true);
 			v1->Mode = 1;
 			Instances[(int)motor - 1] = _this;
 		}
@@ -46,7 +41,7 @@ namespace rumble
 		if (v1->Time-- <= 0)
 		{
 			DeleteObject_(_this);
-			pad.SetActiveMotor(motor, 0);
+			pad.SetActiveMotor(motor, false);
 		}
 	}
 
@@ -90,8 +85,16 @@ namespace rumble
 			_this->UnknownA_ptr = param;
 
 			int i = (int)motor - 1;
-			if (Instances[i] != nullptr)
+			// HACK: Fixes tornado in Windy Valley, allowing it to queue rumble requests and pulse the motor.
+			if (motor & Motor::Large && Instances[i] != nullptr)
 				DeleteObject_(Instances[i]);
+
+			if (input::debug)
+			{
+				Uint32 time_ms = (Uint32)(time_scaled * (1000.0f / (60.0f / (float)FrameIncrement)));
+				PrintDebug("[Input] [%u] Rumble %u: %s, %u frames (%ums)\n",
+					FrameCounter, param->unit, (motor == Motor::Small ? "R" : "L"), time_scaled, time_ms);
+			}
 		}
 		else
 		{

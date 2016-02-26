@@ -45,7 +45,7 @@ public:
 
 	// Poor man's properties
 	Motor GetActiveMotor() const { return rumble_state; }
-	void SetActiveMotor(Motor motor, Uint32 time);
+	void SetActiveMotor(Motor motor, bool enable);
 	bool Connected() const { return connected; }
 	int ControllerID() const { return controller_id; }
 	float NormalizedL() const { return normalized_L; }
