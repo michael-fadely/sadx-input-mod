@@ -9,8 +9,7 @@
 DreamPad DreamPad::Controllers[GAMEPAD_COUNT];
 
 DreamPad::DreamPad() : controller_id(-1), gamepad(nullptr), haptic(nullptr), effect({}), effect_id(-1),
-	rumbleStart_L(0), rumbleDuration_L(0), rumbleStart_S(0), rumbleDuration_S(0), rumble_state(Motor::None),
-	pad({}), normalized_L(0.0f), normalized_R(0.0f)
+	rumble_state(Motor::None), pad({}), normalized_L(0.0f), normalized_R(0.0f)
 {
 	// TODO: Properly detect supported rumble types
 	effect.leftright.type = SDL_HAPTIC_LEFTRIGHT;
@@ -167,16 +166,12 @@ void DreamPad::SetActiveMotor(Motor motor, Uint32 time)
 	if (motor & Motor::Large)
 	{
 		effect.leftright.large_magnitude = !disable ? (ushort)(USHRT_MAX * f) : 0;
-		rumbleStart_L = GetTickCount();
-		rumbleDuration_L = (uint)((1000.0 / 60.0) * time);
 		rumble_state = (Motor)(!disable ? rumble_state | motor : rumble_state & ~Motor::Large);
 	}
 
 	if (motor & Motor::Small)
 	{
 		effect.leftright.small_magnitude = !disable ? (ushort)(USHRT_MAX * f) : 0;
-		rumbleStart_S = GetTickCount();
-		rumbleDuration_S = (uint)((1000.0 / 60.0) * time);
 		rumble_state = (Motor)(!disable ? rumble_state | motor : rumble_state & ~Motor::Small);
 	}
 

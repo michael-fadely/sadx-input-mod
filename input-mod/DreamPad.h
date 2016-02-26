@@ -97,7 +97,6 @@ private:
 	SDL_Haptic* haptic;
 	SDL_HapticEffect effect;
 	int effect_id;
-	uint rumbleStart_L, rumbleDuration_L, rumbleStart_S, rumbleDuration_S;
 	Motor rumble_state;
 
 	ControllerData pad;
