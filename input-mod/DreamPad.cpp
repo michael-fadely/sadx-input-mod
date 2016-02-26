@@ -166,12 +166,14 @@ void DreamPad::SetActiveMotor(Motor motor, Uint32 time)
 	if (motor & Motor::Large)
 	{
 		effect.leftright.large_magnitude = !disable ? (ushort)(USHRT_MAX * f) : 0;
+		effect.leftright.length = time;
 		rumble_state = (Motor)(!disable ? rumble_state | motor : rumble_state & ~Motor::Large);
 	}
 
 	if (motor & Motor::Small)
 	{
 		effect.leftright.small_magnitude = !disable ? (ushort)(USHRT_MAX * f) : 0;
+		effect.leftright.length = time;
 		rumble_state = (Motor)(!disable ? rumble_state | motor : rumble_state & ~Motor::Small);
 	}
 

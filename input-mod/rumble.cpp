@@ -21,15 +21,17 @@ namespace rumble
 	{
 		ObjUnknownB* v1 = (ObjUnknownB*)_this->UnknownB_ptr;
 		PDS_VIBPARAM* param = (PDS_VIBPARAM*)_this->UnknownA_ptr;
+		Motor motor = (Motor)param->reserved[0];
+		DreamPad& pad = DreamPad::Controllers[param->unit];
 
 		if (v1->Time-- <= 0)
 		{
-			DreamPad::Controllers[param->unit].SetActiveMotor((Motor)param->reserved[0], 0);
+			pad.SetActiveMotor(motor, 0);
 			DeleteObject_(_this);
 		}
-		else
+		else if (!(pad.GetActiveMotor() & motor))
 		{
-			DreamPad::Controllers[param->unit].SetActiveMotor((Motor)param->reserved[0], 1000);
+			pad.SetActiveMotor((Motor)param->reserved[0], (Uint32)(v1->Time * (1000.0 / (60.0 / FrameIncrement))));
 		}
 	}
 
@@ -48,7 +50,7 @@ namespace rumble
 		if (_this == nullptr)
 			return;
 
-		((ObjUnknownB*)_this->UnknownB_ptr)->Time = max(4 * time, (uint)(DreamPad::Controllers[port].settings.rumbleMinTime / (1000.0f / 60.0f)));
+		((ObjUnknownB*)_this->UnknownB_ptr)->Time = max(4 * time, (uint)(DreamPad::Controllers[port].settings.rumbleMinTime / (1000.0f / (60.0f / FrameIncrement))));
 		PDS_VIBPARAM* param = (PDS_VIBPARAM*)AllocateMemory(sizeof(PDS_VIBPARAM));
 
 		if (param)
