@@ -15,7 +15,12 @@ namespace rumble
 	Sint32 __cdecl pdVibMxStop_hook(Uint32 port)
 	{
 		for (Uint32 i = 0; i < GAMEPAD_COUNT; i++)
-			DreamPad::Controllers[i].SetActiveMotor(Motor::Both, 0);
+		{
+			DreamPad& pad = DreamPad::Controllers[i];
+			if (pad.GetActiveMotor() != Motor::None)
+				pad.SetActiveMotor(Motor::Both, 0);
+		}
+		
 		return 0;
 	}
 
@@ -42,7 +47,6 @@ namespace rumble
 			DeleteObject_(_this);
 			pad.SetActiveMotor(motor, 0);
 		}
-
 	}
 
 	static void __cdecl Rumble_Delete(ObjectMaster* _this)
