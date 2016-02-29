@@ -117,7 +117,6 @@ extern "C"
 
 			const char* config_cstr = config.c_str();
 			input::debug = GetPrivateProfileIntA("Config", "Debug", (int)debug_default, config_cstr) != 0;
-			rumble::cutsceneRumble = GetPrivateProfileIntA("Config", "CutsceneRumble", 1, config_cstr) != 0;
 
 			for (ushort i = 0; i < GAMEPAD_COUNT; i++)
 			{

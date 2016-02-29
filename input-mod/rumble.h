@@ -3,8 +3,6 @@
 
 namespace rumble
 {
-	extern bool cutsceneRumble;
-
 	enum PDD_VIB_FLAG
 	{
 		PDD_VIB_FLAG_CONTINUOUS = 0x1,
