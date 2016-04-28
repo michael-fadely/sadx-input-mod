@@ -9,8 +9,6 @@
 #include "rumble.h"
 #include "DreamPad.h"
 
-VoidFunc(WriteAnalogs, 0x0040F170);
-
 struct AnalogThing
 {
 	Angle	angle;

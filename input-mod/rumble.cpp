@@ -59,7 +59,7 @@ namespace rumble
 			return;
 		}
 
-		ObjectMaster* _this = LoadObject(LoadObjFlags_UnknownB, 0, Rumble_Main_hook);
+		ObjectMaster* _this = LoadObject(LoadObj_UnknownB, 0, Rumble_Main_hook);
 
 		if (_this == nullptr)
 			return;
