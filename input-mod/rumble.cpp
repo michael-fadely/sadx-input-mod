@@ -8,7 +8,7 @@
 
 namespace rumble
 {
-	static ObjectMaster* Instances[2] = {};
+	static ObjectMaster* Instances[GAMEPAD_COUNT][2] = {};
 
 	Sint32 __cdecl pdVibMxStop_hook(Uint32 port)
 	{
@@ -33,7 +33,7 @@ namespace rumble
 		{
 			pad.SetActiveMotor(motor, true);
 			v1->Mode = 1;
-			Instances[(int)motor - 1] = _this;
+			Instances[param->unit][(int)motor - 1] = _this;
 		}
 
 		if (v1->Time-- <= 0)
@@ -49,8 +49,8 @@ namespace rumble
 		Motor motor = (Motor)param->reserved[0];
 		int i = (int)motor - 1;
 
-		if (Instances[i] == _this)
-			Instances[i] = nullptr;
+		if (Instances[param->unit][i] == _this)
+			Instances[param->unit][i] = nullptr;
 	}
 
 	static void __cdecl Rumble_Load_hook(Uint32 port, Uint32 time, Motor motor)
@@ -88,7 +88,7 @@ namespace rumble
 			int i = (int)motor - 1;
 			// HACK: Fixes tornado in Windy Valley, allowing it to queue rumble requests and pulse the motor.
 			if (motor & Motor::Large && Instances[i] != nullptr)
-				DeleteObject_(Instances[i]);
+				DeleteObject_(Instances[port][i]);
 
 			if (input::debug)
 			{
