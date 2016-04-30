@@ -18,7 +18,7 @@ namespace rumble
 			if (pad.GetActiveMotor() != Motor::None)
 				pad.SetActiveMotor(Motor::Both, false);
 		}
-		
+
 		return 0;
 	}
 
@@ -47,7 +47,10 @@ namespace rumble
 	{
 		PDS_VIBPARAM* param = (PDS_VIBPARAM*)_this->UnknownA_ptr;
 		Motor motor = (Motor)param->reserved[0];
-		Instances[(int)motor - 1] = nullptr;
+		int i = (int)motor - 1;
+
+		if (Instances[i] == _this)
+			Instances[i] = nullptr;
 	}
 
 	static void __cdecl Rumble_Load_hook(Uint32 port, Uint32 time, Motor motor)
