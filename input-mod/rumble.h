@@ -5,8 +5,8 @@ namespace rumble
 {
 	enum PDD_VIB_FLAG
 	{
-		PDD_VIB_FLAG_CONTINUOUS = 0x1,
-		PDD_VIB_FLAG_EXHALATION = 0x8,
+		PDD_VIB_FLAG_CONTINUOUS  = 0x1,
+		PDD_VIB_FLAG_EXHALATION  = 0x8,
 		PDD_VIB_FLAG_CONVERGENCE = 0x80,
 	};
 
@@ -24,14 +24,6 @@ namespace rumble
 		Uint8 reserved[3];                   /* 予約                           */
 											 /* Reserved                       */
 	} PDS_VIBPARAM;
-
-	enum LoadObjFlags : __int8
-	{
-		LoadObjFlags_CharObj2 = 0x1,
-		LoadObjFlags_CharObj1 = 0x2,
-		LoadObjFlags_UnknownA = 0x4,
-		LoadObjFlags_UnknownB = 0x8,
-	};
 
 #pragma pack(push, 1)
 	struct ObjUnknownB

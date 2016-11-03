@@ -18,12 +18,12 @@
 #include "input.h"
 #include "rumble.h"
 
-void* RumbleA_ptr				= (void*)0x004BCBC0;
-void* RumbleB_ptr				= (void*)0x004BCC10;
-void* Rumble_ptr				= (void*)0x004BCB60; // Unused, but here so I don't lose it.
-void* UpdateControllers_ptr		= (void*)0x0040F460;
-void* AnalogHook_ptr			= (void*)0x0040F343;
-void* InitRawControllers_ptr	= (void*)0x0040F451; // End of function (hook)
+static void* RumbleA_ptr            = (void*)0x004BCBC0;
+static void* RumbleB_ptr            = (void*)0x004BCC10;
+static void* Rumble_ptr             = (void*)0x004BCB60; // Unused, but here so I don't lose it.
+static void* UpdateControllers_ptr  = (void*)0x0040F460;
+static void* AnalogHook_ptr         = (void*)0x0040F343;
+static void* InitRawControllers_ptr = (void*)0x0040F451; // End of function (hook)
 
 PointerInfo jumps[] = {
 	{ rumble::pdVibMxStop,		rumble::pdVibMxStop_hook },
@@ -39,7 +39,7 @@ PointerInfo jumps[] = {
 	//{ UpdateControllers_ptr, (void*)0x0040FDB3 }
 };
 
-std::string BuildModPath(const char* modpath, const char* path)
+static std::string BuildModPath(const char* modpath, const char* path)
 {
 	std::stringstream result;
 	char workingdir[FILENAME_MAX];

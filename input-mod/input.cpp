@@ -80,7 +80,7 @@ namespace input
 		}
 	}
 
-	void FixAnalogs()
+	static void FixAnalogs()
 	{
 		if (!ControlEnabled)
 			return;
@@ -112,7 +112,7 @@ namespace input
 		}
 	}
 
-	void RedirectRawControllers()
+	static void RedirectRawControllers()
 	{
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 			ControllerPointers[i] = &RawInput[i];

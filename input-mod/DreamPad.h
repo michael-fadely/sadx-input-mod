@@ -49,7 +49,7 @@ public:
 	bool Connected() const { return connected; }
 	int ControllerID() const { return controller_id; }
 	float NormalizedL() const { return normalized_L; }
-	float NormalizedR() const { return normalized_R; }	
+	float NormalizedR() const { return normalized_R; }
 	// SDL -> Dreamcast converted input data (ControllerData).
 	const ControllerData& DreamcastData() const { return pad; }
 
@@ -67,7 +67,7 @@ public:
 		float	rumbleFactor;		// Rumble intensity multiplier (1.0 by default)
 		bool	megaRumble;			// Always fire both motors
 		ushort	rumbleMinTime;		// Minimum rumble time for controllers that have issues
-		
+
 		void apply(short deadzoneL, short deadzoneR,
 			bool radialL, bool radialR, uint8 triggerThreshold, float rumbleFactor, bool megaRumble, ushort rumbleMinTime);
 	} settings;
@@ -81,7 +81,7 @@ public:
 	/// <param name="source">The source axes (SDL).</param>
 	/// <param name="deadzone">The deadzone.</param>
 	/// <param name="radial">If set to <c>true</c>, the deadzone is treated as fully radial. (i.e one axis exceeding deadzone implies the other)</param>
-	float ConvertAxes(short* dest, short* source, short deadzone, bool radial) const;	
+	float ConvertAxes(short* dest, short* source, short deadzone, bool radial) const;
 
 	/// <summary>
 	/// Handles certain SDL events (such as controller connect and disconnect).

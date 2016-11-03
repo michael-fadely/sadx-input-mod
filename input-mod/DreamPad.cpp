@@ -6,6 +6,15 @@
 
 #include "DreamPad.h"
 
+static const Uint32 PAD_SUPPORT = 
+	PDD_DEV_SUPPORT_TA | PDD_DEV_SUPPORT_TB | PDD_DEV_SUPPORT_TX | PDD_DEV_SUPPORT_TY | PDD_DEV_SUPPORT_ST
+#ifdef EXTENDED_BUTTONS
+	| PDD_DEV_SUPPORT_TC | PDD_DEV_SUPPORT_TD | PDD_DEV_SUPPORT_TZ
+#endif
+	| PDD_DEV_SUPPORT_AR | PDD_DEV_SUPPORT_AL
+	| PDD_DEV_SUPPORT_KU | PDD_DEV_SUPPORT_KD | PDD_DEV_SUPPORT_KL | PDD_DEV_SUPPORT_KR
+	| PDD_DEV_SUPPORT_AX1 | PDD_DEV_SUPPORT_AY1 | PDD_DEV_SUPPORT_AX2 | PDD_DEV_SUPPORT_AY2;
+
 DreamPad DreamPad::Controllers[GAMEPAD_COUNT];
 
 DreamPad::DreamPad() : controller_id(-1), gamepad(nullptr), haptic(nullptr), effect({}), effect_id(-1),
@@ -29,13 +38,7 @@ bool DreamPad::Open(int id)
 	if (gamepad == nullptr)
 		return connected = false;
 
-	pad.Support = (PDD_DEV_SUPPORT_TA | PDD_DEV_SUPPORT_TB | PDD_DEV_SUPPORT_TX | PDD_DEV_SUPPORT_TY | PDD_DEV_SUPPORT_ST
-#ifdef EXTENDED_BUTTONS
-		| PDD_DEV_SUPPORT_TC | PDD_DEV_SUPPORT_TD | PDD_DEV_SUPPORT_TZ
-#endif
-		| PDD_DEV_SUPPORT_AR | PDD_DEV_SUPPORT_AL
-		| PDD_DEV_SUPPORT_KU | PDD_DEV_SUPPORT_KD | PDD_DEV_SUPPORT_KL | PDD_DEV_SUPPORT_KR
-		| PDD_DEV_SUPPORT_AX1 | PDD_DEV_SUPPORT_AY1 | PDD_DEV_SUPPORT_AX2 | PDD_DEV_SUPPORT_AY2);
+	pad.Support = PAD_SUPPORT;
 
 	SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad);
 
@@ -145,11 +148,11 @@ void DreamPad::Poll()
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
 		buttons |= Buttons_Right;
 
-	pad.HeldButtons		= buttons;
-	pad.NotHeldButtons	= ~buttons;
-	pad.ReleasedButtons	= pad.Old & (buttons ^ pad.Old);
-	pad.PressedButtons	= buttons & (buttons ^ pad.Old);
-	pad.Old				= pad.HeldButtons;
+	pad.HeldButtons     = buttons;
+	pad.NotHeldButtons  = ~buttons;
+	pad.ReleasedButtons = pad.Old & (buttons ^ pad.Old);
+	pad.PressedButtons  = buttons & (buttons ^ pad.Old);
+	pad.Old             = pad.HeldButtons;
 }
 
 void DreamPad::SetActiveMotor(Motor motor, bool enable)
@@ -228,8 +231,8 @@ void DreamPad::ProcessEvents()
 				int which = event.cdevice.which;
 				for (uint i = 0; i < GAMEPAD_COUNT; i++)
 				{
-					// Checking for both in cases like the DualShock 4 and DS4Windows where the controller might be "connected"
-					// twice with the same ID. DreamPad::Open automatically closes if already open.
+					// Checking for both in cases like the DualShock 4 and DS4Windows where the controller might be
+					// "connected" twice with the same ID. DreamPad::Open automatically closes if already open.
 					if (!Controllers[i].Connected() || Controllers[i].ControllerID() == which)
 					{
 						Controllers[i].Open(which);
@@ -260,24 +263,24 @@ void DreamPad::ProcessEvents()
 
 DreamPad::Settings::Settings()
 {
-	deadzoneL			= GAMEPAD_LEFT_THUMB_DEADZONE;
-	deadzoneR			= GAMEPAD_RIGHT_THUMB_DEADZONE;
-	triggerThreshold	= GAMEPAD_TRIGGER_THRESHOLD;
-	radialL				= true;
-	radialR				= false;
-	rumbleFactor		= 1.0f;
-	megaRumble			= false;
-	rumbleMinTime		= 0;
+	deadzoneL        = GAMEPAD_LEFT_THUMB_DEADZONE;
+	deadzoneR        = GAMEPAD_RIGHT_THUMB_DEADZONE;
+	triggerThreshold = GAMEPAD_TRIGGER_THRESHOLD;
+	radialL          = true;
+	radialR          = false;
+	rumbleFactor     = 1.0f;
+	megaRumble       = false;
+	rumbleMinTime    = 0;
 }
 void DreamPad::Settings::apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, uint8 triggerThreshold,
 	float rumbleFactor, bool megaRumble, ushort rumbleMinTime)
 {
-	this->deadzoneL			= clamp(deadzoneL, (short)0, (short)SHRT_MAX);
-	this->deadzoneR			= clamp(deadzoneR, (short)0, (short)SHRT_MAX);
-	this->radialL			= radialL;
-	this->radialR			= radialR;
-	this->triggerThreshold	= triggerThreshold;
-	this->rumbleFactor		= rumbleFactor;
-	this->megaRumble		= megaRumble;
-	this->rumbleMinTime		= rumbleMinTime;
+	this->deadzoneL        = clamp(deadzoneL, (short)0, (short)SHRT_MAX);
+	this->deadzoneR        = clamp(deadzoneR, (short)0, (short)SHRT_MAX);
+	this->radialL          = radialL;
+	this->radialR          = radialR;
+	this->triggerThreshold = triggerThreshold;
+	this->rumbleFactor     = rumbleFactor;
+	this->megaRumble       = megaRumble;
+	this->rumbleMinTime    = rumbleMinTime;
 }
