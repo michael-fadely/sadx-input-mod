@@ -118,6 +118,9 @@ extern "C"
 			const char* config_cstr = config.c_str();
 			input::debug = GetPrivateProfileIntA("Config", "Debug", (int)debug_default, config_cstr) != 0;
 
+			// This defaults RadialR to enabled if smooth-cam is detected.
+			int smooth_cam = GetModuleHandleA("smooth-cam.dll") != nullptr ? 1 : 0;
+
 			for (ushort i = 0; i < GAMEPAD_COUNT; i++)
 			{
 				std::string section = "Controller " + std::to_string(i + 1);
@@ -127,7 +130,7 @@ extern "C"
 				int deadzoneR = GetPrivateProfileIntA(section_cstr, "DeadzoneR", GAMEPAD_RIGHT_THUMB_DEADZONE, config_cstr);
 
 				bool radialL = GetPrivateProfileIntA(section_cstr, "RadialL", 1, config_cstr) != 0;
-				bool radialR = GetPrivateProfileIntA(section_cstr, "RadialR", 0, config_cstr) != 0;
+				bool radialR = GetPrivateProfileIntA(section_cstr, "RadialR", smooth_cam, config_cstr) != 0;
 
 				int triggerThreshold = GetPrivateProfileIntA(section_cstr, "TriggerThreshold", GAMEPAD_TRIGGER_THRESHOLD, config_cstr);
 
