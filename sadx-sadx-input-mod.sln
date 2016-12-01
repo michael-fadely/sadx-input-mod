@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "input-mod", "input-mod\input-mod.vcxproj", "{3F122E9B-E722-461F-9DCE-4A82957736B0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sadx-input-mod", "sadx-input-mod\sadx-input-mod.vcxproj", "{3F122E9B-E722-461F-9DCE-4A82957736B0}"
 	ProjectSection(ProjectDependencies) = postProject
 		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68} = {81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}
 		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A} = {DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}
