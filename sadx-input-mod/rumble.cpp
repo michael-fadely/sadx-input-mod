@@ -107,9 +107,14 @@ namespace rumble
 		if (!(motor & Motor::Small) && instance != nullptr)
 		{
 			auto data = (RumbleTimer*)instance->UnknownA_ptr;
-			data->frames = time_scaled;
+
+			data->frames  = time_scaled;
 			data->applied = false;
-			DreamPad::Controllers[port].SetActiveMotor(motor, false);
+
+			if (FrameCounter % 60 < 2)
+			{
+				DreamPad::Controllers[port].SetActiveMotor(motor, false);
+			}
 		}
 		else
 		{
