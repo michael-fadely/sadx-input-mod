@@ -221,7 +221,7 @@ namespace rumble
 		}
 	}
 
-	static const void* loc_0042D534 = (const void*)0x0042D534;
+	static constexpr auto loc_0042D534 = (const void*)0x0042D534;
 	/// <summary>
 	/// Enables rumble by default when a new save file is created.
 	/// </summary>

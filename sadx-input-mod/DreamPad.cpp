@@ -31,7 +31,9 @@ DreamPad::~DreamPad()
 bool DreamPad::Open(int id)
 {
 	if (connected)
+	{
 		Close();
+	}
 
 	gamepad = SDL_GameControllerOpen(id);
 
@@ -43,13 +45,17 @@ bool DreamPad::Open(int id)
 	SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad);
 
 	if (joystick == nullptr)
+	{
 		return connected = false;
+	}
 
 	controller_id = id;
 	haptic = SDL_HapticOpenFromJoystick(joystick);
 
 	if (haptic == nullptr)
+	{
 		return connected = true;
+	}
 
 	if (SDL_HapticRumbleSupported(haptic))
 	{
@@ -67,7 +73,9 @@ bool DreamPad::Open(int id)
 void DreamPad::Close()
 {
 	if (!connected)
+	{
 		return;
+	}
 
 	if (haptic != nullptr)
 	{
@@ -91,7 +99,9 @@ void DreamPad::Close()
 void DreamPad::Poll()
 {
 	if (!connected)
+	{
 		return;
+	}
 
 	SDL_GameControllerUpdate();
 
@@ -119,34 +129,58 @@ void DreamPad::Poll()
 	buttons |= DigitalTrigger(pad.RTriggerPressure, settings.triggerThreshold, Buttons_R);
 
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_A))
+	{
 		buttons |= Buttons_A;
+	}
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_B))
+	{
 		buttons |= Buttons_B;
+	}
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_X))
+	{
 		buttons |= Buttons_X;
+	}
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_Y))
+	{
 		buttons |= Buttons_Y;
+	}
 
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_START))
+	{
 		buttons |= Buttons_Start;
+	}
 
 #ifdef EXTENDED_BUTTONS
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_LEFTSHOULDER))
+	{
 		buttons |= Buttons_C;
+	}
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_BACK))
+	{
 		buttons |= Buttons_D;
+	}
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER))
+	{
 		buttons |= Buttons_Z;
+	}
 #endif
 
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP))
+	{
 		buttons |= Buttons_Up;
+	}
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_DOWN))
+	{
 		buttons |= Buttons_Down;
+	}
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_LEFT))
+	{
 		buttons |= Buttons_Left;
+	}
 	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
+	{
 		buttons |= Buttons_Right;
+	}
 
 	pad.HeldButtons     = buttons;
 	pad.NotHeldButtons  = ~buttons;
@@ -158,10 +192,14 @@ void DreamPad::Poll()
 void DreamPad::SetActiveMotor(Motor motor, bool enable)
 {
 	if (effect_id == -1 || haptic == nullptr)
+	{
 		return;
+	}
 
 	if (settings.megaRumble)
+	{
 		motor = Motor::Both;
+	}
 
 	const float f = settings.rumbleFactor;
 

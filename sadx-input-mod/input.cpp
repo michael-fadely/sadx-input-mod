@@ -34,13 +34,17 @@ namespace input
 			// we copy the data from ControllersRaw first in the event that the controller
 			// isn't connected and the keyboard is to be used.
 			if (i == 0)
+			{
 				RawInput[i] = ControllersRaw[i];
+			}
 
 			DreamPad* dpad = &DreamPad::Controllers[i];
 
 			// HACK: This enables use of the keyboard and mouse if no controllers are connected.
 			if (!dpad->Connected())
+			{
 				continue;
+			}
 
 			dpad->Poll();
 			dpad->Copy(RawInput[i]);
@@ -48,7 +52,9 @@ namespace input
 			// Compatibility for mods who use ControllersRaw directly.
 			// This will only copy the first four controllers.
 			if (i < ControllersRaw_Length)
+			{
 				ControllersRaw[i] = RawInput[i];
+			}
 
 #ifdef EXTENDED_BUTTONS
 			if (debug && RawInput[i].HeldButtons & Buttons_C)
@@ -65,13 +71,21 @@ namespace input
 				{
 					int pressed = pad->PressedButtons;
 					if (pressed & Buttons_Up)
+					{
 						dpad->settings.rumbleFactor += 0.125f;
+					}
 					else if (pressed & Buttons_Down)
+					{
 						dpad->settings.rumbleFactor -= 0.125f;
+					}
 					else if (pressed & Buttons_Left)
+					{
 						rumble::RumbleA(i, 0);
+					}
 					else if (pressed & Buttons_Right)
+					{
 						rumble::RumbleB(i, 7, 59, 6);
+					}
 
 					DisplayDebugStringFormatted(NJM_LOCATION(4, 10 + (3 * i)), "Rumble factor (U/D): %f (L/R to test)", dpad->settings.rumbleFactor);
 				}
@@ -83,12 +97,16 @@ namespace input
 	static void FixAnalogs()
 	{
 		if (!ControlEnabled)
+		{
 			return;
+		}
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
 			if (!_ControllerEnabled[i])
+			{
 				continue;
+			}
 
 			const DreamPad& dreamPad = DreamPad::Controllers[i];
 
@@ -98,7 +116,9 @@ namespace input
 				// SADX's internal deadzone is 12 of 127. It doesn't set the relative forward direction
 				// unless this is exceeded in WriteAnalogs(), so the analog shouldn't be set otherwise.
 				if (abs(pad.LeftStickX) > 12 || abs(pad.LeftStickY) > 12)
+				{
 					NormalizedAnalogs[i].magnitude = dreamPad.NormalizedL();
+				}
 			}
 		}
 	}
@@ -115,7 +135,9 @@ namespace input
 	static void RedirectRawControllers()
 	{
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
+		{
 			ControllerPointers[i] = &RawInput[i];
+		}
 	}
 
 	void __declspec(naked) RedirectRawControllers_Hook()
@@ -139,7 +161,9 @@ namespace input
 		if (index > GAMEPAD_COUNT)
 		{
 			for (Uint32 i = 0; i < min(index, (Uint8)GAMEPAD_COUNT); i++)
+			{
 				EnableController_hook(i);
+			}
 		}
 		else
 		{
@@ -159,7 +183,9 @@ namespace input
 		if (index > GAMEPAD_COUNT)
 		{
 			for (Uint32 i = 0; i < min(index, (Uint8)GAMEPAD_COUNT); i++)
+			{
 				DisableController_hook(i);
+			}
 		}
 		else
 		{
