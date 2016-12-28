@@ -61,10 +61,24 @@ extern "C"
 
 	__declspec(dllexport) void Init(const char* path, const HelperFunctions& helperFunctions)
 	{
+		std::string dll = BuildModPath(path, "SDL2.dll");
+
+		auto handle = LoadLibraryA(dll.c_str());
+
+		if (handle == nullptr)
+		{
+			PrintDebug("[Input] Unable to load SDL2.dll.\n");
+
+			MessageBoxA(nullptr, "Error loading SDL. See debug message for details.",
+				"SDL Load Error", MB_OK | MB_ICONERROR);
+
+			return;
+		}
+
 		int init;
 		if ((init = SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC | SDL_INIT_EVENTS)) != 0)
 		{
-			PrintDebug("Unable to initialize SDL. Error code: %i\n", init);
+			PrintDebug("[Input] Unable to initialize SDL. Error code: %i\n", init);
 			MessageBoxA(nullptr, "Error initializing SDL. See debug message for details.",
 				"SDL Init Error", MB_OK | MB_ICONERROR);
 			return;
@@ -100,9 +114,13 @@ extern "C"
 			int result = SDL_GameControllerAddMappingsFromFile(dbpath.c_str());
 
 			if (result == -1)
+			{
 				PrintDebug("[Input] Error loading gamecontrollerdb: %s\n", SDL_GetError());
+			}
 			else
+			{
 				PrintDebug("[Input] Controller mappings loaded: %i\n", result);
+			}
 		}
 
 		std::string config = BuildModPath(path, "config.ini");
@@ -160,6 +178,8 @@ extern "C"
 	__declspec(dllexport) void OnExit()
 	{
 		for (auto& i : DreamPad::Controllers)
+		{
 			i.Close();
+		}
 	}
 }
