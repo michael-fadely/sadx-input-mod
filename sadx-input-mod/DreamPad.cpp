@@ -96,7 +96,7 @@ void DreamPad::Close()
 	connected = false;
 }
 
-void DreamPad::Poll()
+void DreamPad::Poll(Uint32 add_buttons, const NJS_POINT2I* add_left, const NJS_POINT2I* add_right)
 {
 	if (!connected)
 	{
@@ -105,17 +105,32 @@ void DreamPad::Poll()
 
 	SDL_GameControllerUpdate();
 
-	short axis[2];
+	NJS_POINT2I axis;
 
-	axis[0] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
-	axis[1] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
+	axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
+	axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
 
-	normalized_L = ConvertAxes(&pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
+	if (add_left != nullptr && (add_left->x != 0 || add_left->y != 0))
+	{
+		normalized_L = ConvertAxes((NJS_POINT2I*)&pad.LeftStickX, *add_left, settings.deadzoneL, settings.radialL);
+	}
+	else
+	{
+		normalized_L = ConvertAxes((NJS_POINT2I*)&pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
+	}
 
-	axis[0] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX);
-	axis[1] = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY);
+	axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX);
+	axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY);
 
-	normalized_R = ConvertAxes(&pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
+
+	if (add_right != nullptr && (add_right->x != 0 || add_right->y != 0))
+	{
+		normalized_R = ConvertAxes((NJS_POINT2I*)&pad.RightStickX, *add_right, settings.deadzoneR, settings.radialR);
+	}
+	else
+	{
+		normalized_R = ConvertAxes((NJS_POINT2I*)&pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
+	}
 
 	short lt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
 	short rt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
@@ -123,7 +138,7 @@ void DreamPad::Poll()
 	pad.LTriggerPressure = (short)(255.0f * ((float)lt / (float)SHRT_MAX));
 	pad.RTriggerPressure = (short)(255.0f * ((float)rt / (float)SHRT_MAX));;
 
-	int buttons = 0;
+	Uint32 buttons = 0;
 
 	buttons |= DigitalTrigger(pad.LTriggerPressure, settings.triggerThreshold, Buttons_L);
 	buttons |= DigitalTrigger(pad.RTriggerPressure, settings.triggerThreshold, Buttons_R);
@@ -182,6 +197,8 @@ void DreamPad::Poll()
 		buttons |= Buttons_Right;
 	}
 
+	buttons |= add_buttons;
+
 	pad.HeldButtons     = buttons;
 	pad.NotHeldButtons  = ~buttons;
 	pad.ReleasedButtons = pad.Old & (buttons ^ pad.Old);
@@ -229,17 +246,17 @@ inline int DreamPad::DigitalTrigger(ushort trigger, ushort threshold, int button
 	return (trigger > threshold) ? button : 0;
 }
 
-float DreamPad::ConvertAxes(short* dest, short* source, short deadzone, bool radial) const
+float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short deadzone, bool radial) const
 {
-	if (abs(source[0]) < deadzone && abs(source[1]) < deadzone)
+	if (abs(source.x) < deadzone && abs(source.y) < deadzone)
 	{
-		dest[0] = dest[1] = 0;
+		*dest = {};
 		return 0.0f;
 	}
 
 	// This is being intentionally limited to -32767 instead of -32768
-	const float x = (float)clamp(source[0], (short)-SHRT_MAX, (short)SHRT_MAX);
-	const float y = (float)-clamp(source[1], (short)-SHRT_MAX, (short)SHRT_MAX);
+	const float x = (float)clamp(source.x, (short)-SHRT_MAX, (short)SHRT_MAX);
+	const float y = (float)-clamp(source.y, (short)-SHRT_MAX, (short)SHRT_MAX);
 
 	const float m = sqrt(x * x + y * y);
 
@@ -248,56 +265,11 @@ float DreamPad::ConvertAxes(short* dest, short* source, short deadzone, bool rad
 	const float n	= (min((float)SHRT_MAX, m) - deadzone) / ((float)SHRT_MAX - deadzone);
 
 	// In my testing, multiplying -128 to 128 results in 127 instead, which is the desired value.
-	dest[0] = (radial || abs(source[0]) >= deadzone) ? (short)clamp((short)(128 * (nx * n)), (short)-127, (short)127) : 0;
-	dest[1] = (radial || abs(source[1]) >= deadzone) ? (short)clamp((short)(-128 * (ny * n)), (short)-127, (short)127) : 0;
+	dest->x = (radial || abs(source.x) >= deadzone) ? (short)clamp((short)(128 * (nx * n)), (short)-127, (short)127) : 0;
+	dest->y = (radial || abs(source.y) >= deadzone) ? (short)clamp((short)(-128 * (ny * n)), (short)-127, (short)127) : 0;
 
 	return n;
 }
-
-void DreamPad::ProcessEvents()
-{
-	SDL_Event event;
-	while (SDL_PollEvent(&event))
-	{
-		switch (event.type)
-		{
-			default:
-				break;
-
-			case SDL_CONTROLLERDEVICEADDED:
-			{
-				int which = event.cdevice.which;
-				for (uint i = 0; i < GAMEPAD_COUNT; i++)
-				{
-					// Checking for both in cases like the DualShock 4 and DS4Windows where the controller might be
-					// "connected" twice with the same ID. DreamPad::Open automatically closes if already open.
-					if (!Controllers[i].Connected() || Controllers[i].ControllerID() == which)
-					{
-						Controllers[i].Open(which);
-						break;
-					}
-				}
-				break;
-			}
-
-			// TODO: Zero out raw input structure on disconnect.
-			case SDL_CONTROLLERDEVICEREMOVED:
-			{
-				int which = event.cdevice.which;
-				for (uint i = 0; i < GAMEPAD_COUNT; i++)
-				{
-					if (Controllers[i].ControllerID() == which)
-					{
-						Controllers[i].Close();
-						break;
-					}
-				}
-				break;
-			}
-		}
-	}
-}
-
 
 DreamPad::Settings::Settings()
 {

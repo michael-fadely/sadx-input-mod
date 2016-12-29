@@ -41,7 +41,7 @@ public:
 	/// <summary>
 	/// Polls input for this instance.
 	/// </summary>
-	void Poll();
+	void Poll(Uint32 add_buttons, const NJS_POINT2I* add_left, const NJS_POINT2I* add_right);
 
 	// Poor man's properties
 	Motor GetActiveMotor() const { return rumble_state; }
@@ -81,12 +81,8 @@ public:
 	/// <param name="source">The source axes (SDL).</param>
 	/// <param name="deadzone">The deadzone.</param>
 	/// <param name="radial">If set to <c>true</c>, the deadzone is treated as fully radial. (i.e one axis exceeding deadzone implies the other)</param>
-	float ConvertAxes(short* dest, short* source, short deadzone, bool radial) const;
+	float ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short deadzone, bool radial) const;
 
-	/// <summary>
-	/// Handles certain SDL events (such as controller connect and disconnect).
-	/// </summary>
-	static void ProcessEvents();
 	static DreamPad Controllers[GAMEPAD_COUNT];
 
 private:

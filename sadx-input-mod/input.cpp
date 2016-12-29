@@ -9,6 +9,48 @@
 #include "rumble.h"
 #include "DreamPad.h"
 
+// TODO: mouse
+
+struct KeyboardStick
+{
+	Uint32 directions;
+	NJS_POINT2I axis;
+
+	void update()
+	{
+		auto x = directions & (Buttons_Left | Buttons_Right);
+
+		if (x == Buttons_Left)
+		{
+			axis.x = -SHRT_MAX;
+		}
+		else if (x == Buttons_Right)
+		{
+			axis.x = SHRT_MAX;
+		}
+		else
+		{
+			axis.x = 0;
+		}
+
+		auto y = directions & (Buttons_Up | Buttons_Down);
+
+		if (y == Buttons_Up)
+		{
+			axis.y = -SHRT_MAX;
+		}
+		else if (y == Buttons_Down)
+		{
+			axis.y = SHRT_MAX;
+		}
+		else
+		{
+			axis.y = 0;
+		}
+
+	}
+};
+
 struct AnalogThing
 {
 	Angle	angle;
@@ -17,37 +59,170 @@ struct AnalogThing
 
 DataArray(AnalogThing, NormalizedAnalogs, 0x03B0E7A0, 8);
 
+inline void set_button(Uint32& i, Uint32 value, bool key_down)
+{
+	if (key_down)
+	{
+		i |= value;
+	}
+	else
+	{
+		i &= ~value;
+	}
+}
+
+static KeyboardStick sticks[2] = {};
+static uint32 add_buttons = 0;
+
+static void UpdateKeyboardButtons(Uint32 scancode, bool key_down)
+{
+	switch (scancode)
+	{
+		default:
+			break;
+
+		case SDL_SCANCODE_X:
+		case SDL_SCANCODE_SPACE:
+			set_button(add_buttons, Buttons_A, key_down);
+			break;
+		case SDL_SCANCODE_Z:
+			set_button(add_buttons, Buttons_B, key_down);
+			break;
+		case SDL_SCANCODE_A:
+			set_button(add_buttons, Buttons_X, key_down);
+			break;
+		case SDL_SCANCODE_S:
+			set_button(add_buttons, Buttons_Y, key_down);
+			break;
+		case SDL_SCANCODE_Q:
+			set_button(add_buttons, Buttons_L, key_down);
+			break;
+		case SDL_SCANCODE_W:
+			set_button(add_buttons, Buttons_R, key_down);
+			break;
+		case SDL_SCANCODE_RETURN:
+			set_button(add_buttons, Buttons_Start, key_down);
+			break;
+		case SDL_SCANCODE_D:
+			set_button(add_buttons, Buttons_Z, key_down);
+			break;
+		case SDL_SCANCODE_C:
+			set_button(add_buttons, Buttons_C, key_down);
+			break;
+		case SDL_SCANCODE_E:
+			set_button(add_buttons, Buttons_D, key_down);
+			break;
+
+			// D-Pad
+		case SDL_SCANCODE_KP_8:
+			set_button(add_buttons, Buttons_Up, key_down);
+			break;
+		case SDL_SCANCODE_KP_5:
+			set_button(add_buttons, Buttons_Down, key_down);
+			break;
+		case SDL_SCANCODE_KP_4:
+			set_button(add_buttons, Buttons_Left, key_down);
+			break;
+		case SDL_SCANCODE_KP_6:
+			set_button(add_buttons, Buttons_Right, key_down);
+			break;
+
+			// Left stick
+		case SDL_SCANCODE_UP:
+			set_button(sticks[0].directions, Buttons_Up, key_down);
+			break;
+		case SDL_SCANCODE_DOWN:
+			set_button(sticks[0].directions, Buttons_Down, key_down);
+			break;
+		case SDL_SCANCODE_LEFT:
+			set_button(sticks[0].directions, Buttons_Left, key_down);
+			break;
+		case SDL_SCANCODE_RIGHT:
+			set_button(sticks[0].directions, Buttons_Right, key_down);
+			break;
+
+			// Right stick
+		case SDL_SCANCODE_I:
+			set_button(sticks[1].directions, Buttons_Up, key_down);
+			break;
+		case SDL_SCANCODE_K:
+			set_button(sticks[1].directions, Buttons_Down, key_down);
+			break;
+		case SDL_SCANCODE_J:
+			set_button(sticks[1].directions, Buttons_Left, key_down);
+			break;
+		case SDL_SCANCODE_L:
+			set_button(sticks[1].directions, Buttons_Right, key_down);
+			break;
+	}
+}
+
 namespace input
 {
 	ControllerData RawInput[GAMEPAD_COUNT];
 	bool _ControllerEnabled[GAMEPAD_COUNT];
 	bool debug = false;
 
-	// TODO: Keyboard & Mouse. Now I have no excuse.
 	void PollControllers()
 	{
-		DreamPad::ProcessEvents();
+		SDL_Event event;
+		while (SDL_PollEvent(&event))
+		{
+			switch (event.type)
+			{
+				default:
+					break;
+
+				case SDL_CONTROLLERDEVICEADDED:
+				{
+					int which = event.cdevice.which;
+					for (uint i = 0; i < GAMEPAD_COUNT; i++)
+					{
+						// Checking for both in cases like the DualShock 4 and DS4Windows where the controller might be
+						// "connected" twice with the same ID. DreamPad::Open automatically closes if already open.
+						if (!DreamPad::Controllers[i].Connected() || DreamPad::Controllers[i].ControllerID() == which)
+						{
+							DreamPad::Controllers[i].Open(which);
+							break;
+						}
+					}
+					break;
+				}
+
+				case SDL_CONTROLLERDEVICEREMOVED:
+				{
+					int which = event.cdevice.which;
+					for (uint i = 0; i < GAMEPAD_COUNT; i++)
+					{
+						if (DreamPad::Controllers[i].ControllerID() == which)
+						{
+							DreamPad::Controllers[i].Close();
+							break;
+						}
+					}
+					break;
+				}
+
+				case SDL_KEYDOWN:
+				case SDL_KEYUP:
+					UpdateKeyboardButtons(event.key.keysym.scancode, event.type == SDL_KEYDOWN);
+					break;
+			}
+		}
+
+		sticks[0].update();
+		sticks[1].update();
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
-			// Since RawInput replaces ControllersRaw in ControllerPointers,
-			// we copy the data from ControllersRaw first in the event that the controller
-			// isn't connected and the keyboard is to be used.
-			if (i == 0)
-			{
-				RawInput[i] = ControllersRaw[i];
-			}
+			DreamPad& dpad = DreamPad::Controllers[i];
 
-			DreamPad* dpad = &DreamPad::Controllers[i];
+			auto buttons = !i ? add_buttons : 0;
+			auto ls = !i ? &sticks[0].axis : nullptr;
+			auto rs = !i ? &sticks[1].axis : nullptr;
 
-			// HACK: This enables use of the keyboard and mouse if no controllers are connected.
-			if (!dpad->Connected())
-			{
-				continue;
-			}
-
-			dpad->Poll();
-			dpad->Copy(RawInput[i]);
+			dpad.Poll(buttons, ls, rs);
+			dpad.Copy(RawInput[i]);
 
 			// Compatibility for mods who use ControllersRaw directly.
 			// This will only copy the first four controllers.
@@ -72,11 +247,11 @@ namespace input
 					int pressed = pad->PressedButtons;
 					if (pressed & Buttons_Up)
 					{
-						dpad->settings.rumbleFactor += 0.125f;
+						dpad.settings.rumbleFactor += 0.125f;
 					}
 					else if (pressed & Buttons_Down)
 					{
-						dpad->settings.rumbleFactor -= 0.125f;
+						dpad.settings.rumbleFactor -= 0.125f;
 					}
 					else if (pressed & Buttons_Left)
 					{
@@ -87,7 +262,7 @@ namespace input
 						rumble::RumbleB(i, 7, 59, 6);
 					}
 
-					DisplayDebugStringFormatted(NJM_LOCATION(4, 10 + (3 * i)), "Rumble factor (U/D): %f (L/R to test)", dpad->settings.rumbleFactor);
+					DisplayDebugStringFormatted(NJM_LOCATION(4, 10 + (3 * i)), "Rumble factor (U/D): %f (L/R to test)", dpad.settings.rumbleFactor);
 				}
 			}
 #endif

@@ -49,6 +49,9 @@ static std::string BuildModPath(const char* modpath, const char* path)
 	return result.str();
 }
 
+DataPointer(HWND, hWnd, 0x3D0FD30);
+static SDL_Window* garbage = nullptr;
+
 extern "C"
 {
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
@@ -74,15 +77,19 @@ extern "C"
 
 			return;
 		}
-
+		
 		int init;
-		if ((init = SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC | SDL_INIT_EVENTS)) != 0)
+		if ((init = SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC | SDL_INIT_VIDEO | SDL_INIT_EVENTS)) != 0)
 		{
 			PrintDebug("[Input] Unable to initialize SDL. Error code: %i\n", init);
 			MessageBoxA(nullptr, "Error initializing SDL. See debug message for details.",
 				"SDL Init Error", MB_OK | MB_ICONERROR);
 			return;
 		}
+
+		WriteData((void*)0x0077F0D7, 0x90i8, 5);
+		WriteData((void*)0x0077F03E, 0x90i8, 5);
+		WriteData((void*)0x0077F205, 0x90i8, 5);
 
 		// EnableControl
 		WriteData((bool**)0x40EF80, &input::_ControllerEnabled[0]);
@@ -180,6 +187,15 @@ extern "C"
 		for (auto& i : DreamPad::Controllers)
 		{
 			i.Close();
+		}
+	}
+
+	__declspec(dllexport) void OnFrame()
+	{
+		if (garbage == nullptr && hWnd != nullptr)
+		{
+			garbage = SDL_CreateWindowFrom(hWnd);
+			PrintDebug("%s\n", SDL_GetError());
 		}
 	}
 }
