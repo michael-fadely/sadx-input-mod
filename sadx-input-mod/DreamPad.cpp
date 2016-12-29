@@ -98,7 +98,8 @@ void DreamPad::Close()
 
 void DreamPad::Poll(Uint32 add_buttons, const NJS_POINT2I* add_left, const NJS_POINT2I* add_right)
 {
-	if (!connected)
+	// HACK: 
+	if (!connected && add_left == nullptr && add_right == nullptr)
 	{
 		return;
 	}

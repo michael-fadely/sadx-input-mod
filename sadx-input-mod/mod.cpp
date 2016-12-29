@@ -36,7 +36,7 @@ PointerInfo jumps[] = {
 	{ (void*)0x0042D52D,		rumble::DefaultRumble },
 	// Used to skip over the standard controller update function.
 	// This has no effect on the OnInput hook.
-	//{ UpdateControllers_ptr, (void*)0x0040FDB3 }
+	{ UpdateControllers_ptr, (void*)0x0040FDB3 }
 };
 
 static std::string BuildModPath(const char* modpath, const char* path)

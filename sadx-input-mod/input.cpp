@@ -9,15 +9,21 @@
 #include "rumble.h"
 #include "DreamPad.h"
 
-// TODO: mouse
+// TODO: mouse move modes
 
 struct KeyboardStick
 {
+	bool mouse;
 	Uint32 directions;
 	NJS_POINT2I axis;
 
 	void update()
 	{
+		if (mouse)
+		{
+			return;
+		}
+
 		auto x = directions & (Buttons_Left | Buttons_Right);
 
 		if (x == Buttons_Left)
@@ -58,6 +64,12 @@ struct AnalogThing
 };
 
 DataArray(AnalogThing, NormalizedAnalogs, 0x03B0E7A0, 8);
+DataPointer(bool, MouseEnabled, 0x03B0EAE0);
+DataPointer(int, CursorY, 0x03B0E990);
+DataPointer(int, CursorX, 0x03B0E994);
+DataPointer(int, CursorMagnitude, 0x03B0E998);
+DataPointer(int, CursorCos, 0x03B0E99C);
+DataPointer(int, CursorSin, 0x03B0E9A0);
 
 inline void set_button(Uint32& i, Uint32 value, bool key_down)
 {
@@ -157,6 +169,35 @@ static void UpdateKeyboardButtons(Uint32 scancode, bool key_down)
 	}
 }
 
+static void UpdateMouseButtons(Uint32 button, bool key_down)
+{
+	switch (button)
+	{
+		case SDL_BUTTON_LEFT:
+			sticks[0].mouse = key_down;
+			sticks[0].axis = {};
+
+			if (!key_down)
+			{
+				CursorMagnitude = 0;
+				CursorCos = 0;
+				CursorSin = 0;
+				CursorX = 0;
+				CursorY = 0;
+			}
+			break;
+
+			// TODO
+		case SDL_BUTTON_MIDDLE:
+			break;
+		case SDL_BUTTON_RIGHT:
+			break;
+
+		default:
+			break;
+	}
+}
+
 namespace input
 {
 	ControllerData RawInput[GAMEPAD_COUNT];
@@ -207,6 +248,69 @@ namespace input
 				case SDL_KEYUP:
 					UpdateKeyboardButtons(event.key.keysym.scancode, event.type == SDL_KEYDOWN);
 					break;
+
+				case SDL_MOUSEBUTTONDOWN:
+				case SDL_MOUSEBUTTONUP:
+					UpdateMouseButtons(event.button.button, event.type == SDL_MOUSEBUTTONDOWN);
+					break;
+
+				case SDL_MOUSEMOTION:
+				{
+					if (sticks[0].mouse)
+					{
+						CursorX = clamp(CursorX + event.motion.xrel, -200, 200);
+						CursorY = clamp(CursorY + event.motion.yrel, -200, 200);
+
+						auto& x = CursorX;
+						auto& y = CursorY;
+
+						auto m = x * x + y * y;
+
+						if (m <= 625)
+						{
+							CursorMagnitude = 0;
+						}
+						else
+						{
+							CursorMagnitude = m / 361;
+
+							if (CursorMagnitude >= 1)
+							{
+								if (CursorMagnitude > 120)
+								{
+									CursorMagnitude = 127;
+								}
+							}
+							else
+							{
+								CursorMagnitude = 1;
+							}
+
+							njPushMatrix((NJS_MATRIX*)0x0389D650);
+
+							auto r = (Angle)(atan2((double)x, (double)y) * 65536.0 * 0.1591549762031479);
+
+							if (r)
+							{
+								njRotateZ(nullptr, r);
+							}
+
+							NJS_VECTOR v = { 0.0f, (float)CursorMagnitude * 1.2f, 0.0f };
+							njCalcVector(nullptr, &v, &v);
+
+							CursorCos = (int)v.x;
+							CursorSin = (int)v.y;
+
+							auto& p = sticks[0].axis;
+
+							p.x = (Sint16)clamp((int)(-v.x / 128.0f * SHRT_MAX), -SHRT_MAX, SHRT_MAX);
+							p.y = (Sint16)clamp((int)(v.y / 128.0f * SHRT_MAX), -SHRT_MAX, SHRT_MAX);
+
+							njPopMatrix(1);
+						}
+					}
+					break;
+				}
 			}
 		}
 
