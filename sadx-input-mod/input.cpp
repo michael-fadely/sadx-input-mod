@@ -9,49 +9,43 @@
 #include "rumble.h"
 #include "DreamPad.h"
 
-// TODO: mouse move modes
+// TODO: mouse buttons
+// TODO: fix alt+f4
 
-struct KeyboardStick
+struct KeyboardStick : NJS_POINT2I
 {
-	bool mouse;
 	Uint32 directions;
-	NJS_POINT2I axis;
 
 	void update()
 	{
-		if (mouse)
-		{
-			return;
-		}
+		auto horizontal = directions & (Buttons_Left | Buttons_Right);
 
-		auto x = directions & (Buttons_Left | Buttons_Right);
-
-		if (x == Buttons_Left)
+		if (horizontal == Buttons_Left)
 		{
-			axis.x = -SHRT_MAX;
+			x = -SHRT_MAX;
 		}
-		else if (x == Buttons_Right)
+		else if (horizontal == Buttons_Right)
 		{
-			axis.x = SHRT_MAX;
+			x = SHRT_MAX;
 		}
 		else
 		{
-			axis.x = 0;
+			x = 0;
 		}
 
-		auto y = directions & (Buttons_Up | Buttons_Down);
+		auto vertical = directions & (Buttons_Up | Buttons_Down);
 
-		if (y == Buttons_Up)
+		if (vertical == Buttons_Up)
 		{
-			axis.y = -SHRT_MAX;
+			y = -SHRT_MAX;
 		}
-		else if (y == Buttons_Down)
+		else if (vertical == Buttons_Down)
 		{
-			axis.y = SHRT_MAX;
+			y = SHRT_MAX;
 		}
 		else
 		{
-			axis.y = 0;
+			y = 0;
 		}
 
 	}
@@ -64,12 +58,17 @@ struct AnalogThing
 };
 
 DataArray(AnalogThing, NormalizedAnalogs, 0x03B0E7A0, 8);
-DataPointer(bool, MouseEnabled, 0x03B0EAE0);
+DataPointer(int, MouseMode, 0x03B0EAE0);
 DataPointer(int, CursorY, 0x03B0E990);
 DataPointer(int, CursorX, 0x03B0E994);
 DataPointer(int, CursorMagnitude, 0x03B0E998);
 DataPointer(int, CursorCos, 0x03B0E99C);
 DataPointer(int, CursorSin, 0x03B0E9A0);
+
+static bool mouse_update = false;
+static NJS_POINT2I cursor = {};
+static KeyboardStick sticks[2] = {};
+static uint32 add_buttons = 0;
 
 inline void set_button(Uint32& i, Uint32 value, bool key_down)
 {
@@ -82,9 +81,6 @@ inline void set_button(Uint32& i, Uint32 value, bool key_down)
 		i &= ~value;
 	}
 }
-
-static KeyboardStick sticks[2] = {};
-static uint32 add_buttons = 0;
 
 static void UpdateKeyboardButtons(Uint32 scancode, bool key_down)
 {
@@ -169,25 +165,86 @@ static void UpdateKeyboardButtons(Uint32 scancode, bool key_down)
 	}
 }
 
+void UpdateCursor(Sint32 xrel, Sint32 yrel)
+{
+	if (!mouse_update)
+	{
+		return;
+	}
+
+	CursorX = clamp(CursorX + xrel, -200, 200);
+	CursorY = clamp(CursorY + yrel, -200, 200);
+
+	auto& x = CursorX;
+	auto& y = CursorY;
+
+	auto m = x * x + y * y;
+
+	if (m <= 625)
+	{
+		CursorMagnitude = 0;
+		return;
+	}
+
+	CursorMagnitude = m / 361;
+
+	if (CursorMagnitude >= 1)
+	{
+		if (CursorMagnitude > 120)
+		{
+			CursorMagnitude = 127;
+		}
+	}
+	else
+	{
+		CursorMagnitude = 1;
+	}
+
+	njPushMatrix((NJS_MATRIX*)0x0389D650);
+
+	auto r = (Angle)(atan2((double)x, (double)y) * 65536.0 * 0.1591549762031479);
+
+	if (r)
+	{
+		njRotateZ(nullptr, r);
+	}
+
+	NJS_VECTOR v = { 0.0f, (float)CursorMagnitude * 1.2f, 0.0f };
+	njCalcVector(nullptr, &v, &v);
+
+	CursorCos = (int)v.x;
+	CursorSin = (int)v.y;
+
+	auto& p = cursor;
+	p.x = (Sint16)clamp((int)(-v.x / 128.0f * SHRT_MAX), -SHRT_MAX, SHRT_MAX);
+	p.y = (Sint16)clamp((int)(v.y / 128.0f * SHRT_MAX), -SHRT_MAX, SHRT_MAX);
+
+	njPopMatrix(1);
+}
+
+static void ResetCursor()
+{
+	CursorMagnitude = 0;
+	CursorCos = 0;
+	CursorSin = 0;
+	CursorX = 0;
+	CursorY = 0;
+	cursor = {};
+	mouse_update = false;
+}
+
 static void UpdateMouseButtons(Uint32 button, bool key_down)
 {
 	switch (button)
 	{
 		case SDL_BUTTON_LEFT:
-			sticks[0].mouse = key_down;
-			sticks[0].axis = {};
-
-			if (!key_down)
+			if (!key_down && !MouseMode)
 			{
-				CursorMagnitude = 0;
-				CursorCos = 0;
-				CursorSin = 0;
-				CursorX = 0;
-				CursorY = 0;
+				ResetCursor();
 			}
+			mouse_update = key_down;
 			break;
 
-			// TODO
 		case SDL_BUTTON_MIDDLE:
 			break;
 		case SDL_BUTTON_RIGHT:
@@ -256,59 +313,7 @@ namespace input
 
 				case SDL_MOUSEMOTION:
 				{
-					if (sticks[0].mouse)
-					{
-						CursorX = clamp(CursorX + event.motion.xrel, -200, 200);
-						CursorY = clamp(CursorY + event.motion.yrel, -200, 200);
-
-						auto& x = CursorX;
-						auto& y = CursorY;
-
-						auto m = x * x + y * y;
-
-						if (m <= 625)
-						{
-							CursorMagnitude = 0;
-						}
-						else
-						{
-							CursorMagnitude = m / 361;
-
-							if (CursorMagnitude >= 1)
-							{
-								if (CursorMagnitude > 120)
-								{
-									CursorMagnitude = 127;
-								}
-							}
-							else
-							{
-								CursorMagnitude = 1;
-							}
-
-							njPushMatrix((NJS_MATRIX*)0x0389D650);
-
-							auto r = (Angle)(atan2((double)x, (double)y) * 65536.0 * 0.1591549762031479);
-
-							if (r)
-							{
-								njRotateZ(nullptr, r);
-							}
-
-							NJS_VECTOR v = { 0.0f, (float)CursorMagnitude * 1.2f, 0.0f };
-							njCalcVector(nullptr, &v, &v);
-
-							CursorCos = (int)v.x;
-							CursorSin = (int)v.y;
-
-							auto& p = sticks[0].axis;
-
-							p.x = (Sint16)clamp((int)(-v.x / 128.0f * SHRT_MAX), -SHRT_MAX, SHRT_MAX);
-							p.y = (Sint16)clamp((int)(v.y / 128.0f * SHRT_MAX), -SHRT_MAX, SHRT_MAX);
-
-							njPopMatrix(1);
-						}
-					}
+					UpdateCursor(event.motion.xrel, event.motion.yrel);
 					break;
 				}
 			}
@@ -317,13 +322,22 @@ namespace input
 		sticks[0].update();
 		sticks[1].update();
 
+		if (sticks[0].x || sticks[0].y)
+		{
+			ResetCursor();
+		}
+		else
+		{
+			*(NJS_POINT2I*)&sticks[0] = cursor;
+		}
+
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
 			DreamPad& dpad = DreamPad::Controllers[i];
 
 			auto buttons = !i ? add_buttons : 0;
-			auto ls = !i ? &sticks[0].axis : nullptr;
-			auto rs = !i ? &sticks[1].axis : nullptr;
+			NJS_POINT2I* ls = !i ? &sticks[0] : nullptr;
+			NJS_POINT2I* rs = !i ? &sticks[1] : nullptr;
 
 			dpad.Poll(buttons, ls, rs);
 			dpad.Copy(RawInput[i]);
