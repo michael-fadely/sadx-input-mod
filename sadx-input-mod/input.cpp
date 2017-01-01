@@ -259,7 +259,10 @@ static void UpdateMouseButtons(Uint32 button, bool down)
 }
 
 DataPointer(HWND, hWnd, 0x3D0FD30);
-WNDPROC lpPrevWndFunc = nullptr;
+static WNDPROC lpPrevWndFunc = nullptr;
+
+static Sint16 mouse_x = 0;
+static Sint16 mouse_y = 0;
 
 namespace input
 {
@@ -271,20 +274,37 @@ namespace input
 	{
 		switch (Msg)
 		{
+			case WM_LBUTTONDOWN:
+			case WM_LBUTTONUP:
+				UpdateMouseButtons(VK_LBUTTON, Msg == WM_LBUTTONDOWN);
+				break;
+			case WM_RBUTTONDOWN:
+			case WM_RBUTTONUP:
+				UpdateMouseButtons(VK_RBUTTON, Msg == WM_RBUTTONDOWN);
+				break;
+			case WM_MBUTTONDOWN:
+			case WM_MBUTTONUP:
+				UpdateMouseButtons(VK_MBUTTON, Msg == WM_MBUTTONDOWN);
+				break;
+
+			case WM_SYSKEYUP:
+			case WM_SYSKEYDOWN:
 			case WM_KEYDOWN:
 			case WM_KEYUP:
-				if (wParam <= VK_XBUTTON2)
-				{
-					UpdateMouseButtons(wParam, Msg == WM_KEYDOWN);
-				}
-				else
-				{
-					UpdateKeyboardButtons(wParam, Msg == WM_KEYDOWN);
-				}
+				UpdateKeyboardButtons(wParam, Msg == WM_KEYDOWN || Msg == WM_SYSKEYDOWN);
 				break;
 
 			case WM_MOUSEMOVE:
+			{
+				auto x = (short)(lParam & 0xFFFF);
+				auto y = (short)(lParam >> 16);
+
+				UpdateCursor(x - mouse_x, y - mouse_y);
+
+				mouse_x = x;
+				mouse_y = y;
 				break;
+			}
 
 			case WM_MOUSEWHEEL:
 				break;
@@ -345,13 +365,6 @@ namespace input
 					}
 					break;
 				}
-#if 0
-				case SDL_MOUSEMOTION:
-				{
-					UpdateCursor(event.motion.xrel, event.motion.yrel);
-					break;
-				}
-#endif
 			}
 		}
 
@@ -364,7 +377,7 @@ namespace input
 		}
 		else
 		{
-			(NJS_POINT2I)sticks[0] = cursor;
+			*(NJS_POINT2I*)&sticks[0] = cursor;
 		}
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
