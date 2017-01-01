@@ -5,7 +5,6 @@
 
 namespace input
 {
-	// Ingame functions
 	void PollControllers();
 	void WriteAnalogs_Hook();
 	void RedirectRawControllers_Hook();

@@ -82,90 +82,94 @@ inline void set_button(Uint32& i, Uint32 value, bool key_down)
 	}
 }
 
-static void UpdateKeyboardButtons(Uint32 scancode, bool key_down)
+static void UpdateKeyboardButtons(Uint32 key, bool down)
 {
-	switch (scancode)
+	switch (key)
 	{
 		default:
 			break;
 
-		case SDL_SCANCODE_X:
-		case SDL_SCANCODE_SPACE:
-			set_button(add_buttons, Buttons_A, key_down);
+		case UINT_MAX:
+			set_button(add_buttons, key, down);
 			break;
-		case SDL_SCANCODE_Z:
-			set_button(add_buttons, Buttons_B, key_down);
+
+		case 'X':
+		case VK_SPACE:
+			set_button(add_buttons, Buttons_A, down);
 			break;
-		case SDL_SCANCODE_A:
-			set_button(add_buttons, Buttons_X, key_down);
+		case 'Z':
+			set_button(add_buttons, Buttons_B, down);
 			break;
-		case SDL_SCANCODE_S:
-			set_button(add_buttons, Buttons_Y, key_down);
+		case 'A':
+			set_button(add_buttons, Buttons_X, down);
 			break;
-		case SDL_SCANCODE_Q:
-			set_button(add_buttons, Buttons_L, key_down);
+		case 'S':
+			set_button(add_buttons, Buttons_Y, down);
 			break;
-		case SDL_SCANCODE_W:
-			set_button(add_buttons, Buttons_R, key_down);
+		case 'Q':
+			set_button(add_buttons, Buttons_L, down);
 			break;
-		case SDL_SCANCODE_RETURN:
-			set_button(add_buttons, Buttons_Start, key_down);
+		case 'W':
+			set_button(add_buttons, Buttons_R, down);
 			break;
-		case SDL_SCANCODE_D:
-			set_button(add_buttons, Buttons_Z, key_down);
+		case VK_RETURN:
+			set_button(add_buttons, Buttons_Start, down);
 			break;
-		case SDL_SCANCODE_C:
-			set_button(add_buttons, Buttons_C, key_down);
+		case 'D':
+			set_button(add_buttons, Buttons_Z, down);
 			break;
-		case SDL_SCANCODE_E:
-			set_button(add_buttons, Buttons_D, key_down);
+		case 'C':
+			set_button(add_buttons, Buttons_C, down);
+			break;
+		case 'E':
+			set_button(add_buttons, Buttons_D, down);
 			break;
 
 			// D-Pad
-		case SDL_SCANCODE_KP_8:
-			set_button(add_buttons, Buttons_Up, key_down);
+		case VK_NUMPAD8:
+			set_button(add_buttons, Buttons_Up, down);
 			break;
-		case SDL_SCANCODE_KP_5:
-			set_button(add_buttons, Buttons_Down, key_down);
+		case VK_NUMPAD5:
+			set_button(add_buttons, Buttons_Down, down);
 			break;
-		case SDL_SCANCODE_KP_4:
-			set_button(add_buttons, Buttons_Left, key_down);
+		case VK_NUMPAD4:
+			set_button(add_buttons, Buttons_Left, down);
 			break;
-		case SDL_SCANCODE_KP_6:
-			set_button(add_buttons, Buttons_Right, key_down);
+		case VK_NUMPAD6:
+			set_button(add_buttons, Buttons_Right, down);
 			break;
 
 			// Left stick
-		case SDL_SCANCODE_UP:
-			set_button(sticks[0].directions, Buttons_Up, key_down);
+		case VK_UP:
+			set_button(sticks[0].directions, Buttons_Up, down);
 			break;
-		case SDL_SCANCODE_DOWN:
-			set_button(sticks[0].directions, Buttons_Down, key_down);
+		case VK_DOWN:
+			set_button(sticks[0].directions, Buttons_Down, down);
 			break;
-		case SDL_SCANCODE_LEFT:
-			set_button(sticks[0].directions, Buttons_Left, key_down);
+		case VK_LEFT:
+			set_button(sticks[0].directions, Buttons_Left, down);
 			break;
-		case SDL_SCANCODE_RIGHT:
-			set_button(sticks[0].directions, Buttons_Right, key_down);
+		case VK_RIGHT:
+			set_button(sticks[0].directions, Buttons_Right, down);
 			break;
 
 			// Right stick
-		case SDL_SCANCODE_I:
-			set_button(sticks[1].directions, Buttons_Up, key_down);
+		case 'I':
+			set_button(sticks[1].directions, Buttons_Up, down);
 			break;
-		case SDL_SCANCODE_K:
-			set_button(sticks[1].directions, Buttons_Down, key_down);
+		case 'K':
+			set_button(sticks[1].directions, Buttons_Down, down);
 			break;
-		case SDL_SCANCODE_J:
-			set_button(sticks[1].directions, Buttons_Left, key_down);
+		case 'J':
+			set_button(sticks[1].directions, Buttons_Left, down);
 			break;
-		case SDL_SCANCODE_L:
-			set_button(sticks[1].directions, Buttons_Right, key_down);
+		case 'L':
+			set_button(sticks[1].directions, Buttons_Right, down);
 			break;
 	}
 }
 
-void UpdateCursor(Sint32 xrel, Sint32 yrel)
+static void UpdateCursor(Sint32 xrel, Sint32 yrel)
 {
 	if (!mouse_update)
 	{
@@ -225,29 +229,28 @@ void UpdateCursor(Sint32 xrel, Sint32 yrel)
 static void ResetCursor()
 {
 	CursorMagnitude = 0;
-	CursorCos = 0;
-	CursorSin = 0;
-	CursorX = 0;
-	CursorY = 0;
-	cursor = {};
-	mouse_update = false;
+	CursorCos       = 0;
+	CursorSin       = 0;
+	CursorX         = 0;
+	CursorY         = 0;
+	cursor          = {};
+	mouse_update    = false;
 }
 
-static void UpdateMouseButtons(Uint32 button, bool key_down)
+static void UpdateMouseButtons(Uint32 button, bool down)
 {
 	switch (button)
 	{
-		case SDL_BUTTON_LEFT:
-			if (!key_down && !MouseMode)
+		case VK_LBUTTON:
+			if (!down && !MouseMode)
 			{
 				ResetCursor();
 			}
-			mouse_update = key_down;
+			mouse_update = down;
 			break;
 
-		case SDL_BUTTON_MIDDLE:
-			break;
-		case SDL_BUTTON_RIGHT:
+		case VK_MBUTTON:
+		case VK_RBUTTON:
 			break;
 
 		default:
@@ -255,14 +258,56 @@ static void UpdateMouseButtons(Uint32 button, bool key_down)
 	}
 }
 
+DataPointer(HWND, hWnd, 0x3D0FD30);
+WNDPROC lpPrevWndFunc = nullptr;
+
 namespace input
 {
 	ControllerData RawInput[GAMEPAD_COUNT];
 	bool _ControllerEnabled[GAMEPAD_COUNT];
 	bool debug = false;
 
+	LRESULT __stdcall PollKeyboardMouse(HWND handle, UINT Msg, WPARAM wParam, LPARAM lParam)
+	{
+		switch (Msg)
+		{
+			case WM_KEYDOWN:
+			case WM_KEYUP:
+				if (wParam <= VK_XBUTTON2)
+				{
+					UpdateMouseButtons(wParam, Msg == WM_KEYDOWN);
+				}
+				else
+				{
+					UpdateKeyboardButtons(wParam, Msg == WM_KEYDOWN);
+				}
+				break;
+
+			case WM_MOUSEMOVE:
+				break;
+
+			case WM_MOUSEWHEEL:
+				break;
+
+			default:
+				break;
+		}
+
+		return CallWindowProc(lpPrevWndFunc, handle, Msg, wParam, lParam);
+	}
+
+	void HookWndProc()
+	{
+		if (lpPrevWndFunc == nullptr)
+		{
+			lpPrevWndFunc = (WNDPROC)SetWindowLong(hWnd, GWL_WNDPROC, (LONG)PollKeyboardMouse);
+		}
+	}
+
 	void PollControllers()
 	{
+		HookWndProc();
+
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
@@ -300,22 +345,13 @@ namespace input
 					}
 					break;
 				}
-
-				case SDL_KEYDOWN:
-				case SDL_KEYUP:
-					UpdateKeyboardButtons(event.key.keysym.scancode, event.type == SDL_KEYDOWN);
-					break;
-
-				case SDL_MOUSEBUTTONDOWN:
-				case SDL_MOUSEBUTTONUP:
-					UpdateMouseButtons(event.button.button, event.type == SDL_MOUSEBUTTONDOWN);
-					break;
-
+#if 0
 				case SDL_MOUSEMOTION:
 				{
 					UpdateCursor(event.motion.xrel, event.motion.yrel);
 					break;
 				}
+#endif
 			}
 		}
 
@@ -328,7 +364,7 @@ namespace input
 		}
 		else
 		{
-			*(NJS_POINT2I*)&sticks[0] = cursor;
+			(NJS_POINT2I)sticks[0] = cursor;
 		}
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
