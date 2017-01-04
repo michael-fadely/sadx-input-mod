@@ -11,10 +11,12 @@
 
 // TODO: fix l/r
 // TODO: fix alt+f4
+// TODO: keyboard & controller half press modifier
 
 struct KeyboardStick : NJS_POINT2I
 {
 	Uint32 directions;
+	static constexpr auto amount = 8192;
 
 	void update()
 	{
@@ -22,32 +24,45 @@ struct KeyboardStick : NJS_POINT2I
 
 		if (horizontal == Buttons_Left)
 		{
-			x = -SHRT_MAX;
+			x = max(x - amount, -SHRT_MAX);
 		}
 		else if (horizontal == Buttons_Right)
 		{
-			x = SHRT_MAX;
+			x = min(x + amount, SHRT_MAX);
 		}
 		else
 		{
-			x = 0;
+			if (x < 0)
+			{
+				x = min(x + amount, 0);
+			}
+			else if (x > 0)
+			{
+				x = max(x - amount, 0);
+			}
 		}
 
 		auto vertical = directions & (Buttons_Up | Buttons_Down);
 
 		if (vertical == Buttons_Up)
 		{
-			y = -SHRT_MAX;
+			y = max(y - amount, -SHRT_MAX);
 		}
 		else if (vertical == Buttons_Down)
 		{
-			y = SHRT_MAX;
+			y = min(y + amount, SHRT_MAX);
 		}
 		else
 		{
-			y = 0;
+			if (y < 0)
+			{
+				y = min(y + amount, 0);
+			}
+			else if (y > 0)
+			{
+				y = max(y - amount, 0);
+			}
 		}
-
 	}
 };
 
