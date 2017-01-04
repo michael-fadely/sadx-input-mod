@@ -9,7 +9,7 @@
 #include "rumble.h"
 #include "DreamPad.h"
 
-// TODO: mouse buttons
+// TODO: fix l/r
 // TODO: fix alt+f4
 
 struct KeyboardStick : NJS_POINT2I
@@ -53,8 +53,8 @@ struct KeyboardStick : NJS_POINT2I
 
 struct AnalogThing
 {
-	Angle	angle;
-	float	magnitude;
+	Angle angle;
+	float magnitude;
 };
 
 DataArray(AnalogThing, NormalizedAnalogs, 0x03B0E7A0, 8);
@@ -70,9 +70,9 @@ static NJS_POINT2I cursor = {};
 static KeyboardStick sticks[2] = {};
 static uint32 add_buttons = 0;
 
-inline void set_button(Uint32& i, Uint32 value, bool key_down)
+inline void set_button(Uint32& i, Uint32 value, bool down)
 {
-	if (key_down)
+	if (down)
 	{
 		i |= value;
 	}
@@ -87,10 +87,6 @@ static void UpdateKeyboardButtons(Uint32 key, bool down)
 	switch (key)
 	{
 		default:
-			break;
-
-		case UINT_MAX:
-			set_button(add_buttons, key, down);
 			break;
 
 		case 'X':
@@ -249,8 +245,19 @@ static void UpdateMouseButtons(Uint32 button, bool down)
 			mouse_update = down;
 			break;
 
-		case VK_MBUTTON:
 		case VK_RBUTTON:
+			if (mouse_update)
+			{
+				set_button(add_buttons, Buttons_A, down);
+			}
+			else
+			{
+				set_button(add_buttons, Buttons_B, down);
+			}
+			break;
+
+		case VK_MBUTTON:
+			set_button(add_buttons, Buttons_Start, down);
 			break;
 
 		default:
@@ -278,20 +285,15 @@ namespace input
 			case WM_LBUTTONUP:
 				UpdateMouseButtons(VK_LBUTTON, Msg == WM_LBUTTONDOWN);
 				break;
+
 			case WM_RBUTTONDOWN:
 			case WM_RBUTTONUP:
 				UpdateMouseButtons(VK_RBUTTON, Msg == WM_RBUTTONDOWN);
 				break;
+
 			case WM_MBUTTONDOWN:
 			case WM_MBUTTONUP:
 				UpdateMouseButtons(VK_MBUTTON, Msg == WM_MBUTTONDOWN);
-				break;
-
-			case WM_SYSKEYUP:
-			case WM_SYSKEYDOWN:
-			case WM_KEYDOWN:
-			case WM_KEYUP:
-				UpdateKeyboardButtons(wParam, Msg == WM_KEYDOWN || Msg == WM_SYSKEYDOWN);
 				break;
 
 			case WM_MOUSEMOVE:
@@ -307,6 +309,13 @@ namespace input
 			}
 
 			case WM_MOUSEWHEEL:
+				break; // TODO
+
+			case WM_SYSKEYUP:
+			case WM_SYSKEYDOWN:
+			case WM_KEYDOWN:
+			case WM_KEYUP:
+				UpdateKeyboardButtons(wParam, Msg == WM_KEYDOWN || Msg == WM_SYSKEYDOWN);
 				break;
 
 			default:
