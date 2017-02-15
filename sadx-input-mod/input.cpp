@@ -80,10 +80,11 @@ DataPointer(int, CursorMagnitude, 0x03B0E998);
 DataPointer(int, CursorCos, 0x03B0E99C);
 DataPointer(int, CursorSin, 0x03B0E9A0);
 
-static bool mouse_update = false;
-static NJS_POINT2I cursor = {};
-static KeyboardStick sticks[2] = {};
-static uint32 add_buttons = 0;
+static bool mouse_update             = false;
+static NJS_POINT2I cursor            = {};
+static KeyboardStick sticks[2]       = {};
+static KeyboardStick mouse_sticks[2] = {};
+static uint32 add_buttons            = 0;
 
 inline void set_button(Uint32& i, Uint32 value, bool down)
 {
@@ -216,13 +217,7 @@ static void UpdateCursor(Sint32 xrel, Sint32 yrel)
 	}
 
 	njPushMatrix((NJS_MATRIX*)0x0389D650);
-
-	auto r = (Angle)(atan2((double)x, (double)y) * 65536.0 * 0.1591549762031479);
-
-	if (r)
-	{
-		njRotateZ(nullptr, r);
-	}
+	njRotateZ(nullptr, NJM_RAD_ANG(atan2(x, y)));
 
 	NJS_VECTOR v = { 0.0f, (float)CursorMagnitude * 1.2f, 0.0f };
 	njCalcVector(nullptr, &v, &v);
@@ -394,14 +389,16 @@ namespace input
 
 		sticks[0].update();
 		sticks[1].update();
+		NJS_POINT2I stick;
 
 		if (sticks[0].x || sticks[0].y)
 		{
 			ResetCursor();
+			stick = static_cast<NJS_POINT2I>(sticks[0]);
 		}
 		else
 		{
-			*(NJS_POINT2I*)&sticks[0] = cursor;
+			stick = cursor;
 		}
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
@@ -409,7 +406,7 @@ namespace input
 			DreamPad& dpad = DreamPad::Controllers[i];
 
 			auto buttons = !i ? add_buttons : 0;
-			NJS_POINT2I* ls = !i ? &sticks[0] : nullptr;
+			NJS_POINT2I* ls = !i ? &stick : nullptr;
 			NJS_POINT2I* rs = !i ? &sticks[1] : nullptr;
 
 			dpad.Poll(buttons, ls, rs);
