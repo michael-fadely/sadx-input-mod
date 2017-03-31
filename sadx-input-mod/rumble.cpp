@@ -168,13 +168,9 @@ namespace rumble
 	/// <param name="a4">Unknown.</param>
 	void __cdecl RumbleB(Uint32 port, Uint32 time, int a3, int a4)
 	{
-		Uint32 idk; // ecx@4
-		int _a3; // eax@12
-		int _time; // eax@16
-
 		if (RumbleEnabled && !DemoPlaying && input::_ControllerEnabled[port])
 		{
-			idk = time;
+			Uint32 idk = time;
 			if ((signed int)time <= 4)
 			{
 				if ((signed int)time >= -4)
@@ -198,7 +194,7 @@ namespace rumble
 				idk = 4;
 			}
 
-			_a3 = a3;
+			int _a3 = a3;
 			if (a3 <= 59)
 			{
 				if (a3 < 7)
@@ -211,7 +207,7 @@ namespace rumble
 				_a3 = 59;
 			}
 
-			_time = a4 * _a3 / (signed int)(4 * idk);
+			int _time = a4 * _a3 / (signed int)(4 * idk);
 			if (_time <= 0)
 			{
 				_time = 1;
@@ -221,7 +217,7 @@ namespace rumble
 		}
 	}
 
-	static constexpr auto loc_0042D534 = (const void*)0x0042D534;
+	static const auto loc_0042D534 = (const void*)0x0042D534;
 	/// <summary>
 	/// Enables rumble by default when a new save file is created.
 	/// </summary>
