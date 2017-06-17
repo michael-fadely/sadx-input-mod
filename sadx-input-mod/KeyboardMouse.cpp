@@ -175,7 +175,7 @@ void KeyboardMouse::UpdateCursor(Sint32 xrel, Sint32 yrel)
 		CursorMagnitude = 1;
 	}
 
-	njPushMatrix((NJS_MATRIX*)0x0389D650);
+	njPushMatrix((NJS_MATRIX_PTR)0x0389D650);
 	njRotateZ(nullptr, NJM_RAD_ANG(atan2(x, y)));
 
 	NJS_VECTOR v = { 0.0f, (float)CursorMagnitude * 1.2f, 0.0f };

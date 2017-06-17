@@ -2,7 +2,7 @@
 
 #include "minmax.h"
 #include <ninja.h>
-#include <SADXModLoader/SADXStructs.h>
+#include <SADXStructs.h>
 
 struct KeyboardStick : NJS_POINT2I
 {

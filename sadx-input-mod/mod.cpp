@@ -52,7 +52,7 @@ static std::string BuildModPath(const char* modpath, const char* path)
 extern "C"
 {
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
-	__declspec(dllexport) PointerList Jumps[] = { { arrayptrandlength(jumps) } };
+	__declspec(dllexport) PointerList Jumps[] = { { arrayptrandlengthT(jumps, int) } };
 
 	__declspec(dllexport) void OnInput()
 	{
@@ -84,9 +84,9 @@ extern "C"
 			return;
 		}
 
-		WriteData((void*)0x0077F0D7, 0x90i8, 5);
-		WriteData((void*)0x0077F03E, 0x90i8, 5);
-		WriteData((void*)0x0077F205, 0x90i8, 5);
+		WriteData<5>((void*)0x0077F0D7, 0x90i8);
+		WriteData<5>((void*)0x0077F03E, 0x90i8);
+		WriteData<5>((void*)0x0077F205, 0x90i8);
 
 		// EnableControl
 		WriteData((bool**)0x40EF80, &input::_ControllerEnabled[0]);
