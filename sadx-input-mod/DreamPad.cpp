@@ -6,11 +6,11 @@
 
 #include "DreamPad.h"
 
-static const Uint32 PAD_SUPPORT = 
+static const Uint32 PAD_SUPPORT =
 	PDD_DEV_SUPPORT_TA | PDD_DEV_SUPPORT_TB | PDD_DEV_SUPPORT_TX | PDD_DEV_SUPPORT_TY | PDD_DEV_SUPPORT_ST
-#ifdef EXTENDED_BUTTONS
+	#ifdef EXTENDED_BUTTONS
 	| PDD_DEV_SUPPORT_TC | PDD_DEV_SUPPORT_TD | PDD_DEV_SUPPORT_TZ
-#endif
+	#endif
 	| PDD_DEV_SUPPORT_AR | PDD_DEV_SUPPORT_AL
 	| PDD_DEV_SUPPORT_KU | PDD_DEV_SUPPORT_KD | PDD_DEV_SUPPORT_KL | PDD_DEV_SUPPORT_KR
 	| PDD_DEV_SUPPORT_AX1 | PDD_DEV_SUPPORT_AY1 | PDD_DEV_SUPPORT_AX2 | PDD_DEV_SUPPORT_AY2;
@@ -96,10 +96,9 @@ void DreamPad::Close()
 	connected = false;
 }
 
-void DreamPad::Poll(Uint32 add_buttons, const NJS_POINT2I* add_left, const NJS_POINT2I* add_right)
+void DreamPad::Poll()
 {
-	// HACK: 
-	if (!connected && add_left == nullptr && add_right == nullptr)
+	if (!connected)
 	{
 		return;
 	}
@@ -111,27 +110,12 @@ void DreamPad::Poll(Uint32 add_buttons, const NJS_POINT2I* add_left, const NJS_P
 	axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
 	axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
 
-	if (add_left != nullptr && (add_left->x != 0 || add_left->y != 0))
-	{
-		normalized_L = ConvertAxes((NJS_POINT2I*)&pad.LeftStickX, *add_left, settings.deadzoneL, settings.radialL);
-	}
-	else
-	{
-		normalized_L = ConvertAxes((NJS_POINT2I*)&pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
-	}
+	normalized_L = ConvertAxes((NJS_POINT2I*)&pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
 
 	axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX);
 	axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY);
 
-
-	if (add_right != nullptr && (add_right->x != 0 || add_right->y != 0))
-	{
-		normalized_R = ConvertAxes((NJS_POINT2I*)&pad.RightStickX, *add_right, settings.deadzoneR, settings.radialR);
-	}
-	else
-	{
-		normalized_R = ConvertAxes((NJS_POINT2I*)&pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
-	}
+	normalized_R = ConvertAxes((NJS_POINT2I*)&pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
 
 	short lt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
 	short rt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
@@ -198,13 +182,7 @@ void DreamPad::Poll(Uint32 add_buttons, const NJS_POINT2I* add_left, const NJS_P
 		buttons |= Buttons_Right;
 	}
 
-	buttons |= add_buttons;
-
-	pad.HeldButtons     = buttons;
-	pad.NotHeldButtons  = ~buttons;
-	pad.ReleasedButtons = pad.Old & (buttons ^ pad.Old);
-	pad.PressedButtons  = buttons & (buttons ^ pad.Old);
-	pad.Old             = pad.HeldButtons;
+	UpdateButtons(pad, buttons);
 }
 
 void DreamPad::SetActiveMotor(Motor motor, bool enable)
@@ -261,15 +239,24 @@ float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short 
 
 	const float m = sqrt(x * x + y * y);
 
-	const float nx	= (m < deadzone) ? 0 : x / m;	// Normalized (X)
-	const float ny	= (m < deadzone) ? 0 : y / m;	// Normalized (Y)
-	const float n	= (min((float)SHRT_MAX, m) - deadzone) / ((float)SHRT_MAX - deadzone);
+	const float nx = (m < deadzone) ? 0 : x / m;	// Normalized (X)
+	const float ny = (m < deadzone) ? 0 : y / m;	// Normalized (Y)
+	const float n  = (min((float)SHRT_MAX, m) - deadzone) / ((float)SHRT_MAX - deadzone);
 
 	// In my testing, multiplying -128 to 128 results in 127 instead, which is the desired value.
 	dest->x = (radial || abs(source.x) >= deadzone) ? (short)clamp((short)(128 * (nx * n)), (short)-127, (short)127) : 0;
 	dest->y = (radial || abs(source.y) >= deadzone) ? (short)clamp((short)(-128 * (ny * n)), (short)-127, (short)127) : 0;
 
 	return n;
+}
+
+void DreamPad::UpdateButtons(ControllerData& pad, Uint32 buttons)
+{
+	pad.HeldButtons     = buttons;
+	pad.NotHeldButtons  = ~buttons;
+	pad.ReleasedButtons = pad.Old & (buttons ^ pad.Old);
+	pad.PressedButtons  = buttons & (buttons ^ pad.Old);
+	pad.Old             = pad.HeldButtons;
 }
 
 DreamPad::Settings::Settings()

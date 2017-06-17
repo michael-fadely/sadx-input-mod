@@ -13,6 +13,7 @@
 #include "SDL.h"
 #include <SADXModLoader.h>
 #include "typedefs.h"
+#include "KeyboardMouse.h"
 
 enum Motor : int8
 {
@@ -41,7 +42,7 @@ public:
 	/// <summary>
 	/// Polls input for this instance.
 	/// </summary>
-	void Poll(Uint32 add_buttons, const NJS_POINT2I* add_left, const NJS_POINT2I* add_right);
+	void Poll();
 
 	// Poor man's properties
 	Motor GetActiveMotor() const { return rumble_state; }
@@ -85,7 +86,11 @@ public:
 
 	static DreamPad Controllers[GAMEPAD_COUNT];
 
+	static void UpdateButtons(ControllerData& data, Uint32 buttons);
+
 private:
+	static KeyboardMouse keyboard;
+
 	bool connected = false;
 	int controller_id;
 	SDL_GameController* gamepad;

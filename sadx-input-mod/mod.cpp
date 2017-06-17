@@ -160,7 +160,7 @@ extern "C"
 				char wtf[255];
 
 				GetPrivateProfileStringA(section_cstr, "RumbleFactor", "1.0", wtf, 255, config_cstr);
-				float rumbleFactor = min(1.0f, (float)atof(wtf));
+				float rumbleFactor = clamp((float)atof(wtf), 0.0f, 1.0f);
 
 				bool megaRumble = GetPrivateProfileIntA(section_cstr, "MegaRumble", 0, config_cstr) != 0;
 				ushort minRumble = (ushort)GetPrivateProfileIntA(section_cstr, "RumbleMinTime", 0, config_cstr);

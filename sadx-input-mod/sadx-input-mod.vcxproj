@@ -104,6 +104,7 @@
     <ClCompile Include="DreamPad.cpp" />
     <ClCompile Include="FileExists.cpp" />
     <ClCompile Include="input.cpp" />
+    <ClCompile Include="KeyboardMouse.cpp" />
     <ClCompile Include="mod.cpp" />
     <ClCompile Include="rumble.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -117,6 +118,7 @@
   <ItemGroup>
     <ClInclude Include="DreamPad.h" />
     <ClInclude Include="FileExists.h" />
+    <ClInclude Include="KeyboardMouse.h" />
     <ClInclude Include="minmax.h" />
     <ClInclude Include="rumble.h" />
     <ClInclude Include="SDL.h" />
