@@ -46,9 +46,9 @@ public:
 
 	// Poor man's properties
 	Motor GetActiveMotor() const { return rumble_state; }
-	void SetActiveMotor(Motor motor, bool enable);
-	bool Connected() const { return connected; }
-	int ControllerID() const { return controller_id; }
+	void  SetActiveMotor(Motor motor, bool enable);
+	bool  Connected() const { return connected; }
+	int   ControllerID() const { return controller_id; }
 	float NormalizedL() const { return normalized_L; }
 	float NormalizedR() const { return normalized_R; }
 	// SDL -> Dreamcast converted input data (ControllerData).
@@ -60,14 +60,14 @@ public:
 	{
 		Settings();
 
-		short	deadzoneL;			// Left stick deadzone
-		bool	radialL;			// Indicates if the stick is fully radial or semi-radial
-		short	deadzoneR;			// Right stick deadzone
-		bool	radialR;			// Indicates if the stick is fully radial or semi-radial
-		uint8	triggerThreshold;	// Trigger threshold
-		float	rumbleFactor;		// Rumble intensity multiplier (1.0 by default)
-		bool	megaRumble;			// Always fire both motors
-		ushort	rumbleMinTime;		// Minimum rumble time for controllers that have issues
+		short  deadzoneL;        // Left stick deadzone
+		bool   radialL;          // Indicates if the stick is fully radial or semi-radial
+		short  deadzoneR;        // Right stick deadzone
+		bool   radialR;          // Indicates if the stick is fully radial or semi-radial
+		uint8  triggerThreshold; // Trigger threshold
+		float  rumbleFactor;     // Rumble intensity multiplier (1.0 by default)
+		bool   megaRumble;       // Always fire both motors
+		ushort rumbleMinTime;    // Minimum rumble time for controllers that have issues
 
 		void apply(short deadzoneL, short deadzoneR,
 			bool radialL, bool radialR, uint8 triggerThreshold, float rumbleFactor, bool megaRumble, ushort rumbleMinTime);
@@ -75,6 +75,7 @@ public:
 
 
 	static int DigitalTrigger(ushort trigger, ushort threshold, int button);
+
 	/// <summary>
 	/// Converts from SDL (-32768 to 32767) to Dreamcast (-127 to 127) axes, including scaled deadzone.
 	/// </summary>

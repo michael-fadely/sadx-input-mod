@@ -9,11 +9,7 @@
 #include "rumble.h"
 #include "DreamPad.h"
 
-// TODO: fix l/r
-// TODO: fix alt+f4
 // TODO: keyboard & controller half press modifier
-
-
 
 struct AnalogThing
 {

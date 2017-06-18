@@ -107,18 +107,52 @@ void DreamPad::Poll()
 
 	NJS_POINT2I axis;
 
-	axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
-	axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
+	// TODO: keyboard/mouse toggle
+	auto kb = keyboard.DreamcastData();
+
+	if (kb.LeftStickX)
+	{
+		axis.x = kb.LeftStickX;
+	}
+	else
+	{
+		axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
+	}
+
+	if (kb.LeftStickY)
+	{
+		axis.y = kb.LeftStickY;
+	}
+	else
+	{
+		axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
+	}
 
 	normalized_L = ConvertAxes((NJS_POINT2I*)&pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
 
-	axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX);
-	axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY);
+
+	if (kb.RightStickX)
+	{
+		axis.x = kb.RightStickX;
+	}
+	else
+	{
+		axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX);
+	}
+
+	if (kb.RightStickY)
+	{
+		axis.y = kb.RightStickY;
+	}
+	else
+	{
+		axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY);
+	}
 
 	normalized_R = ConvertAxes((NJS_POINT2I*)&pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
 
-	short lt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
-	short rt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+	short lt = kb.LTriggerPressure ? kb.LTriggerPressure : SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
+	short rt = kb.RTriggerPressure ? kb.RTriggerPressure : SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
 
 	pad.LTriggerPressure = (short)(255.0f * ((float)lt / (float)SHRT_MAX));
 	pad.RTriggerPressure = (short)(255.0f * ((float)rt / (float)SHRT_MAX));;
@@ -182,6 +216,8 @@ void DreamPad::Poll()
 		buttons |= Buttons_Right;
 	}
 
+	buttons |= keyboard.DreamcastData().HeldButtons;
+
 	UpdateButtons(pad, buttons);
 }
 
@@ -222,7 +258,7 @@ void DreamPad::Copy(ControllerData& dest) const
 
 inline int DreamPad::DigitalTrigger(ushort trigger, ushort threshold, int button)
 {
-	return (trigger > threshold) ? button : 0;
+	return trigger > threshold ? button : 0;
 }
 
 float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short deadzone, bool radial) const

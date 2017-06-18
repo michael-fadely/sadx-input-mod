@@ -53,8 +53,8 @@ void KeyboardMouse::Poll()
 	pad.LeftStickY       = stick.y;
 	pad.RightStickX      = sticks[1].x;
 	pad.RightStickY      = sticks[1].y;
-	pad.LTriggerPressure = !!(pad.HeldButtons & Buttons_L) ? 255 : 0;
-	pad.RTriggerPressure = !!(pad.HeldButtons & Buttons_R) ? 255 : 0;
+	pad.LTriggerPressure = !!(pad.HeldButtons & Buttons_L) ? SHRT_MAX : 0;
+	pad.RTriggerPressure = !!(pad.HeldButtons & Buttons_R) ? SHRT_MAX : 0;
 }
 
 void KeyboardMouse::UpdateKeyboardButtons(Uint32 key, bool down)
