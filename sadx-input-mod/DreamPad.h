@@ -60,6 +60,8 @@ public:
 	{
 		Settings();
 
+		// HACK: make configurable
+		bool   allow_keyboard;
 		short  deadzoneL;        // Left stick deadzone
 		bool   radialL;          // Indicates if the stick is fully radial or semi-radial
 		short  deadzoneR;        // Right stick deadzone

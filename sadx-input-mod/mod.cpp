@@ -168,6 +168,9 @@ extern "C"
 				DreamPad::Settings* settings = &DreamPad::Controllers[i].settings;
 				settings->apply(deadzoneL, deadzoneR, radialL, radialR, triggerThreshold, rumbleFactor, megaRumble, minRumble);
 
+				// HACK: make configurable
+				settings->allow_keyboard = !i;
+
 				if (input::debug)
 				{
 					PrintDebug("[Input] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),

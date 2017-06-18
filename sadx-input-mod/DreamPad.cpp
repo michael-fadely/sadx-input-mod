@@ -98,19 +98,24 @@ void DreamPad::Close()
 
 void DreamPad::Poll()
 {
-	if (!connected)
+	if (!connected && !settings.allow_keyboard)
 	{
 		return;
 	}
 
-	SDL_GameControllerUpdate();
+	if (connected)
+	{
+		SDL_GameControllerUpdate();
+	}
+
+	bool allow_keyboard = settings.allow_keyboard;
 
 	NJS_POINT2I axis;
 
 	// TODO: keyboard/mouse toggle
-	auto kb = keyboard.DreamcastData();
+	auto& kb = keyboard.DreamcastData();
 
-	if (kb.LeftStickX)
+	if (!connected || allow_keyboard && kb.LeftStickX)
 	{
 		axis.x = kb.LeftStickX;
 	}
@@ -119,7 +124,7 @@ void DreamPad::Poll()
 		axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
 	}
 
-	if (kb.LeftStickY)
+	if (!connected || allow_keyboard && kb.LeftStickY)
 	{
 		axis.y = kb.LeftStickY;
 	}
@@ -131,7 +136,7 @@ void DreamPad::Poll()
 	normalized_L = ConvertAxes((NJS_POINT2I*)&pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
 
 
-	if (kb.RightStickX)
+	if (!connected || allow_keyboard && kb.RightStickX)
 	{
 		axis.x = kb.RightStickX;
 	}
@@ -140,7 +145,7 @@ void DreamPad::Poll()
 		axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX);
 	}
 
-	if (kb.RightStickY)
+	if (!connected || allow_keyboard && kb.RightStickY)
 	{
 		axis.y = kb.RightStickY;
 	}
@@ -151,8 +156,8 @@ void DreamPad::Poll()
 
 	normalized_R = ConvertAxes((NJS_POINT2I*)&pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
 
-	short lt = kb.LTriggerPressure ? kb.LTriggerPressure : SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
-	short rt = kb.RTriggerPressure ? kb.RTriggerPressure : SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+	short lt = (!connected || allow_keyboard && kb.LTriggerPressure) ? kb.LTriggerPressure : SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
+	short rt = (!connected || allow_keyboard && kb.RTriggerPressure) ? kb.RTriggerPressure : SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
 
 	pad.LTriggerPressure = (short)(255.0f * ((float)lt / (float)SHRT_MAX));
 	pad.RTriggerPressure = (short)(255.0f * ((float)rt / (float)SHRT_MAX));;
@@ -162,61 +167,67 @@ void DreamPad::Poll()
 	buttons |= DigitalTrigger(pad.LTriggerPressure, settings.triggerThreshold, Buttons_L);
 	buttons |= DigitalTrigger(pad.RTriggerPressure, settings.triggerThreshold, Buttons_R);
 
-	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_A))
+	if (connected)
 	{
-		buttons |= Buttons_A;
-	}
-	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_B))
-	{
-		buttons |= Buttons_B;
-	}
-	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_X))
-	{
-		buttons |= Buttons_X;
-	}
-	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_Y))
-	{
-		buttons |= Buttons_Y;
-	}
+		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_A))
+		{
+			buttons |= Buttons_A;
+		}
+		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_B))
+		{
+			buttons |= Buttons_B;
+		}
+		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_X))
+		{
+			buttons |= Buttons_X;
+		}
+		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_Y))
+		{
+			buttons |= Buttons_Y;
+		}
 
-	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_START))
-	{
-		buttons |= Buttons_Start;
-	}
+		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_START))
+		{
+			buttons |= Buttons_Start;
+		}
 
 #ifdef EXTENDED_BUTTONS
-	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_LEFTSHOULDER))
-	{
-		buttons |= Buttons_C;
-	}
-	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_BACK))
-	{
-		buttons |= Buttons_D;
-	}
-	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER))
-	{
-		buttons |= Buttons_Z;
-	}
+		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_LEFTSHOULDER))
+		{
+			buttons |= Buttons_C;
+		}
+		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_BACK))
+		{
+			buttons |= Buttons_D;
+		}
+		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER))
+		{
+			buttons |= Buttons_Z;
+		}
 #endif
 
-	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP))
-	{
-		buttons |= Buttons_Up;
-	}
-	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_DOWN))
-	{
-		buttons |= Buttons_Down;
-	}
-	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_LEFT))
-	{
-		buttons |= Buttons_Left;
-	}
-	if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
-	{
-		buttons |= Buttons_Right;
+		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP))
+		{
+			buttons |= Buttons_Up;
+		}
+		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_DOWN))
+		{
+			buttons |= Buttons_Down;
+		}
+		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_LEFT))
+		{
+			buttons |= Buttons_Left;
+		}
+		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
+		{
+			buttons |= Buttons_Right;
+		}
 	}
 
-	buttons |= keyboard.DreamcastData().HeldButtons;
+	if (allow_keyboard)
+	{
+		buttons |= kb.HeldButtons;
+	}
 
 	UpdateButtons(pad, buttons);
 }
@@ -297,6 +308,7 @@ void DreamPad::UpdateButtons(ControllerData& pad, Uint32 buttons)
 
 DreamPad::Settings::Settings()
 {
+	allow_keyboard   = false;
 	deadzoneL        = GAMEPAD_LEFT_THUMB_DEADZONE;
 	deadzoneR        = GAMEPAD_RIGHT_THUMB_DEADZONE;
 	triggerThreshold = GAMEPAD_TRIGGER_THRESHOLD;
