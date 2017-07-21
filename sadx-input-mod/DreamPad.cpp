@@ -38,7 +38,9 @@ bool DreamPad::Open(int id)
 	gamepad = SDL_GameControllerOpen(id);
 
 	if (gamepad == nullptr)
-		return connected = false;
+	{
+		return (connected = false);
+	}
 
 	pad.Support = PAD_SUPPORT;
 
@@ -46,7 +48,7 @@ bool DreamPad::Open(int id)
 
 	if (joystick == nullptr)
 	{
-		return connected = false;
+		return (connected = false);
 	}
 
 	controller_id = id;
@@ -54,7 +56,7 @@ bool DreamPad::Open(int id)
 
 	if (haptic == nullptr)
 	{
-		return connected = true;
+		return (connected = true);
 	}
 
 	if (SDL_HapticRumbleSupported(haptic))
@@ -67,7 +69,7 @@ bool DreamPad::Open(int id)
 		haptic = nullptr;
 	}
 
-	return connected = true;
+	return (connected = true);
 }
 
 void DreamPad::Close()
