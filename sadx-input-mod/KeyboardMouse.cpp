@@ -238,6 +238,17 @@ LRESULT KeyboardMouse::ReadWindowMessage(HWND handle, UINT Msg, WPARAM wParam, L
 {
 	switch (Msg)
 	{
+		case WM_KILLFOCUS:
+			sticks[0].directions = 0;
+			sticks[1].directions = 0;
+			pad.HeldButtons = 0;
+			pad.LeftStickX  = 0;
+			pad.LeftStickY  = 0;
+			pad.RightStickX = 0;
+			pad.RightStickY = 0;
+			ResetCursor();
+			break;
+
 		case WM_LBUTTONDOWN:
 		case WM_LBUTTONUP:
 			UpdateMouseButtons(VK_LBUTTON, Msg == WM_LBUTTONDOWN);
