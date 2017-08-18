@@ -162,7 +162,7 @@ void DreamPad::Poll()
 	short rt = (!connected || allow_keyboard && kb.RTriggerPressure) ? kb.RTriggerPressure : SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
 
 	pad.LTriggerPressure = (short)(255.0f * ((float)lt / (float)SHRT_MAX));
-	pad.RTriggerPressure = (short)(255.0f * ((float)rt / (float)SHRT_MAX));;
+	pad.RTriggerPressure = (short)(255.0f * ((float)rt / (float)SHRT_MAX));
 
 	Uint32 buttons = 0;
 
@@ -286,13 +286,12 @@ float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short 
 	const float x = (float)clamp(source.x, (short)-SHRT_MAX, (short)SHRT_MAX);
 	const float y = (float)-clamp(source.y, (short)-SHRT_MAX, (short)SHRT_MAX);
 
-	const float m = sqrt(x * x + y * y);
+	const float m = min(sqrt(x * x + y * y), (float)SHRT_MAX);
 
-	const float nx = (m < deadzone) ? 0 : x / m;	// Normalized (X)
-	const float ny = (m < deadzone) ? 0 : y / m;	// Normalized (Y)
+	const float nx = (m < deadzone) ? 0 : x / m; // Normalized (X)
+	const float ny = (m < deadzone) ? 0 : y / m; // Normalized (Y)
 	const float n  = (min((float)SHRT_MAX, m) - deadzone) / ((float)SHRT_MAX - deadzone);
 
-	// In my testing, multiplying -128 to 128 results in 127 instead, which is the desired value.
 	dest->x = (radial || abs(source.x) >= deadzone) ? (short)clamp((short)(128 * (nx * n)), (short)-127, (short)127) : 0;
 	dest->y = (radial || abs(source.y) >= deadzone) ? (short)clamp((short)(-128 * (ny * n)), (short)-127, (short)127) : 0;
 
