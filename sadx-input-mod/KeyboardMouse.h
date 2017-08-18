@@ -85,6 +85,7 @@ private:
 	static ControllerData pad;
 	static float normalized_L, normalized_R;
 	static bool mouse_update;
+	static bool half_press;
 	static NJS_POINT2I cursor;
 	static KeyboardStick sticks[2];
 	static Sint16 mouse_x;

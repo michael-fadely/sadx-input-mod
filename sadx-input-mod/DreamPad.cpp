@@ -114,59 +114,62 @@ void DreamPad::Poll()
 		SDL_GameControllerUpdate();
 	}
 
-	bool allow_keyboard = settings.allow_keyboard;
-
-	NJS_POINT2I axis;
-
 	// TODO: keyboard/mouse toggle
 	auto& kb = keyboard.DreamcastData();
+	bool allow_keyboard = settings.allow_keyboard;
 
-	if (!connected || allow_keyboard && kb.LeftStickX)
+	if (!connected || allow_keyboard && (kb.LeftStickX || kb.LeftStickY))
 	{
-		axis.x = kb.LeftStickX;
+		normalized_L = keyboard.NormalizedL();
+		pad.LeftStickX = kb.LeftStickX;
+		pad.LeftStickY = kb.LeftStickY;
 	}
 	else
 	{
-		axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
+		NJS_POINT2I axis = {
+			axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX),
+			axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY)
+		};
+
+		normalized_L = ConvertAxes((NJS_POINT2I*)&pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
 	}
 
-	if (!connected || allow_keyboard && kb.LeftStickY)
+	if (!connected || allow_keyboard && (kb.RightStickX || kb.RightStickY))
 	{
-		axis.y = kb.LeftStickY;
+		normalized_R = keyboard.NormalizedR();
+		pad.RightStickX = kb.RightStickX;
+		pad.RightStickY = kb.RightStickY;
 	}
 	else
 	{
-		axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
+		NJS_POINT2I axis = {
+			axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX),
+			axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY)
+		};
+
+		normalized_R = ConvertAxes((NJS_POINT2I*)&pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
 	}
 
-	normalized_L = ConvertAxes((NJS_POINT2I*)&pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
-
-
-	if (!connected || allow_keyboard && kb.RightStickX)
+	if (!connected || allow_keyboard && kb.LTriggerPressure)
 	{
-		axis.x = kb.RightStickX;
+		pad.LTriggerPressure = kb.LTriggerPressure;
 	}
 	else
 	{
-		axis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX);
+		auto lt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
+		pad.LTriggerPressure = (short)(255.0f * ((float)lt / (float)SHRT_MAX));
 	}
 
-	if (!connected || allow_keyboard && kb.RightStickY)
+	if (!connected || allow_keyboard && kb.RTriggerPressure)
 	{
-		axis.y = kb.RightStickY;
+		pad.RTriggerPressure = kb.RTriggerPressure;
 	}
 	else
 	{
-		axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY);
+		auto rt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+		pad.RTriggerPressure = (short)(255.0f * ((float)rt / (float)SHRT_MAX));
 	}
 
-	normalized_R = ConvertAxes((NJS_POINT2I*)&pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
-
-	short lt = (!connected || allow_keyboard && kb.LTriggerPressure) ? kb.LTriggerPressure : SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
-	short rt = (!connected || allow_keyboard && kb.RTriggerPressure) ? kb.RTriggerPressure : SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
-
-	pad.LTriggerPressure = (short)(255.0f * ((float)lt / (float)SHRT_MAX));
-	pad.RTriggerPressure = (short)(255.0f * ((float)rt / (float)SHRT_MAX));
 
 	Uint32 buttons = 0;
 

@@ -13,6 +13,7 @@ ControllerData KeyboardMouse::pad           = {};
 float          KeyboardMouse::normalized_L  = 0.0f;
 float          KeyboardMouse::normalized_R  = 0.0f;
 bool           KeyboardMouse::mouse_update  = false;
+bool           KeyboardMouse::half_press    = false;
 NJS_POINT2I    KeyboardMouse::cursor        = {};
 KeyboardStick  KeyboardMouse::sticks[2]     = {};
 Sint16         KeyboardMouse::mouse_x       = 0;
@@ -47,14 +48,41 @@ void KeyboardMouse::Poll()
 		stick = cursor;
 	}
 
+	auto x = (float)stick.x;
+	auto y = -(float)stick.y;
+
+	float m = min(sqrt(x * x + y * y), (float)SHRT_MAX) / (float)SHRT_MAX;
+
+	if (half_press && (sticks[0].x || sticks[0].y))
+	{
+		m *= 0.5f;
+		stick.x = (Sint16)(stick.x * m);
+		stick.y = (Sint16)(stick.y * m);
+	}
+
+	normalized_L = m;
+
+	x = (float)sticks[1].x;
+	y = (float)sticks[1].y;
+	m = min(sqrt(x * x + y * y), (float)SHRT_MAX) / (float)SHRT_MAX;
+
+	if (half_press)
+	{
+		m *= 0.5f;
+		sticks[1].x = (Sint16)(sticks[1].x * m);
+		sticks[1].y = (Sint16)(sticks[1].y * m);
+	}
+
+	normalized_R = m;
+
 	DreamPad::UpdateButtons(pad, pad.HeldButtons);
 
-	pad.LeftStickX       = stick.x;
-	pad.LeftStickY       = stick.y;
-	pad.RightStickX      = sticks[1].x;
-	pad.RightStickY      = sticks[1].y;
-	pad.LTriggerPressure = !!(pad.HeldButtons & Buttons_L) ? SHRT_MAX : 0;
-	pad.RTriggerPressure = !!(pad.HeldButtons & Buttons_R) ? SHRT_MAX : 0;
+	pad.LeftStickX       = stick.x >> 8;
+	pad.LeftStickY       = stick.y >> 8;
+	pad.RightStickX      = sticks[1].x >> 8;
+	pad.RightStickY      = sticks[1].y >> 8;
+	pad.LTriggerPressure = !!(pad.HeldButtons & Buttons_L) ? CHAR_MAX : 0;
+	pad.RTriggerPressure = !!(pad.HeldButtons & Buttons_R) ? CHAR_MAX : 0;
 }
 
 void KeyboardMouse::UpdateKeyboardButtons(Uint32 key, bool down)
@@ -62,6 +90,10 @@ void KeyboardMouse::UpdateKeyboardButtons(Uint32 key, bool down)
 	switch (key)
 	{
 		default:
+			break;
+
+		case VK_SHIFT:
+			half_press = down;
 			break;
 
 		case 'X':
