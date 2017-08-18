@@ -39,7 +39,8 @@ bool DreamPad::Open(int id)
 
 	if (gamepad == nullptr)
 	{
-		return (connected = false);
+		connected = false;
+		return false;
 	}
 
 	pad.Support = PAD_SUPPORT;
@@ -48,7 +49,8 @@ bool DreamPad::Open(int id)
 
 	if (joystick == nullptr)
 	{
-		return (connected = false);
+		connected = false;
+		return false;
 	}
 
 	controller_id = id;
@@ -56,7 +58,8 @@ bool DreamPad::Open(int id)
 
 	if (haptic == nullptr)
 	{
-		return (connected = true);
+		connected = true;
+		return true;
 	}
 
 	if (SDL_HapticRumbleSupported(haptic))
@@ -69,7 +72,8 @@ bool DreamPad::Open(int id)
 		haptic = nullptr;
 	}
 
-	return (connected = true);
+	connected = true;
+	return true;
 }
 
 void DreamPad::Close()
@@ -292,8 +296,23 @@ float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short 
 	const float ny = (m < deadzone) ? 0 : y / m; // Normalized (Y)
 	const float n  = (min((float)SHRT_MAX, m) - deadzone) / ((float)SHRT_MAX - deadzone);
 
-	dest->x = (radial || abs(source.x) >= deadzone) ? (short)clamp((short)(128 * (nx * n)), (short)-127, (short)127) : 0;
-	dest->y = (radial || abs(source.y) >= deadzone) ? (short)clamp((short)(-128 * (ny * n)), (short)-127, (short)127) : 0;
+	if (!radial && abs(source.x) < deadzone)
+	{
+		dest->x = 0;
+	}
+	else
+	{
+		dest->x = (short)clamp((short)(128 * (nx * n)), (short)-127, (short)127);
+	}
+
+	if (!radial && abs(source.y) < deadzone)
+	{
+		dest->y = 0;
+	}
+	else
+	{
+		dest->y = (short)clamp((short)(-128 * (ny * n)), (short)-127, (short)127);
+	}
 
 	return n;
 }
