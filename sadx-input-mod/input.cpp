@@ -1,15 +1,13 @@
 ﻿#include "stdafx.h"
-// Other crap
+
 #include <SADXModLoader.h>
-#include <limits.h>
 #include "minmax.h"
 
-// This namespace
 #include "input.h"
 #include "rumble.h"
 #include "DreamPad.h"
 
-// TODO: keyboard & controller half press modifier
+// TODO: controller half press modifier
 
 struct AnalogThing
 {
@@ -71,10 +69,10 @@ namespace input
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
-			DreamPad& dpad = DreamPad::Controllers[i];
+			DreamPad& dreampad = DreamPad::Controllers[i];
 
-			dpad.Poll();
-			dpad.Copy(RawInput[i]);
+			dreampad.Poll();
+			dreampad.Copy(RawInput[i]);
 
 			// Compatibility for mods who use ControllersRaw directly.
 			// This will only copy the first four controllers.
@@ -91,19 +89,19 @@ namespace input
 
 				DisplayDebugStringFormatted(NJM_LOCATION(0, 8 + (3 * i)), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
 					pad->HeldButtons, pad->LTriggerPressure, pad->RTriggerPressure, (m & Motor::Large), (m & Motor::Small) >> 1);
-				DisplayDebugStringFormatted(NJM_LOCATION(4, 9 + (3 * i)), "LS: % 4d/% 4d RS: % 4d/% 4d",
-					pad->LeftStickX, pad->LeftStickY, pad->RightStickX, pad->RightStickY);
+				DisplayDebugStringFormatted(NJM_LOCATION(4, 9 + (3 * i)), "LS: %4d/%4d (%f) RS: %4d/%4d (%f)",
+					pad->LeftStickX, pad->LeftStickY, dreampad.NormalizedL(), pad->RightStickX, pad->RightStickY, dreampad.NormalizedR());
 
 				if (pad->HeldButtons & Buttons_Z)
 				{
 					int pressed = pad->PressedButtons;
 					if (pressed & Buttons_Up)
 					{
-						dpad.settings.rumbleFactor += 0.125f;
+						dreampad.settings.rumbleFactor += 0.125f;
 					}
 					else if (pressed & Buttons_Down)
 					{
-						dpad.settings.rumbleFactor -= 0.125f;
+						dreampad.settings.rumbleFactor -= 0.125f;
 					}
 					else if (pressed & Buttons_Left)
 					{
@@ -114,7 +112,8 @@ namespace input
 						rumble::RumbleB(i, 7, 59, 6);
 					}
 
-					DisplayDebugStringFormatted(NJM_LOCATION(4, 10 + (3 * i)), "Rumble factor (U/D): %f (L/R to test)", dpad.settings.rumbleFactor);
+					DisplayDebugStringFormatted(NJM_LOCATION(4, 10 + (3 * i)),
+						"Rumble factor (U/D): %f (L/R to test)", dreampad.settings.rumbleFactor);
 				}
 			}
 #endif

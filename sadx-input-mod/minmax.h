@@ -15,4 +15,8 @@
 using std::min;
 using std::max;
 
-#define clamp(value, low, high) min(max(low, value), high)
+template <typename T>
+T clamp(T value, T low, T high)
+{
+	return min(max(low, value), high);
+}

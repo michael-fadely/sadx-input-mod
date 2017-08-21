@@ -1,18 +1,14 @@
 #include "stdafx.h"
-// Microsoft stuff
 #include <Windows.h>
 #include <direct.h>	// for _getcwd
 
-// Standard library
 #include <string>
 #include <sstream>	// because
 
 #include "SDL.h"
 
-// Mod loader
 #include <SADXModLoader.h>
 
-// Local stuff
 #include "typedefs.h"
 #include "FileExists.h"
 #include "input.h"

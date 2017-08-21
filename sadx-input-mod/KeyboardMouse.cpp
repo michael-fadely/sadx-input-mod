@@ -30,6 +30,29 @@ LRESULT __stdcall PollKeyboardMouse(HWND handle, UINT Msg, WPARAM wParam, LPARAM
 	return KeyboardMouse::ReadWindowMessage(handle, Msg, wParam, lParam);
 }
 
+inline void normalize(const NJS_POINT2I& src, float* magnitude, short* out_x, short* out_y)
+{
+	float x = (float)clamp<short>(src.x, -SHRT_MAX, SHRT_MAX);
+	float y = (float)clamp<short>(src.y, -SHRT_MAX, SHRT_MAX);
+	float m = sqrt(x * x + y * y);
+
+	if (m < FLT_EPSILON)
+	{
+		x = 0.0f;
+		y = 0.0f;
+	}
+	else
+	{
+		x = 1.0f / m * x;
+		y = 1.0f / m * y;
+	}
+
+	*magnitude = min(1.0f, m / (float)SHRT_MAX);
+
+	*out_x = (short)(127 * x);
+	*out_y = (short)(127 * y);
+}
+
 void KeyboardMouse::Poll()
 {
 	HookWndProc();
@@ -48,39 +71,21 @@ void KeyboardMouse::Poll()
 		stick = cursor;
 	}
 
-	auto x = (float)stick.x;
-	auto y = -(float)stick.y;
-
-	float m = min(sqrt(x * x + y * y), (float)SHRT_MAX) / (float)SHRT_MAX;
-
-	if (half_press && (sticks[0].x || sticks[0].y))
-	{
-		m *= 0.5f;
-		stick.x = (Sint16)(stick.x * m);
-		stick.y = (Sint16)(stick.y * m);
-	}
-
-	normalized_L = m;
-
-	x = (float)sticks[1].x;
-	y = (float)sticks[1].y;
-	m = min(sqrt(x * x + y * y), (float)SHRT_MAX) / (float)SHRT_MAX;
+	normalize(stick, &normalized_L, &pad.LeftStickX, &pad.LeftStickY);
+	normalize(sticks[1], &normalized_R, &pad.RightStickX, &pad.RightStickY);
 
 	if (half_press)
 	{
-		m *= 0.5f;
-		sticks[1].x = (Sint16)(sticks[1].x * m);
-		sticks[1].y = (Sint16)(sticks[1].y * m);
+		pad.LeftStickX /= 2;
+		pad.LeftStickY /= 2;
+		pad.RightStickX /= 2;
+		pad.RightStickY /= 2;
+		normalized_L /= 2.0f;
+		normalized_R /= 2.0f;
 	}
-
-	normalized_R = m;
 
 	DreamPad::UpdateButtons(pad, pad.HeldButtons);
 
-	pad.LeftStickX       = stick.x >> 8;
-	pad.LeftStickY       = stick.y >> 8;
-	pad.RightStickX      = sticks[1].x >> 8;
-	pad.RightStickY      = sticks[1].y >> 8;
 	pad.LTriggerPressure = !!(pad.HeldButtons & Buttons_L) ? UCHAR_MAX : 0;
 	pad.RTriggerPressure = !!(pad.HeldButtons & Buttons_R) ? UCHAR_MAX : 0;
 }

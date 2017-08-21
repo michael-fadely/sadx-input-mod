@@ -85,7 +85,7 @@ public:
 	/// <param name="source">The source axes (SDL).</param>
 	/// <param name="deadzone">The deadzone.</param>
 	/// <param name="radial">If set to <c>true</c>, the deadzone is treated as fully radial. (i.e one axis exceeding deadzone implies the other)</param>
-	float ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short deadzone, bool radial) const;
+	static float ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short deadzone, bool radial);
 
 	static DreamPad Controllers[GAMEPAD_COUNT];
 

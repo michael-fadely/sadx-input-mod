@@ -281,7 +281,7 @@ inline int DreamPad::DigitalTrigger(ushort trigger, ushort threshold, int button
 	return trigger > threshold ? button : 0;
 }
 
-float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short deadzone, bool radial) const
+float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short deadzone, bool radial)
 {
 	if (abs(source.x) < deadzone && abs(source.y) < deadzone)
 	{
@@ -289,15 +289,14 @@ float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short 
 		return 0.0f;
 	}
 
-	// This is being intentionally limited to -32767 instead of -32768
-	const float x = (float)clamp(source.x, (short)-SHRT_MAX, (short)SHRT_MAX);
-	const float y = (float)-clamp(source.y, (short)-SHRT_MAX, (short)SHRT_MAX);
+	const float x = (float)clamp<short>(source.x, -SHRT_MAX, SHRT_MAX);
+	const float y = (float)clamp<short>(source.y, -SHRT_MAX, SHRT_MAX);
 
-	const float m = min(sqrt(x * x + y * y), (float)SHRT_MAX);
+	const float m = sqrt(x * x + y * y);
 
-	const float nx = (m < deadzone) ? 0 : x / m; // Normalized (X)
-	const float ny = (m < deadzone) ? 0 : y / m; // Normalized (Y)
-	const float n  = (min((float)SHRT_MAX, m) - deadzone) / ((float)SHRT_MAX - deadzone);
+	const float nx = (m < deadzone) ? 0 : (x / m); // Normalized (X)
+	const float ny = (m < deadzone) ? 0 : (y / m); // Normalized (Y)
+	const float n  = (min((float)SHRT_MAX, m) - deadzone) / (float)(SHRT_MAX - deadzone);
 
 	if (!radial && abs(source.x) < deadzone)
 	{
@@ -305,7 +304,7 @@ float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short 
 	}
 	else
 	{
-		dest->x = (short)clamp((short)(128 * (nx * n)), (short)-127, (short)127);
+		dest->x = clamp<short>((short)(128 * (nx * n)), -127, 127);
 	}
 
 	if (!radial && abs(source.y) < deadzone)
@@ -314,7 +313,7 @@ float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short 
 	}
 	else
 	{
-		dest->y = (short)clamp((short)(-128 * (ny * n)), (short)-127, (short)127);
+		dest->y = clamp<short>((short)(128 * (ny * n)), -127, 127);
 	}
 
 	return n;
