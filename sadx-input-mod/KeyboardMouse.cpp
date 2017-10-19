@@ -10,8 +10,8 @@ DataPointer(int, CursorSin, 0x03B0E9A0);
 DataPointer(HWND, hWnd, 0x3D0FD30);
 
 ControllerData KeyboardMouse::pad           = {};
-float          KeyboardMouse::normalized_L  = 0.0f;
-float          KeyboardMouse::normalized_R  = 0.0f;
+float          KeyboardMouse::normalized_l  = 0.0f;
+float          KeyboardMouse::normalized_r  = 0.0f;
 bool           KeyboardMouse::mouse_update  = false;
 bool           KeyboardMouse::half_press    = false;
 NJS_POINT2I    KeyboardMouse::cursor        = {};
@@ -27,13 +27,14 @@ inline void set_button(Uint32& i, Uint32 value, bool down)
 
 LRESULT __stdcall PollKeyboardMouse(HWND handle, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-	return KeyboardMouse::ReadWindowMessage(handle, Msg, wParam, lParam);
+	return KeyboardMouse::read_window_message(handle, Msg, wParam, lParam);
 }
 
 inline void normalize(const NJS_POINT2I& src, float* magnitude, short* out_x, short* out_y)
 {
-	float x = (float)clamp<short>(src.x, -SHRT_MAX, SHRT_MAX);
-	float y = (float)clamp<short>(src.y, -SHRT_MAX, SHRT_MAX);
+	constexpr auto short_max = std::numeric_limits<short>::max();
+	auto x = static_cast<float>(clamp<short>(src.x, -short_max, short_max));
+	auto y = static_cast<float>(clamp<short>(src.y, -short_max, short_max));
 	float m = sqrt(x * x + y * y);
 
 	if (m < FLT_EPSILON)
@@ -47,15 +48,15 @@ inline void normalize(const NJS_POINT2I& src, float* magnitude, short* out_x, sh
 		y = 1.0f / m * y;
 	}
 
-	*magnitude = min(1.0f, m / (float)SHRT_MAX);
+	*magnitude = min(1.0f, m / static_cast<float>(short_max));
 
-	*out_x = (short)(127 * x);
-	*out_y = (short)(127 * y);
+	*out_x = static_cast<short>(127 * x);
+	*out_y = static_cast<short>(127 * y);
 }
 
-void KeyboardMouse::Poll()
+void KeyboardMouse::poll()
 {
-	HookWndProc();
+	hook_wnd_proc();
 
 	sticks[0].update();
 	sticks[1].update();
@@ -63,7 +64,7 @@ void KeyboardMouse::Poll()
 
 	if (sticks[0].x || sticks[0].y)
 	{
-		ResetCursor();
+		reset_cursor();
 		stick = static_cast<NJS_POINT2I>(sticks[0]);
 	}
 	else
@@ -71,8 +72,8 @@ void KeyboardMouse::Poll()
 		stick = cursor;
 	}
 
-	normalize(stick, &normalized_L, &pad.LeftStickX, &pad.LeftStickY);
-	normalize(sticks[1], &normalized_R, &pad.RightStickX, &pad.RightStickY);
+	normalize(stick, &normalized_l, &pad.LeftStickX, &pad.LeftStickY);
+	normalize(sticks[1], &normalized_r, &pad.RightStickX, &pad.RightStickY);
 
 	if (half_press)
 	{
@@ -80,17 +81,19 @@ void KeyboardMouse::Poll()
 		pad.LeftStickY /= 2;
 		pad.RightStickX /= 2;
 		pad.RightStickY /= 2;
-		normalized_L /= 2.0f;
-		normalized_R /= 2.0f;
+		normalized_l /= 2.0f;
+		normalized_r /= 2.0f;
 	}
 
-	DreamPad::UpdateButtons(pad, pad.HeldButtons);
+	DreamPad::update_buttons(pad, pad.HeldButtons);
 
-	pad.LTriggerPressure = !!(pad.HeldButtons & Buttons_L) ? UCHAR_MAX : 0;
-	pad.RTriggerPressure = !!(pad.HeldButtons & Buttons_R) ? UCHAR_MAX : 0;
+	constexpr auto uchar_max = std::numeric_limits<uchar>::max();
+
+	pad.LTriggerPressure = !!(pad.HeldButtons & Buttons_L) ? uchar_max : 0;
+	pad.RTriggerPressure = !!(pad.HeldButtons & Buttons_R) ? uchar_max : 0;
 }
 
-void KeyboardMouse::UpdateKeyboardButtons(Uint32 key, bool down)
+void KeyboardMouse::update_keyboard_buttons(Uint32 key, bool down)
 {
 	switch (key)
 	{
@@ -177,7 +180,7 @@ void KeyboardMouse::UpdateKeyboardButtons(Uint32 key, bool down)
 	}
 }
 
-void KeyboardMouse::UpdateCursor(Sint32 xrel, Sint32 yrel)
+void KeyboardMouse::update_cursor(Sint32 xrel, Sint32 yrel)
 {
 	if (!mouse_update)
 	{
@@ -212,23 +215,25 @@ void KeyboardMouse::UpdateCursor(Sint32 xrel, Sint32 yrel)
 		CursorMagnitude = 1;
 	}
 
-	njPushMatrix((NJS_MATRIX_PTR)0x0389D650);
+	njPushMatrix(reinterpret_cast<NJS_MATRIX_PTR>(0x0389D650));
 	njRotateZ(nullptr, NJM_RAD_ANG(atan2(x, y)));
 
-	NJS_VECTOR v = { 0.0f, (float)CursorMagnitude * 1.2f, 0.0f };
+	NJS_VECTOR v = { 0.0f, static_cast<float>(CursorMagnitude) * 1.2f, 0.0f };
 	njCalcVector(nullptr, &v, &v);
 
-	CursorCos = (int)v.x;
-	CursorSin = (int)v.y;
+	CursorCos = static_cast<int>(v.x);
+	CursorSin = static_cast<int>(v.y);
+
+	constexpr auto short_max = static_cast<int>(std::numeric_limits<short>::max());
 
 	auto& p = cursor;
-	p.x = (Sint16)clamp((int)(-v.x / 128.0f * SHRT_MAX), -SHRT_MAX, SHRT_MAX);
-	p.y = (Sint16)clamp((int)(v.y / 128.0f * SHRT_MAX), -SHRT_MAX, SHRT_MAX);
+	p.x = static_cast<Sint16>(clamp(static_cast<int>(-v.x / 128.0f * short_max), -short_max, short_max));
+	p.y = static_cast<Sint16>(clamp(static_cast<int>(v.y / 128.0f * short_max), -short_max, short_max));
 
 	njPopMatrix(1);
 }
 
-void KeyboardMouse::ResetCursor()
+void KeyboardMouse::reset_cursor()
 {
 	CursorMagnitude = 0;
 	CursorCos       = 0;
@@ -239,14 +244,14 @@ void KeyboardMouse::ResetCursor()
 	mouse_update    = false;
 }
 
-void KeyboardMouse::UpdateMouseButtons(Uint32 button, bool down)
+void KeyboardMouse::update_mouse_buttons(Uint32 button, bool down)
 {
 	switch (button)
 	{
 		case VK_LBUTTON:
 			if (!down && !MouseMode)
 			{
-				ResetCursor();
+				reset_cursor();
 			}
 			mouse_update = down;
 			break;
@@ -271,7 +276,7 @@ void KeyboardMouse::UpdateMouseButtons(Uint32 button, bool down)
 	}
 }
 
-LRESULT KeyboardMouse::ReadWindowMessage(HWND handle, UINT Msg, WPARAM wParam, LPARAM lParam)
+LRESULT KeyboardMouse::read_window_message(HWND handle, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (Msg)
 	{
@@ -283,30 +288,30 @@ LRESULT KeyboardMouse::ReadWindowMessage(HWND handle, UINT Msg, WPARAM wParam, L
 			pad.LeftStickY  = 0;
 			pad.RightStickX = 0;
 			pad.RightStickY = 0;
-			ResetCursor();
+			reset_cursor();
 			break;
 
 		case WM_LBUTTONDOWN:
 		case WM_LBUTTONUP:
-			UpdateMouseButtons(VK_LBUTTON, Msg == WM_LBUTTONDOWN);
+			update_mouse_buttons(VK_LBUTTON, Msg == WM_LBUTTONDOWN);
 			break;
 
 		case WM_RBUTTONDOWN:
 		case WM_RBUTTONUP:
-			UpdateMouseButtons(VK_RBUTTON, Msg == WM_RBUTTONDOWN);
+			update_mouse_buttons(VK_RBUTTON, Msg == WM_RBUTTONDOWN);
 			break;
 
 		case WM_MBUTTONDOWN:
 		case WM_MBUTTONUP:
-			UpdateMouseButtons(VK_MBUTTON, Msg == WM_MBUTTONDOWN);
+			update_mouse_buttons(VK_MBUTTON, Msg == WM_MBUTTONDOWN);
 			break;
 
 		case WM_MOUSEMOVE:
 		{
-			auto x = (short)(lParam & 0xFFFF);
-			auto y = (short)(lParam >> 16);
+			auto x = static_cast<short>(lParam & 0xFFFF);
+			auto y = static_cast<short>(lParam >> 16);
 
-			UpdateCursor(x - mouse_x, y - mouse_y);
+			update_cursor(x - mouse_x, y - mouse_y);
 
 			mouse_x = x;
 			mouse_y = y;
@@ -320,7 +325,7 @@ LRESULT KeyboardMouse::ReadWindowMessage(HWND handle, UINT Msg, WPARAM wParam, L
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN:
 		case WM_KEYUP:
-			UpdateKeyboardButtons(wParam, Msg == WM_KEYDOWN || Msg == WM_SYSKEYDOWN);
+			update_keyboard_buttons(wParam, Msg == WM_KEYDOWN || Msg == WM_SYSKEYDOWN);
 			break;
 
 		default:
@@ -330,10 +335,10 @@ LRESULT KeyboardMouse::ReadWindowMessage(HWND handle, UINT Msg, WPARAM wParam, L
 	return CallWindowProc(lpPrevWndFunc, handle, Msg, wParam, lParam);
 }
 
-void KeyboardMouse::HookWndProc()
+void KeyboardMouse::hook_wnd_proc()
 {
 	if (lpPrevWndFunc == nullptr)
 	{
-		lpPrevWndFunc = (WNDPROC)SetWindowLong(hWnd, GWL_WNDPROC, (LONG)PollKeyboardMouse);
+		lpPrevWndFunc = reinterpret_cast<WNDPROC>(SetWindowLong(hWnd, GWL_WNDPROC, reinterpret_cast<LONG>(PollKeyboardMouse)));
 	}
 }

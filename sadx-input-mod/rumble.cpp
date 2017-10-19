@@ -48,10 +48,10 @@ namespace rumble
 
 		for (Uint32 i = 0; i < GAMEPAD_COUNT; i++)
 		{
-			auto& pad = DreamPad::Controllers[i];
-			if (pad.GetActiveMotor() != Motor::None)
+			auto& pad = DreamPad::controllers[i];
+			if (pad.get_active_motor() != Motor::none)
 			{
-				pad.SetActiveMotor(Motor::Both, false);
+				pad.set_active_motor(Motor::both, false);
 			}
 		}
 
@@ -61,16 +61,16 @@ namespace rumble
 	static void __cdecl Rumble_Main_hook(ObjectMaster* _this)
 	{
 		auto data = (RumbleTimer*)_this->UnknownA_ptr;
-		auto& pad  = DreamPad::Controllers[data->port];
+		auto& pad  = DreamPad::controllers[data->port];
 
 		if (data->frames-- <= 0)
 		{
 			DeleteObject_(_this);
-			pad.SetActiveMotor(data->motor, false);
+			pad.set_active_motor(data->motor, false);
 		}
 		else if (!data->applied)
 		{
-			pad.SetActiveMotor(data->motor, true);
+			pad.set_active_motor(data->motor, true);
 			data->applied = true;
 		}
 	}
@@ -100,11 +100,11 @@ namespace rumble
 			return;
 		}
 
-		auto time_scaled = max(4 * time, (Uint32)(DreamPad::Controllers[port].settings.rumbleMinTime / (1000.0f / 60.0f)));
+		auto time_scaled = max(4 * time, (Uint32)(DreamPad::controllers[port].settings.rumble_min_time / (1000.0f / 60.0f)));
 		auto instance = get_instance(port, motor);
 
 		// HACK: Fixes tornado in Windy Valley, allowing it to queue rumble requests and pulse the motor.
-		if (!(motor & Motor::Small) && instance != nullptr)
+		if (!(motor & Motor::small) && instance != nullptr)
 		{
 			auto data = (RumbleTimer*)instance->UnknownA_ptr;
 
@@ -113,7 +113,7 @@ namespace rumble
 
 			if (FrameCounter % 60 < 2)
 			{
-				DreamPad::Controllers[port].SetActiveMotor(motor, false);
+				DreamPad::controllers[port].set_active_motor(motor, false);
 			}
 		}
 		else
@@ -141,7 +141,7 @@ namespace rumble
 			{
 				auto time_ms = (Uint32)(time_scaled * (1000.0f / (60.0f / (float)FrameIncrement)));
 				PrintDebug("[Input] [%u] Rumble %u: %s, %u frames (%ums)\n",
-					FrameCounter, data->port, (motor == Motor::Small ? "R" : "L"), time_scaled, time_ms);
+					FrameCounter, data->port, (motor == Motor::small ? "R" : "L"), time_scaled, time_ms);
 			}
 		}
 	}
@@ -153,9 +153,9 @@ namespace rumble
 	/// <param name="time">Time to rumble.</param>
 	void __cdecl RumbleA(Uint32 port, Uint32 time)
 	{
-		if (RumbleEnabled && !DemoPlaying && input::_ControllerEnabled[port])
+		if (RumbleEnabled && !DemoPlaying && input::controller_enabled[port])
 		{
-			Rumble_Load_hook(port, clamp(time, 1u, 255u), Motor::Large);
+			Rumble_Load_hook(port, clamp(time, 1u, 255u), Motor::large);
 		}
 	}
 
@@ -168,7 +168,7 @@ namespace rumble
 	/// <param name="a4">Unknown.</param>
 	void __cdecl RumbleB(Uint32 port, Uint32 time, int a3, int a4)
 	{
-		if (RumbleEnabled && !DemoPlaying && input::_ControllerEnabled[port])
+		if (RumbleEnabled && !DemoPlaying && input::controller_enabled[port])
 		{
 			Uint32 idk = time;
 			if ((signed int)time <= 4)
@@ -213,7 +213,7 @@ namespace rumble
 				_time = 1;
 			}
 
-			Rumble_Load_hook(port, _time, Motor::Small);
+			Rumble_Load_hook(port, _time, Motor::small);
 		}
 	}
 

@@ -16,4 +16,3 @@
 #include <limits>
 #include <sstream>
 #include <string>
-#include <wtypes.h>

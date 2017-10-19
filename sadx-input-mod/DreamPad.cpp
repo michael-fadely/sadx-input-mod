@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "SDL.h"
-#include <limits.h>
-#include <Windows.h>
+#include <limits>
 #include "minmax.h"
 
 #include "DreamPad.h"
@@ -15,31 +14,31 @@ static const Uint32 PAD_SUPPORT =
 	| PDD_DEV_SUPPORT_KU | PDD_DEV_SUPPORT_KD | PDD_DEV_SUPPORT_KL | PDD_DEV_SUPPORT_KR
 	| PDD_DEV_SUPPORT_AX1 | PDD_DEV_SUPPORT_AY1 | PDD_DEV_SUPPORT_AX2 | PDD_DEV_SUPPORT_AY2;
 
-DreamPad DreamPad::Controllers[GAMEPAD_COUNT];
+DreamPad DreamPad::controllers[GAMEPAD_COUNT];
 
-DreamPad::DreamPad() : controller_id(-1), gamepad(nullptr), haptic(nullptr), effect({}), effect_id(-1),
-	rumble_state(Motor::None), pad({}), normalized_L(0.0f), normalized_R(0.0f)
+DreamPad::DreamPad() : controller_id_(-1), gamepad(nullptr), haptic(nullptr), effect({}), effect_id(-1),
+	rumble_state(Motor::none), pad({}), normalized_l_(0.0f), normalized_r_(0.0f)
 {
 	// TODO: Properly detect supported rumble types
 	effect.leftright.type = SDL_HAPTIC_LEFTRIGHT;
 }
 DreamPad::~DreamPad()
 {
-	Close();
+	close();
 }
 
-bool DreamPad::Open(int id)
+bool DreamPad::open(int id)
 {
-	if (connected)
+	if (connected_)
 	{
-		Close();
+		close();
 	}
 
 	gamepad = SDL_GameControllerOpen(id);
 
 	if (gamepad == nullptr)
 	{
-		connected = false;
+		connected_ = false;
 		return false;
 	}
 
@@ -49,16 +48,16 @@ bool DreamPad::Open(int id)
 
 	if (joystick == nullptr)
 	{
-		connected = false;
+		connected_ = false;
 		return false;
 	}
 
-	controller_id = id;
+	controller_id_ = id;
 	haptic = SDL_HapticOpenFromJoystick(joystick);
 
 	if (haptic == nullptr)
 	{
-		connected = true;
+		connected_ = true;
 		return true;
 	}
 
@@ -72,13 +71,13 @@ bool DreamPad::Open(int id)
 		haptic = nullptr;
 	}
 
-	connected = true;
+	connected_ = true;
 	return true;
 }
 
-void DreamPad::Close()
+void DreamPad::close()
 {
-	if (!connected)
+	if (!connected_)
 	{
 		return;
 	}
@@ -98,18 +97,18 @@ void DreamPad::Close()
 		gamepad = nullptr;
 	}
 
-	controller_id = -1;
-	connected = false;
+	controller_id_ = -1;
+	connected_ = false;
 }
 
-void DreamPad::Poll()
+void DreamPad::poll()
 {
-	if (!connected && !settings.allow_keyboard)
+	if (!connected_ && !settings.allow_keyboard)
 	{
 		return;
 	}
 
-	if (connected)
+	if (connected_)
 	{
 		SDL_GameControllerUpdate();
 	}
@@ -118,9 +117,9 @@ void DreamPad::Poll()
 	auto& kb = keyboard.DreamcastData();
 	bool allow_keyboard = settings.allow_keyboard;
 
-	if (!connected || allow_keyboard && (kb.LeftStickX || kb.LeftStickY))
+	if (!connected_ || allow_keyboard && (kb.LeftStickX || kb.LeftStickY))
 	{
-		normalized_L = keyboard.NormalizedL();
+		normalized_l_ = keyboard.NormalizedL();
 		pad.LeftStickX = kb.LeftStickX;
 		pad.LeftStickY = kb.LeftStickY;
 	}
@@ -131,12 +130,12 @@ void DreamPad::Poll()
 			axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY)
 		};
 
-		normalized_L = ConvertAxes((NJS_POINT2I*)&pad.LeftStickX, axis, settings.deadzoneL, settings.radialL);
+		normalized_l_ = convert_axes(reinterpret_cast<NJS_POINT2I*>(&pad.LeftStickX), axis, settings.deadzone_l, settings.radial_l);
 	}
 
-	if (!connected || allow_keyboard && (kb.RightStickX || kb.RightStickY))
+	if (!connected_ || allow_keyboard && (kb.RightStickX || kb.RightStickY))
 	{
-		normalized_R = keyboard.NormalizedR();
+		normalized_r_ = keyboard.NormalizedR();
 		pad.RightStickX = kb.RightStickX;
 		pad.RightStickY = kb.RightStickY;
 	}
@@ -147,36 +146,38 @@ void DreamPad::Poll()
 			axis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY)
 		};
 
-		normalized_R = ConvertAxes((NJS_POINT2I*)&pad.RightStickX, axis, settings.deadzoneR, settings.radialR);
+		normalized_r_ = convert_axes(reinterpret_cast<NJS_POINT2I*>(&pad.RightStickX), axis, settings.deadzone_r, settings.radial_r);
 	}
 
-	if (!connected || allow_keyboard && kb.LTriggerPressure)
+	constexpr short short_max = std::numeric_limits<short>::max();
+
+	if (!connected_ || allow_keyboard && kb.LTriggerPressure)
 	{
 		pad.LTriggerPressure = kb.LTriggerPressure;
 	}
 	else
 	{
 		auto lt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
-		pad.LTriggerPressure = (short)(255.0f * ((float)lt / (float)SHRT_MAX));
+		pad.LTriggerPressure = static_cast<short>(255.0f * (static_cast<float>(lt) / static_cast<float>(short_max)));
 	}
 
-	if (!connected || allow_keyboard && kb.RTriggerPressure)
+	if (!connected_ || allow_keyboard && kb.RTriggerPressure)
 	{
 		pad.RTriggerPressure = kb.RTriggerPressure;
 	}
 	else
 	{
 		auto rt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
-		pad.RTriggerPressure = (short)(255.0f * ((float)rt / (float)SHRT_MAX));
+		pad.RTriggerPressure = static_cast<short>(255.0f * (static_cast<float>(rt) / static_cast<float>(short_max)));
 	}
 
 
 	Uint32 buttons = 0;
 
-	buttons |= DigitalTrigger(pad.LTriggerPressure, settings.triggerThreshold, Buttons_L);
-	buttons |= DigitalTrigger(pad.RTriggerPressure, settings.triggerThreshold, Buttons_R);
+	buttons |= digital_trigger(pad.LTriggerPressure, settings.trigger_threshold, Buttons_L);
+	buttons |= digital_trigger(pad.RTriggerPressure, settings.trigger_threshold, Buttons_R);
 
-	if (connected)
+	if (connected_)
 	{
 		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_A))
 		{
@@ -238,50 +239,50 @@ void DreamPad::Poll()
 		buttons |= kb.HeldButtons;
 	}
 
-	UpdateButtons(pad, buttons);
+	update_buttons(pad, buttons);
 }
 
-void DreamPad::SetActiveMotor(Motor motor, bool enable)
+void DreamPad::set_active_motor(Motor motor, bool enable)
 {
 	if (effect_id == -1 || haptic == nullptr)
 	{
 		return;
 	}
 
-	if (settings.megaRumble)
+	if (settings.mega_rumble)
 	{
-		motor = Motor::Both;
+		motor = Motor::both;
 	}
 
-	const float f = settings.rumbleFactor;
+	const float f = settings.rumble_factor;
 
-	if (motor & Motor::Large)
+	if (motor & Motor::large)
 	{
-		effect.leftright.large_magnitude = enable ? (ushort)(USHRT_MAX * f) : 0;
-		rumble_state = (Motor)(enable ? rumble_state | motor : rumble_state & ~Motor::Large);
+		effect.leftright.large_magnitude = enable ? static_cast<ushort>(std::numeric_limits<ushort>::max() * f) : 0;
+		rumble_state = static_cast<Motor>(enable ? rumble_state | motor : rumble_state & ~Motor::large);
 	}
 
-	if (motor & Motor::Small)
+	if (motor & Motor::small)
 	{
-		effect.leftright.small_magnitude = enable ? (ushort)(USHRT_MAX * f) : 0;
-		rumble_state = (Motor)(enable ? rumble_state | motor : rumble_state & ~Motor::Small);
+		effect.leftright.small_magnitude = enable ? static_cast<ushort>(std::numeric_limits<ushort>::max() * f) : 0;
+		rumble_state = static_cast<Motor>(enable ? rumble_state | motor : rumble_state & ~Motor::small);
 	}
 
 	SDL_HapticUpdateEffect(haptic, effect_id, &effect);
 	SDL_HapticRunEffect(haptic, effect_id, 1);
 }
 
-void DreamPad::Copy(ControllerData& dest) const
+void DreamPad::copy(ControllerData& dest) const
 {
 	dest = pad;
 }
 
-inline int DreamPad::DigitalTrigger(ushort trigger, ushort threshold, int button)
+inline int DreamPad::digital_trigger(ushort trigger, ushort threshold, int button)
 {
 	return trigger > threshold ? button : 0;
 }
 
-float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short deadzone, bool radial)
+float DreamPad::convert_axes(NJS_POINT2I* dest, const NJS_POINT2I& source, short deadzone, bool radial)
 {
 	if (abs(source.x) < deadzone && abs(source.y) < deadzone)
 	{
@@ -289,14 +290,16 @@ float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short 
 		return 0.0f;
 	}
 
-	const float x = (float)clamp<short>(source.x, -SHRT_MAX, SHRT_MAX);
-	const float y = (float)clamp<short>(source.y, -SHRT_MAX, SHRT_MAX);
+	constexpr short short_max = std::numeric_limits<short>::max();
+
+	const float x = static_cast<float>(clamp<short>(source.x, -short_max, short_max));
+	const float y = static_cast<float>(clamp<short>(source.y, -short_max, short_max));
 
 	const float m = sqrt(x * x + y * y);
 
 	const float nx = (m < deadzone) ? 0 : (x / m); // Normalized (X)
 	const float ny = (m < deadzone) ? 0 : (y / m); // Normalized (Y)
-	const float n  = (min((float)SHRT_MAX, m) - deadzone) / (float)(SHRT_MAX - deadzone);
+	const float n  = (min(static_cast<float>(short_max), m) - deadzone) / static_cast<float>(short_max - deadzone);
 
 	if (!radial && abs(source.x) < deadzone)
 	{
@@ -304,7 +307,7 @@ float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short 
 	}
 	else
 	{
-		dest->x = clamp<short>((short)(128 * (nx * n)), -127, 127);
+		dest->x = clamp<short>(static_cast<short>(128 * (nx * n)), -127, 127);
 	}
 
 	if (!radial && abs(source.y) < deadzone)
@@ -313,13 +316,13 @@ float DreamPad::ConvertAxes(NJS_POINT2I* dest, const NJS_POINT2I& source, short 
 	}
 	else
 	{
-		dest->y = clamp<short>((short)(128 * (ny * n)), -127, 127);
+		dest->y = clamp<short>(static_cast<short>(128 * (ny * n)), -127, 127);
 	}
 
 	return n;
 }
 
-void DreamPad::UpdateButtons(ControllerData& pad, Uint32 buttons)
+void DreamPad::update_buttons(ControllerData& pad, Uint32 buttons)
 {
 	pad.HeldButtons     = buttons;
 	pad.NotHeldButtons  = ~buttons;
@@ -330,25 +333,25 @@ void DreamPad::UpdateButtons(ControllerData& pad, Uint32 buttons)
 
 DreamPad::Settings::Settings()
 {
-	allow_keyboard   = false;
-	deadzoneL        = GAMEPAD_LEFT_THUMB_DEADZONE;
-	deadzoneR        = GAMEPAD_RIGHT_THUMB_DEADZONE;
-	triggerThreshold = GAMEPAD_TRIGGER_THRESHOLD;
-	radialL          = true;
-	radialR          = false;
-	rumbleFactor     = 1.0f;
-	megaRumble       = false;
-	rumbleMinTime    = 0;
+	allow_keyboard    = false;
+	deadzone_l        = GAMEPAD_LEFT_THUMB_DEADZONE;
+	deadzone_r        = GAMEPAD_RIGHT_THUMB_DEADZONE;
+	trigger_threshold = GAMEPAD_TRIGGER_THRESHOLD;
+	radial_l          = true;
+	radial_r          = false;
+	rumble_factor     = 1.0f;
+	mega_rumble       = false;
+	rumble_min_time   = 0;
 }
-void DreamPad::Settings::apply(short deadzoneL, short deadzoneR, bool radialL, bool radialR, uint8 triggerThreshold,
-	float rumbleFactor, bool megaRumble, ushort rumbleMinTime)
+void DreamPad::Settings::apply(short deadzone_l, short deadzone_r, bool radial_l, bool radial_r, uint8 trigger_threshold,
+							   float rumble_factor, bool mega_rumble, ushort rumble_min_time)
 {
-	this->deadzoneL        = clamp(deadzoneL, (short)0, (short)SHRT_MAX);
-	this->deadzoneR        = clamp(deadzoneR, (short)0, (short)SHRT_MAX);
-	this->radialL          = radialL;
-	this->radialR          = radialR;
-	this->triggerThreshold = triggerThreshold;
-	this->rumbleFactor     = rumbleFactor;
-	this->megaRumble       = megaRumble;
-	this->rumbleMinTime    = rumbleMinTime;
+	this->deadzone_l        = clamp(deadzone_l, static_cast<short>(0), static_cast<short>(std::numeric_limits<short>::max()));
+	this->deadzone_r        = clamp(deadzone_r, static_cast<short>(0), static_cast<short>(std::numeric_limits<short>::max()));
+	this->radial_l          = radial_l;
+	this->radial_r          = radial_r;
+	this->trigger_threshold = trigger_threshold;
+	this->rumble_factor     = rumble_factor;
+	this->mega_rumble       = mega_rumble;
+	this->rumble_min_time   = rumble_min_time;
 }

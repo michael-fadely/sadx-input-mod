@@ -14,28 +14,27 @@
 #include "input.h"
 #include "rumble.h"
 
-static void* RumbleA_ptr            = (void*)0x004BCBC0;
-static void* RumbleB_ptr            = (void*)0x004BCC10;
-static void* Rumble_ptr             = (void*)0x004BCB60; // Unused, but here so I don't lose it.
-static void* UpdateControllers_ptr  = (void*)0x0040F460;
-static void* AnalogHook_ptr         = (void*)0x0040F343;
-static void* InitRawControllers_ptr = (void*)0x0040F451; // End of function (hook)
+static void* RumbleA_ptr            = reinterpret_cast<void*>(0x004BCBC0);
+static void* RumbleB_ptr            = reinterpret_cast<void*>(0x004BCC10);
+static void* UpdateControllers_ptr  = reinterpret_cast<void*>(0x0040F460);
+static void* AnalogHook_ptr         = reinterpret_cast<void*>(0x0040F343);
+static void* InitRawControllers_ptr = reinterpret_cast<void*>(0x0040F451); // End of function (hook)
 
 PointerInfo jumps[] = {
 	{ rumble::pdVibMxStop,		rumble::pdVibMxStop_hook },
 	{ RumbleA_ptr,				rumble::RumbleA },
 	{ RumbleB_ptr,				rumble::RumbleB },
-	{ AnalogHook_ptr,			input::WriteAnalogs_Hook },
-	{ InitRawControllers_ptr,	input::RedirectRawControllers_Hook },
+	{ AnalogHook_ptr,			input::WriteAnalogs_r },
+	{ InitRawControllers_ptr,	input::InitRawControllers_hook },
 	{ EnableController,			input::EnableController_hook },
 	{ DisableController,		input::DisableController_hook },
-	{ (void*)0x0042D52D,		rumble::DefaultRumble },
+	{ reinterpret_cast<void*>(0x0042D52D),		rumble::DefaultRumble },
 	// Used to skip over the standard controller update function.
 	// This has no effect on the OnInput hook.
-	{ UpdateControllers_ptr, (void*)0x0040FDB3 }
+	{ UpdateControllers_ptr, reinterpret_cast<void*>(0x0040FDB3) }
 };
 
-static std::string BuildModPath(const char* modpath, const char* path)
+static std::string build_mod_path(const char* modpath, const char* path)
 {
 	std::stringstream result;
 	char workingdir[FILENAME_MAX];
@@ -52,12 +51,12 @@ extern "C"
 
 	__declspec(dllexport) void OnInput()
 	{
-		input::PollControllers();
+		input::poll_controllers();
 	}
 
 	__declspec(dllexport) void Init(const char* path, const HelperFunctions& helperFunctions)
 	{
-		std::string dll = BuildModPath(path, "SDL2.dll");
+		std::string dll = build_mod_path(path, "SDL2.dll");
 
 		auto handle = LoadLibraryA(dll.c_str());
 
@@ -80,34 +79,34 @@ extern "C"
 			return;
 		}
 
-		WriteData<5>((void*)0x0077F0D7, 0x90i8);
-		WriteData<5>((void*)0x0077F03E, 0x90i8);
-		WriteData<5>((void*)0x0077F205, 0x90i8);
+		WriteData<5>(reinterpret_cast<void*>(0x0077F0D7), 0x90i8);
+		WriteData<5>(reinterpret_cast<void*>(0x0077F03E), 0x90i8);
+		WriteData<5>(reinterpret_cast<void*>(0x0077F205), 0x90i8);
 
 		// EnableControl
-		WriteData((bool**)0x40EF80, &input::_ControllerEnabled[0]);
-		WriteData((bool**)0x40EF86, &input::_ControllerEnabled[1]);
-		WriteData((bool**)0x40EF90, input::_ControllerEnabled);
+		WriteData(reinterpret_cast<bool**>(0x40EF80), &input::controller_enabled[0]);
+		WriteData(reinterpret_cast<bool**>(0x40EF86), &input::controller_enabled[1]);
+		WriteData(reinterpret_cast<bool**>(0x40EF90), input::controller_enabled);
 
 		// DisableControl
-		WriteData((bool**)0x40EFB0, &input::_ControllerEnabled[0]);
-		WriteData((bool**)0x40EFB6, &input::_ControllerEnabled[1]);
-		WriteData((bool**)0x40EFC0, input::_ControllerEnabled);
+		WriteData(reinterpret_cast<bool**>(0x40EFB0), &input::controller_enabled[0]);
+		WriteData(reinterpret_cast<bool**>(0x40EFB6), &input::controller_enabled[1]);
+		WriteData(reinterpret_cast<bool**>(0x40EFC0), input::controller_enabled);
 
 		// IsControllerEnabled
-		WriteData((bool**)0x40EFD8, input::_ControllerEnabled);
+		WriteData(reinterpret_cast<bool**>(0x40EFD8), input::controller_enabled);
 
 		// Control
-		WriteData((bool**)0x40FE0D, input::_ControllerEnabled);
-		WriteData((bool**)0x40FE2F, &input::_ControllerEnabled[1]);
+		WriteData(reinterpret_cast<bool**>(0x40FE0D), input::controller_enabled);
+		WriteData(reinterpret_cast<bool**>(0x40FE2F), &input::controller_enabled[1]);
 
 		// WriteAnalogs
-		WriteData((bool**)0x40F30C, input::_ControllerEnabled);
+		WriteData(reinterpret_cast<bool**>(0x40F30C), input::controller_enabled);
 
-		input::_ControllerEnabled[0] = true;
-		input::_ControllerEnabled[1] = true;
+		input::controller_enabled[0] = true;
+		input::controller_enabled[1] = true;
 		
-		std::string dbpath = BuildModPath(path, "gamecontrollerdb.txt");
+		std::string dbpath = build_mod_path(path, "gamecontrollerdb.txt");
 
 		if (FileExists(dbpath))
 		{
@@ -123,7 +122,7 @@ extern "C"
 			}
 		}
 
-		std::string config = BuildModPath(path, "config.ini");
+		std::string config = build_mod_path(path, "config.ini");
 
 		if (FileExists(config))
 		{
@@ -144,25 +143,25 @@ extern "C"
 				std::string section = "Controller " + std::to_string(i + 1);
 				const char* section_cstr = section.c_str();
 
-				int deadzoneL = GetPrivateProfileIntA(section_cstr, "DeadzoneL", GAMEPAD_LEFT_THUMB_DEADZONE, config_cstr);
-				int deadzoneR = GetPrivateProfileIntA(section_cstr, "DeadzoneR", GAMEPAD_RIGHT_THUMB_DEADZONE, config_cstr);
+				int deadzone_l = GetPrivateProfileIntA(section_cstr, "DeadzoneL", GAMEPAD_LEFT_THUMB_DEADZONE, config_cstr);
+				int deadzone_r = GetPrivateProfileIntA(section_cstr, "DeadzoneR", GAMEPAD_RIGHT_THUMB_DEADZONE, config_cstr);
 
-				bool radialL = GetPrivateProfileIntA(section_cstr, "RadialL", 1, config_cstr) != 0;
-				bool radialR = GetPrivateProfileIntA(section_cstr, "RadialR", smooth_cam, config_cstr) != 0;
+				bool radial_l = GetPrivateProfileIntA(section_cstr, "RadialL", 1, config_cstr) != 0;
+				bool radial_r = GetPrivateProfileIntA(section_cstr, "RadialR", smooth_cam, config_cstr) != 0;
 
-				int triggerThreshold = GetPrivateProfileIntA(section_cstr, "TriggerThreshold", GAMEPAD_TRIGGER_THRESHOLD, config_cstr);
+				int trigger_threshold = GetPrivateProfileIntA(section_cstr, "TriggerThreshold", GAMEPAD_TRIGGER_THRESHOLD, config_cstr);
 
 				// TODO: Not this
 				char wtf[255];
 
 				GetPrivateProfileStringA(section_cstr, "RumbleFactor", "1.0", wtf, 255, config_cstr);
-				float rumbleFactor = clamp((float)atof(wtf), 0.0f, 1.0f);
+				float rumble_factor = clamp(static_cast<float>(atof(wtf)), 0.0f, 1.0f);
 
-				bool megaRumble = GetPrivateProfileIntA(section_cstr, "MegaRumble", 0, config_cstr) != 0;
-				ushort minRumble = (ushort)GetPrivateProfileIntA(section_cstr, "RumbleMinTime", 0, config_cstr);
+				bool mega_rumble = GetPrivateProfileIntA(section_cstr, "MegaRumble", 0, config_cstr) != 0;
+				ushort min_rumble = static_cast<ushort>(GetPrivateProfileIntA(section_cstr, "RumbleMinTime", 0, config_cstr));
 
-				DreamPad::Settings* settings = &DreamPad::Controllers[i].settings;
-				settings->apply(deadzoneL, deadzoneR, radialL, radialR, triggerThreshold, rumbleFactor, megaRumble, minRumble);
+				DreamPad::Settings* settings = &DreamPad::controllers[i].settings;
+				settings->apply(deadzone_l, deadzone_r, radial_l, radial_r, trigger_threshold, rumble_factor, mega_rumble, min_rumble);
 
 				// HACK: make configurable
 				settings->allow_keyboard = !i;
@@ -170,7 +169,7 @@ extern "C"
 				if (input::debug)
 				{
 					PrintDebug("[Input] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
-						settings->deadzoneL, settings->deadzoneR, settings->triggerThreshold);
+						settings->deadzone_l, settings->deadzone_r, settings->trigger_threshold);
 				}
 			}
 		}
@@ -180,9 +179,9 @@ extern "C"
 
 	__declspec(dllexport) void OnExit()
 	{
-		for (auto& i : DreamPad::Controllers)
+		for (auto& i : DreamPad::controllers)
 		{
-			i.Close();
+			i.close();
 		}
 	}
 }
