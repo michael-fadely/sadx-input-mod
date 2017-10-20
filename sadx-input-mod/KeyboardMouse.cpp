@@ -12,7 +12,9 @@ DataPointer(HWND, hWnd, 0x3D0FD30);
 ControllerData KeyboardMouse::pad           = {};
 float          KeyboardMouse::normalized_l  = 0.0f;
 float          KeyboardMouse::normalized_r  = 0.0f;
-bool           KeyboardMouse::mouse_update  = false;
+bool           KeyboardMouse::mouse_active  = false;
+bool           KeyboardMouse::left_button   = false;
+bool           KeyboardMouse::right_button  = false;
 bool           KeyboardMouse::half_press    = false;
 NJS_POINT2I    KeyboardMouse::cursor        = {};
 KeyboardStick  KeyboardMouse::sticks[2]     = {};
@@ -182,7 +184,7 @@ void KeyboardMouse::update_keyboard_buttons(Uint32 key, bool down)
 
 void KeyboardMouse::update_cursor(Sint32 xrel, Sint32 yrel)
 {
-	if (!mouse_update)
+	if (!mouse_active)
 	{
 		return;
 	}
@@ -241,30 +243,28 @@ void KeyboardMouse::reset_cursor()
 	CursorX         = 0;
 	CursorY         = 0;
 	cursor          = {};
-	mouse_update    = false;
+	mouse_active    = false;
 }
 
 void KeyboardMouse::update_mouse_buttons(Uint32 button, bool down)
 {
+	bool last_rmb = right_button;
+
 	switch (button)
 	{
 		case VK_LBUTTON:
+			left_button = down;
+
 			if (!down && !MouseMode)
 			{
 				reset_cursor();
 			}
-			mouse_update = down;
+
+			mouse_active = down;
 			break;
 
 		case VK_RBUTTON:
-			if (mouse_update)
-			{
-				set_button(pad.HeldButtons, Buttons_A, down);
-			}
-			else
-			{
-				set_button(pad.HeldButtons, Buttons_B, down);
-			}
+			right_button = down;
 			break;
 
 		case VK_MBUTTON:
@@ -274,6 +274,11 @@ void KeyboardMouse::update_mouse_buttons(Uint32 button, bool down)
 		default:
 			break;
 	}
+
+	// When "A" (LMB + RMB) is active, B is not activated until next RMB press.
+	bool a = (right_button && right_button != last_rmb) && left_button;
+	set_button(pad.HeldButtons, Buttons_A, a);
+	set_button(pad.HeldButtons, Buttons_B, right_button && (!a && right_button != last_rmb));
 }
 
 LRESULT KeyboardMouse::read_window_message(HWND handle, UINT Msg, WPARAM wParam, LPARAM lParam)
