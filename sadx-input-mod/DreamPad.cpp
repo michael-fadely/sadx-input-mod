@@ -114,12 +114,12 @@ void DreamPad::poll()
 	}
 
 	// TODO: keyboard/mouse toggle
-	auto& kb = keyboard.DreamcastData();
+	auto& kb = keyboard.dreamcast_data();
 	bool allow_keyboard = settings.allow_keyboard;
 
 	if (!connected_ || allow_keyboard && (kb.LeftStickX || kb.LeftStickY))
 	{
-		normalized_l_ = keyboard.NormalizedL();
+		normalized_l_ = keyboard.normalized_l();
 		pad.LeftStickX = kb.LeftStickX;
 		pad.LeftStickY = kb.LeftStickY;
 	}
@@ -135,7 +135,7 @@ void DreamPad::poll()
 
 	if (!connected_ || allow_keyboard && (kb.RightStickX || kb.RightStickY))
 	{
-		normalized_r_ = keyboard.NormalizedR();
+		normalized_r_ = keyboard.normalized_r();
 		pad.RightStickX = kb.RightStickX;
 		pad.RightStickY = kb.RightStickY;
 	}

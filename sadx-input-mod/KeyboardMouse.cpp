@@ -10,8 +10,8 @@ DataPointer(int, CursorSin, 0x03B0E9A0);
 DataPointer(HWND, hWnd, 0x3D0FD30);
 
 ControllerData KeyboardMouse::pad           = {};
-float          KeyboardMouse::normalized_l  = 0.0f;
-float          KeyboardMouse::normalized_r  = 0.0f;
+float          KeyboardMouse::normalized_l_ = 0.0f;
+float          KeyboardMouse::normalized_r_ = 0.0f;
 bool           KeyboardMouse::mouse_active  = false;
 bool           KeyboardMouse::left_button   = false;
 bool           KeyboardMouse::right_button  = false;
@@ -46,14 +46,88 @@ inline void normalize(const NJS_POINT2I& src, float* magnitude, short* out_x, sh
 	}
 	else
 	{
-		x = 1.0f / m * x;
-		y = 1.0f / m * y;
+		x = x / m;
+		y = y / m;
 	}
 
 	*magnitude = min(1.0f, m / static_cast<float>(short_max));
 
 	*out_x = static_cast<short>(127 * x);
 	*out_y = static_cast<short>(127 * y);
+}
+
+// TODO: framerate-independent interpolation
+void KeyboardStick::update()
+{
+#define INTERPOLATE
+
+	const auto horizontal = directions & (Buttons_Left | Buttons_Right);
+
+	if (horizontal == Buttons_Left)
+	{
+	#ifdef INTERPOLATE
+		x = max(x - amount, -static_cast<int>(std::numeric_limits<short>::max()));
+	#else
+		x = -static_cast<int>(std::numeric_limits<short>::max());
+	#endif
+	}
+	else if (horizontal == Buttons_Right)
+	{
+	#ifdef INTERPOLATE
+		x = min(x + amount, static_cast<int>(std::numeric_limits<short>::max()));
+	#else
+		x = static_cast<int>(std::numeric_limits<short>::max());
+	#endif
+	}
+	else
+	{
+	#ifdef INTERPOLATE
+		if (x < 0)
+		{
+			x = min(x + amount, 0);
+		}
+		else if (x > 0)
+		{
+			x = max(x - amount, 0);
+		}
+	#else
+		x = 0;
+	#endif
+	}
+
+	const auto vertical = directions & (Buttons_Up | Buttons_Down);
+
+	if (vertical == Buttons_Up)
+	{
+	#ifdef INTERPOLATE
+		y = max(y - amount, -static_cast<int>(std::numeric_limits<short>::max()));
+	#else
+		y = -static_cast<int>(std::numeric_limits<short>::max());
+	#endif
+	}
+	else if (vertical == Buttons_Down)
+	{
+	#ifdef INTERPOLATE
+		y = min(y + amount, static_cast<int>(std::numeric_limits<short>::max()));
+	#else
+		y = static_cast<int>(std::numeric_limits<short>::max());
+	#endif
+	}
+	else
+	{
+	#ifdef INTERPOLATE
+		if (y < 0)
+		{
+			y = min(y + amount, 0);
+		}
+		else if (y > 0)
+		{
+			y = max(y - amount, 0);
+		}
+	#else
+		y = 0;
+	#endif
+	}
 }
 
 void KeyboardMouse::poll()
@@ -74,8 +148,8 @@ void KeyboardMouse::poll()
 		stick = cursor;
 	}
 
-	normalize(stick, &normalized_l, &pad.LeftStickX, &pad.LeftStickY);
-	normalize(sticks[1], &normalized_r, &pad.RightStickX, &pad.RightStickY);
+	normalize(stick, &normalized_l_, &pad.LeftStickX, &pad.LeftStickY);
+	normalize(sticks[1], &normalized_r_, &pad.RightStickX, &pad.RightStickY);
 
 	if (half_press)
 	{
@@ -83,8 +157,8 @@ void KeyboardMouse::poll()
 		pad.LeftStickY /= 2;
 		pad.RightStickX /= 2;
 		pad.RightStickY /= 2;
-		normalized_l /= 2.0f;
-		normalized_r /= 2.0f;
+		normalized_l_ /= 2.0f;
+		normalized_r_ /= 2.0f;
 	}
 
 	DreamPad::update_buttons(pad, pad.HeldButtons);

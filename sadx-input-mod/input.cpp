@@ -72,7 +72,7 @@ namespace input
 			dreampad.poll();
 			dreampad.copy(raw_input[i]);
 
-			// Compatibility for mods who use ControllersRaw directly.
+			// Compatibility for mods which use ControllersRaw directly.
 			// This will only copy the first four controllers.
 			if (i < ControllersRaw_Length)
 			{
@@ -82,17 +82,17 @@ namespace input
 #ifdef EXTENDED_BUTTONS
 			if (debug && raw_input[i].HeldButtons & Buttons_C)
 			{
-				ControllerData* pad = &raw_input[i];
+				const ControllerData& pad = raw_input[i];
 				Motor m = DreamPad::controllers[i].get_active_motor();
 
 				DisplayDebugStringFormatted(NJM_LOCATION(0, 8 + (3 * i)), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
-					pad->HeldButtons, pad->LTriggerPressure, pad->RTriggerPressure, (m & Motor::large), (m & Motor::small) >> 1);
+					pad.HeldButtons, pad.LTriggerPressure, pad.RTriggerPressure, (m & Motor::large), (m & Motor::small) >> 1);
 				DisplayDebugStringFormatted(NJM_LOCATION(4, 9 + (3 * i)), "LS: %4d/%4d (%f) RS: %4d/%4d (%f)",
-					pad->LeftStickX, pad->LeftStickY, dreampad.normalized_l(), pad->RightStickX, pad->RightStickY, dreampad.normalized_r());
+					pad.LeftStickX, pad.LeftStickY, dreampad.normalized_l(), pad.RightStickX, pad.RightStickY, dreampad.normalized_r());
 
-				if (pad->HeldButtons & Buttons_Z)
+				if (pad.HeldButtons & Buttons_Z)
 				{
-					const int pressed = pad->PressedButtons;
+					const int pressed = pad.PressedButtons;
 					if (pressed & Buttons_Up)
 					{
 						dreampad.settings.rumble_factor += 0.125f;
@@ -119,7 +119,7 @@ namespace input
 	}
 
 	// ReSharper disable once CppDeclaratorNeverUsed
-	static void fix_analogs()
+	static void WriteAnalogs_c()
 	{
 		if (!ControlEnabled)
 		{
@@ -133,16 +133,16 @@ namespace input
 				continue;
 			}
 
-			const DreamPad& dreamPad = DreamPad::controllers[i];
+			const DreamPad& dream_pad = DreamPad::controllers[i];
 
-			if (dreamPad.connected())
+			if (dream_pad.connected() || dream_pad.settings.allow_keyboard)
 			{
-				const ControllerData& pad = dreamPad.dreamcast_data();
+				const ControllerData& pad = dream_pad.dreamcast_data();
 				// SADX's internal deadzone is 12 of 127. It doesn't set the relative forward direction
 				// unless this is exceeded in WriteAnalogs(), so the analog shouldn't be set otherwise.
 				if (abs(pad.LeftStickX) > 12 || abs(pad.LeftStickY) > 12)
 				{
-					NormalizedAnalogs[i].magnitude = dreamPad.normalized_l();
+					NormalizedAnalogs[i].magnitude = dream_pad.normalized_l();
 				}
 			}
 		}
@@ -152,7 +152,7 @@ namespace input
 	{
 		__asm
 		{
-			call fix_analogs
+			call WriteAnalogs_c
 			ret
 		}
 	}

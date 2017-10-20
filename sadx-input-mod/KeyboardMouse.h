@@ -9,68 +9,23 @@ struct KeyboardStick : NJS_POINT2I
 	Uint32 directions;
 	static constexpr auto amount = 8192;
 
-	void update()
-	{
-		const auto horizontal = directions & (Buttons_Left | Buttons_Right);
-
-		if (horizontal == Buttons_Left)
-		{
-			x = max(x - amount, -static_cast<int>(std::numeric_limits<short>::max()));
-		}
-		else if (horizontal == Buttons_Right)
-		{
-			x = min(x + amount, static_cast<int>(std::numeric_limits<short>::max()));
-		}
-		else
-		{
-			if (x < 0)
-			{
-				x = min(x + amount, 0);
-			}
-			else if (x > 0)
-			{
-				x = max(x - amount, 0);
-			}
-		}
-
-		const auto vertical = directions & (Buttons_Up | Buttons_Down);
-
-		if (vertical == Buttons_Up)
-		{
-			y = max(y - amount, -static_cast<int>(std::numeric_limits<short>::max()));
-		}
-		else if (vertical == Buttons_Down)
-		{
-			y = min(y + amount, static_cast<int>(std::numeric_limits<short>::max()));
-		}
-		else
-		{
-			if (y < 0)
-			{
-				y = min(y + amount, 0);
-			}
-			else if (y > 0)
-			{
-				y = max(y - amount, 0);
-			}
-		}
-	}
+	void update();
 };
 
 class KeyboardMouse
 {
 public:
-	static const ControllerData& DreamcastData()
+	static const ControllerData& dreamcast_data()
 	{
 		return pad;
 	}
-	static float NormalizedL()
+	static float normalized_l()
 	{
-		return normalized_l;
+		return normalized_l_;
 	}
-	static float NormalizedR()
+	static float normalized_r()
 	{
-		return normalized_r;
+		return normalized_r_;
 	}
 
 	static void poll();
@@ -83,7 +38,7 @@ public:
 
 private:
 	static ControllerData pad;
-	static float normalized_l, normalized_r;
+	static float normalized_l_, normalized_r_;
 	static bool mouse_active;
 	static bool left_button;
 	static bool right_button;
