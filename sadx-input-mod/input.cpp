@@ -135,7 +135,7 @@ namespace input
 
 			const DreamPad& dream_pad = DreamPad::controllers[i];
 
-			if (dream_pad.connected() || dream_pad.settings.allow_keyboard)
+			if (dream_pad.connected() || dream_pad.settings.allow_keyboard && !i)
 			{
 				const ControllerData& pad = dream_pad.dreamcast_data();
 				// SADX's internal deadzone is 12 of 127. It doesn't set the relative forward direction
