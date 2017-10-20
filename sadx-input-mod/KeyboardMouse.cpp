@@ -27,7 +27,7 @@ inline void set_button(Uint32& i, Uint32 value, bool down)
 	down ? i |= value : i &= ~value;
 }
 
-LRESULT __stdcall PollKeyboardMouse(HWND handle, UINT Msg, WPARAM wParam, LPARAM lParam)
+LRESULT __stdcall poll_keyboard_mouse(HWND handle, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	return KeyboardMouse::read_window_message(handle, Msg, wParam, lParam);
 }
@@ -344,6 +344,6 @@ void KeyboardMouse::hook_wnd_proc()
 {
 	if (lpPrevWndFunc == nullptr)
 	{
-		lpPrevWndFunc = reinterpret_cast<WNDPROC>(SetWindowLong(hWnd, GWL_WNDPROC, reinterpret_cast<LONG>(PollKeyboardMouse)));
+		lpPrevWndFunc = reinterpret_cast<WNDPROC>(SetWindowLong(hWnd, GWL_WNDPROC, reinterpret_cast<LONG>(poll_keyboard_mouse)));
 	}
 }
