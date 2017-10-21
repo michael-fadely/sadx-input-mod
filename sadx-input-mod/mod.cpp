@@ -21,14 +21,14 @@ static void* AnalogHook_ptr         = reinterpret_cast<void*>(0x0040F343);
 static void* InitRawControllers_ptr = reinterpret_cast<void*>(0x0040F451); // End of function (hook)
 
 PointerInfo jumps[] = {
-	{ rumble::pdVibMxStop,		rumble::pdVibMxStop_hook },
-	{ RumbleA_ptr,				rumble::RumbleA },
-	{ RumbleB_ptr,				rumble::RumbleB },
-	{ AnalogHook_ptr,			input::WriteAnalogs_r },
-	{ InitRawControllers_ptr,	input::InitRawControllers_hook },
-	{ EnableController,			input::EnableController_hook },
-	{ DisableController,		input::DisableController_hook },
-	{ reinterpret_cast<void*>(0x0042D52D),		rumble::DefaultRumble },
+	{ rumble::pdVibMxStop, rumble::pdVibMxStop_hook },
+	{ RumbleA_ptr, rumble::RumbleA },
+	{ RumbleB_ptr, rumble::RumbleB },
+	{ AnalogHook_ptr, input::WriteAnalogs_r },
+	{ InitRawControllers_ptr, input::InitRawControllers_hook },
+	{ EnableController, input::EnableController_hook },
+	{ DisableController, input::DisableController_hook },
+	{ reinterpret_cast<void*>(0x0042D52D), rumble::DefaultRumble },
 	// Used to skip over the standard controller update function.
 	// This has no effect on the OnInput hook.
 	{ UpdateControllers_ptr, reinterpret_cast<void*>(0x0040FDB3) }
@@ -56,9 +56,9 @@ extern "C"
 
 	__declspec(dllexport) void Init(const char* path, const HelperFunctions& helperFunctions)
 	{
-		std::string dll = build_mod_path(path, "SDL2.dll");
+		std::string dll = move(build_mod_path(path, "SDL2.dll"));
 
-		auto handle = LoadLibraryA(dll.c_str());
+		const auto handle = LoadLibraryA(dll.c_str());
 
 		if (handle == nullptr)
 		{
@@ -79,8 +79,11 @@ extern "C"
 			return;
 		}
 
+		// Disable call to CreateKeyboardDevice
 		WriteData<5>(reinterpret_cast<void*>(0x0077F0D7), 0x90i8);
+		// Disable call to CreateMousedevice
 		WriteData<5>(reinterpret_cast<void*>(0x0077F03E), 0x90i8);
+		// Disable call to DirectInput_Init
 		WriteData<5>(reinterpret_cast<void*>(0x0077F205), 0x90i8);
 
 		// EnableControl
@@ -133,7 +136,7 @@ extern "C"
 #endif
 
 			const char* config_cstr = config.c_str();
-			input::debug = GetPrivateProfileIntA("Config", "Debug", (int)debug_default, config_cstr) != 0;
+			input::debug = GetPrivateProfileIntA("Config", "Debug", static_cast<int>(debug_default), config_cstr) != 0;
 
 			// This defaults RadialR to enabled if smooth-cam is detected.
 			int smooth_cam = GetModuleHandleA("smooth-cam.dll") != nullptr ? 1 : 0;

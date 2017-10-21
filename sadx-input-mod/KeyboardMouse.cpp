@@ -349,10 +349,16 @@ void KeyboardMouse::update_mouse_buttons(Uint32 button, bool down)
 			break;
 	}
 
-	// When "A" (LMB + RMB) is active, B is not activated until next RMB press.
-	bool a = (right_button && right_button != last_rmb) && left_button;
-	set_button(pad.HeldButtons, Buttons_A, a);
-	set_button(pad.HeldButtons, Buttons_B, right_button && (!a && right_button != last_rmb));
+	if (left_button)
+	{
+		set_button(pad.HeldButtons, Buttons_B, right_button && right_button == last_rmb);
+		set_button(pad.HeldButtons, Buttons_A, right_button && right_button != last_rmb);
+	}
+	else
+	{
+		set_button(pad.HeldButtons, Buttons_A, false);
+		set_button(pad.HeldButtons, Buttons_B, right_button);
+	}
 }
 
 LRESULT KeyboardMouse::read_window_message(HWND handle, UINT Msg, WPARAM wParam, LPARAM lParam)
