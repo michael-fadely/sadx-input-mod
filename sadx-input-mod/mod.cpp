@@ -174,6 +174,11 @@ extern "C"
 			}
 		}
 
+		for (int i = 0; i < GAMEPAD_COUNT; i++)
+		{
+			DreamPad::controllers[i].settings.allow_keyboard = !i;
+		}
+
 		PrintDebug("[Input] Initialization complete.\n");
 	}
 
