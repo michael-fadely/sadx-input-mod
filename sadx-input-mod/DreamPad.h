@@ -74,7 +74,6 @@ public:
 	{
 		Settings();
 
-		// HACK: make configurable
 		bool   allow_keyboard;
 		short  deadzone_l;        // Left stick deadzone
 		bool   radial_l;          // Indicates if the stick is fully radial or semi-radial
@@ -83,10 +82,10 @@ public:
 		uint8  trigger_threshold; // Trigger threshold
 		float  rumble_factor;     // Rumble intensity multiplier (1.0 by default)
 		bool   mega_rumble;       // Always fire both motors
-		ushort rumble_min_time;    // Minimum rumble time for controllers that have issues
+		ushort rumble_min_time;   // Minimum rumble time for controllers that have issues
 
-		void apply(short deadzoneL, short deadzoneR,
-			bool radialL, bool radialR, uint8 triggerThreshold, float rumbleFactor, bool megaRumble, ushort rumbleMinTime);
+		void set_deadzone_l(short deadzone);
+		void set_deadzone_r(short deadzone);
 	} settings;
 
 

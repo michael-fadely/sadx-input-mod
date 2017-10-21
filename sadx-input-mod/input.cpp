@@ -103,11 +103,11 @@ namespace input
 					}
 					else if (pressed & Buttons_Left)
 					{
-						rumble::RumbleA(i, 0);
+						rumble::RumbleA_r(i, 0);
 					}
 					else if (pressed & Buttons_Right)
 					{
-						rumble::RumbleB(i, 7, 59, 6);
+						rumble::RumbleB_r(i, 7, 59, 6);
 					}
 
 					DisplayDebugStringFormatted(NJM_LOCATION(4, 10 + (3 * i)),
@@ -148,7 +148,7 @@ namespace input
 		}
 	}
 
-	void __declspec(naked) WriteAnalogs_r()
+	void __declspec(naked) WriteAnalogs_hook()
 	{
 		__asm
 		{
@@ -175,7 +175,7 @@ namespace input
 		}
 	}
 
-	void EnableController_hook(Uint8 index)
+	void EnableController_r(Uint8 index)
 	{
 		// default behavior 
 		if (index > 1)
@@ -188,7 +188,7 @@ namespace input
 		{
 			for (Uint32 i = 0; i < min(index, static_cast<Uint8>(GAMEPAD_COUNT)); i++)
 			{
-				EnableController_hook(i);
+				EnableController_r(i);
 			}
 		}
 		else
@@ -197,7 +197,7 @@ namespace input
 		}
 	}
 
-	void DisableController_hook(Uint8 index)
+	void DisableController_r(Uint8 index)
 	{
 		// default behavior 
 		if (index > 1)
@@ -210,7 +210,7 @@ namespace input
 		{
 			for (Uint32 i = 0; i < min(index, static_cast<Uint8>(GAMEPAD_COUNT)); i++)
 			{
-				DisableController_hook(i);
+				DisableController_r(i);
 			}
 		}
 		else

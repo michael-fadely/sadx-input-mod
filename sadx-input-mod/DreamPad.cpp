@@ -343,15 +343,13 @@ DreamPad::Settings::Settings()
 	mega_rumble       = false;
 	rumble_min_time   = 0;
 }
-void DreamPad::Settings::apply(short deadzone_l, short deadzone_r, bool radial_l, bool radial_r, uint8 trigger_threshold,
-							   float rumble_factor, bool mega_rumble, ushort rumble_min_time)
+
+void DreamPad::Settings::set_deadzone_l(const short deadzone)
 {
-	this->deadzone_l        = clamp(deadzone_l, static_cast<short>(0), static_cast<short>(std::numeric_limits<short>::max()));
-	this->deadzone_r        = clamp(deadzone_r, static_cast<short>(0), static_cast<short>(std::numeric_limits<short>::max()));
-	this->radial_l          = radial_l;
-	this->radial_r          = radial_r;
-	this->trigger_threshold = trigger_threshold;
-	this->rumble_factor     = rumble_factor;
-	this->mega_rumble       = mega_rumble;
-	this->rumble_min_time   = rumble_min_time;
+	this->deadzone_l = clamp<short>(deadzone, 0, std::numeric_limits<short>::max());
+}
+
+void DreamPad::Settings::set_deadzone_r(const short deadzone)
+{
+	this->deadzone_r = clamp<short>(deadzone, 0, std::numeric_limits<short>::max());
 }

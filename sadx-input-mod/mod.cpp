@@ -21,14 +21,14 @@ static void* AnalogHook_ptr         = reinterpret_cast<void*>(0x0040F343);
 static void* InitRawControllers_ptr = reinterpret_cast<void*>(0x0040F451); // End of function (hook)
 
 PointerInfo jumps[] = {
-	{ rumble::pdVibMxStop, rumble::pdVibMxStop_hook },
-	{ RumbleA_ptr, rumble::RumbleA },
-	{ RumbleB_ptr, rumble::RumbleB },
-	{ AnalogHook_ptr, input::WriteAnalogs_r },
+	{ rumble::pdVibMxStop, rumble::pdVibMxStop_r },
+	{ RumbleA_ptr, rumble::RumbleA_r },
+	{ RumbleB_ptr, rumble::RumbleB_r },
+	{ AnalogHook_ptr, input::WriteAnalogs_hook },
 	{ InitRawControllers_ptr, input::InitRawControllers_hook },
-	{ EnableController, input::EnableController_hook },
-	{ DisableController, input::DisableController_hook },
-	{ reinterpret_cast<void*>(0x0042D52D), rumble::DefaultRumble },
+	{ EnableController, input::EnableController_r },
+	{ DisableController, input::DisableController_r },
+	{ reinterpret_cast<void*>(0x0042D52D), rumble::default_rumble },
 	// Used to skip over the standard controller update function.
 	// This has no effect on the OnInput hook.
 	{ UpdateControllers_ptr, reinterpret_cast<void*>(0x0040FDB3) }
@@ -37,7 +37,7 @@ PointerInfo jumps[] = {
 static std::string build_mod_path(const char* modpath, const char* path)
 {
 	std::stringstream result;
-	char workingdir[FILENAME_MAX];
+	char workingdir[FILENAME_MAX] {};
 
 	result << _getcwd(workingdir, FILENAME_MAX) << "\\" << modpath << "\\" << path;
 
@@ -54,7 +54,7 @@ extern "C"
 		input::poll_controllers();
 	}
 
-	__declspec(dllexport) void Init(const char* path, const HelperFunctions& helperFunctions)
+	__declspec(dllexport) void Init(const char* path, const HelperFunctions&)
 	{
 		std::string dll = move(build_mod_path(path, "SDL2.dll"));
 
@@ -65,17 +65,17 @@ extern "C"
 			PrintDebug("[Input] Unable to load SDL2.dll.\n");
 
 			MessageBoxA(nullptr, "Error loading SDL. See debug message for details.",
-				"SDL Load Error", MB_OK | MB_ICONERROR);
+						"SDL Load Error", MB_OK | MB_ICONERROR);
 
 			return;
 		}
-		
+
 		int init;
 		if ((init = SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC | SDL_INIT_EVENTS)) != 0)
 		{
 			PrintDebug("[Input] Unable to initialize SDL. Error code: %i\n", init);
 			MessageBoxA(nullptr, "Error initializing SDL. See debug message for details.",
-				"SDL Init Error", MB_OK | MB_ICONERROR);
+						"SDL Init Error", MB_OK | MB_ICONERROR);
 			return;
 		}
 
@@ -108,8 +108,8 @@ extern "C"
 
 		input::controller_enabled[0] = true;
 		input::controller_enabled[1] = true;
-		
-		std::string dbpath = build_mod_path(path, "gamecontrollerdb.txt");
+
+		std::string dbpath = move(build_mod_path(path, "gamecontrollerdb.txt"));
 
 		if (FileExists(dbpath))
 		{
@@ -125,15 +125,22 @@ extern "C"
 			}
 		}
 
-		std::string config = build_mod_path(path, "config.ini");
+		std::string config = move(build_mod_path(path, "config.ini"));
 
-		if (FileExists(config))
+		if (!FileExists(config))
 		{
-#ifdef _DEBUG
+			for (int i = 0; i < GAMEPAD_COUNT; i++)
+			{
+				DreamPad::controllers[i].settings.allow_keyboard = !i;
+			}
+		}
+		else
+		{
+		#ifdef _DEBUG
 			bool debug_default = true;
-#else
+		#else
 			bool debug_default = false;
-#endif
+		#endif
 
 			const char* config_cstr = config.c_str();
 			input::debug = GetPrivateProfileIntA("Config", "Debug", static_cast<int>(debug_default), config_cstr) != 0;
@@ -143,43 +150,39 @@ extern "C"
 
 			for (ushort i = 0; i < GAMEPAD_COUNT; i++)
 			{
-				std::string section = "Controller " + std::to_string(i + 1);
+				DreamPad::Settings& settings = DreamPad::controllers[i].settings;
+
+				std::string section = move("Controller " + std::to_string(i + 1));
 				const char* section_cstr = section.c_str();
 
-				int deadzone_l = GetPrivateProfileIntA(section_cstr, "DeadzoneL", GAMEPAD_LEFT_THUMB_DEADZONE, config_cstr);
-				int deadzone_r = GetPrivateProfileIntA(section_cstr, "DeadzoneR", GAMEPAD_RIGHT_THUMB_DEADZONE, config_cstr);
+				const int deadzone_l = GetPrivateProfileIntA(section_cstr, "DeadzoneL", GAMEPAD_LEFT_THUMB_DEADZONE, config_cstr);
+				const int deadzone_r = GetPrivateProfileIntA(section_cstr, "DeadzoneR", GAMEPAD_RIGHT_THUMB_DEADZONE, config_cstr);
 
-				bool radial_l = GetPrivateProfileIntA(section_cstr, "RadialL", 1, config_cstr) != 0;
-				bool radial_r = GetPrivateProfileIntA(section_cstr, "RadialR", smooth_cam, config_cstr) != 0;
+				settings.set_deadzone_l(deadzone_l);
+				settings.set_deadzone_r(deadzone_r);
 
-				int trigger_threshold = GetPrivateProfileIntA(section_cstr, "TriggerThreshold", GAMEPAD_TRIGGER_THRESHOLD, config_cstr);
+				settings.radial_l = GetPrivateProfileIntA(section_cstr, "RadialL", 1, config_cstr) != 0;
+				settings.radial_r = GetPrivateProfileIntA(section_cstr, "RadialR", smooth_cam, config_cstr) != 0;
 
-				// TODO: Not this
-				char wtf[255];
+				settings.trigger_threshold = GetPrivateProfileIntA(section_cstr, "TriggerThreshold", GAMEPAD_TRIGGER_THRESHOLD, config_cstr);
 
-				GetPrivateProfileStringA(section_cstr, "RumbleFactor", "1.0", wtf, 255, config_cstr);
-				float rumble_factor = clamp(static_cast<float>(atof(wtf)), 0.0f, 1.0f);
+				// honestly how else would I do it
+				char float_buffer[256] {};
 
-				bool mega_rumble = GetPrivateProfileIntA(section_cstr, "MegaRumble", 0, config_cstr) != 0;
-				ushort min_rumble = static_cast<ushort>(GetPrivateProfileIntA(section_cstr, "RumbleMinTime", 0, config_cstr));
+				GetPrivateProfileStringA(section_cstr, "RumbleFactor", "1.0", float_buffer, LengthOfArray(float_buffer), config_cstr);
+				settings.rumble_factor = clamp(static_cast<float>(atof(float_buffer)), 0.0f, 1.0f);
 
-				DreamPad::Settings* settings = &DreamPad::controllers[i].settings;
-				settings->apply(deadzone_l, deadzone_r, radial_l, radial_r, trigger_threshold, rumble_factor, mega_rumble, min_rumble);
+				settings.mega_rumble = GetPrivateProfileIntA(section_cstr, "MegaRumble", 0, config_cstr) != 0;
+				settings.rumble_min_time = static_cast<ushort>(GetPrivateProfileIntA(section_cstr, "RumbleMinTime", 0, config_cstr));
 
-				// HACK: make configurable
-				settings->allow_keyboard = !i;
+				settings.allow_keyboard = GetPrivateProfileIntA(section_cstr, "AllowKeyboard", !i, config_cstr) != 0;
 
 				if (input::debug)
 				{
 					PrintDebug("[Input] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
-						settings->deadzone_l, settings->deadzone_r, settings->trigger_threshold);
+							   settings.deadzone_l, settings.deadzone_r, settings.trigger_threshold);
 				}
 			}
-		}
-
-		for (int i = 0; i < GAMEPAD_COUNT; i++)
-		{
-			DreamPad::controllers[i].settings.allow_keyboard = !i;
 		}
 
 		PrintDebug("[Input] Initialization complete.\n");
