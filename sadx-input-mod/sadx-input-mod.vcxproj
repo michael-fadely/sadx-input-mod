@@ -71,7 +71,8 @@
       <Command>xcopy /Y /D "$(ProjectDir)mod.ini" "$(OutDir)"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "$(SolutionDir)SDL2\lib\x86\SDL2.dll" "$(OutDir)"</Command>
+      <Command>xcopy /Y /D "$(SolutionDir)SDL2\lib\x86\SDL2.dll" "$(OutDir)"
+xcopy /Y /D "$(SolutionDir)SDL2\README-SDL.txt" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -97,7 +98,8 @@
       <Command>xcopy /Y /D "$(ProjectDir)mod.ini" "$(OutDir)"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "$(SolutionDir)SDL2\lib\x86\SDL2.dll" "$(OutDir)"</Command>
+      <Command>xcopy /Y /D "$(SolutionDir)SDL2\lib\x86\SDL2.dll" "$(OutDir)"
+xcopy /Y /D "$(SolutionDir)SDL2\README-SDL.txt" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
