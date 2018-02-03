@@ -114,12 +114,12 @@ void DreamPad::poll()
 	}
 
 	// TODO: keyboard/mouse toggle
-	auto& kb = keyboard.dreamcast_data();
+	auto& kb = KeyboardMouse::dreamcast_data();
 	bool allow_keyboard = settings.allow_keyboard;
 
-	if (!connected_ || allow_keyboard && (kb.LeftStickX || kb.LeftStickY))
+	if (!connected_ || (allow_keyboard && (kb.LeftStickX || kb.LeftStickY)))
 	{
-		normalized_l_ = keyboard.normalized_l();
+		normalized_l_ = KeyboardMouse::normalized_l();
 		pad.LeftStickX = kb.LeftStickX;
 		pad.LeftStickY = kb.LeftStickY;
 	}
@@ -133,9 +133,9 @@ void DreamPad::poll()
 		normalized_l_ = convert_axes(reinterpret_cast<NJS_POINT2I*>(&pad.LeftStickX), axis, settings.deadzone_l, settings.radial_l);
 	}
 
-	if (!connected_ || allow_keyboard && (kb.RightStickX || kb.RightStickY))
+	if (!connected_ || (allow_keyboard && (kb.RightStickX || kb.RightStickY)))
 	{
-		normalized_r_ = keyboard.normalized_r();
+		normalized_r_ = KeyboardMouse::normalized_r();
 		pad.RightStickX = kb.RightStickX;
 		pad.RightStickY = kb.RightStickY;
 	}
@@ -151,7 +151,7 @@ void DreamPad::poll()
 
 	constexpr short short_max = std::numeric_limits<short>::max();
 
-	if (!connected_ || allow_keyboard && kb.LTriggerPressure)
+	if (!connected_ || (allow_keyboard && kb.LTriggerPressure))
 	{
 		pad.LTriggerPressure = kb.LTriggerPressure;
 	}
@@ -161,7 +161,7 @@ void DreamPad::poll()
 		pad.LTriggerPressure = static_cast<short>(255.0f * (static_cast<float>(lt) / static_cast<float>(short_max)));
 	}
 
-	if (!connected_ || allow_keyboard && kb.RTriggerPressure)
+	if (!connected_ || (allow_keyboard && kb.RTriggerPressure))
 	{
 		pad.RTriggerPressure = kb.RTriggerPressure;
 	}

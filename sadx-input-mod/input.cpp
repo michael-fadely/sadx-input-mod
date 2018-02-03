@@ -34,13 +34,13 @@ namespace input
 				case SDL_CONTROLLERDEVICEADDED:
 				{
 					const int which = event.cdevice.which;
-					for (uint i = 0; i < GAMEPAD_COUNT; i++)
+					for (auto& controller : DreamPad::controllers)
 					{
 						// Checking for both in cases like the DualShock 4 and DS4Windows where the controller might be
 						// "connected" twice with the same ID. DreamPad::Open automatically closes if already open.
-						if (!DreamPad::controllers[i].connected() || DreamPad::controllers[i].controller_id() == which)
+						if (!controller.connected() || controller.controller_id() == which)
 						{
-							DreamPad::controllers[i].open(which);
+							controller.open(which);
 							break;
 						}
 					}
@@ -50,11 +50,11 @@ namespace input
 				case SDL_CONTROLLERDEVICEREMOVED:
 				{
 					const int which = event.cdevice.which;
-					for (uint i = 0; i < GAMEPAD_COUNT; i++)
+					for (auto& controller : DreamPad::controllers)
 					{
-						if (DreamPad::controllers[i].controller_id() == which)
+						if (controller.controller_id() == which)
 						{
-							DreamPad::controllers[i].close();
+							controller.close();
 							break;
 						}
 					}
@@ -135,7 +135,7 @@ namespace input
 
 			const DreamPad& dream_pad = DreamPad::controllers[i];
 
-			if (dream_pad.connected() || dream_pad.settings.allow_keyboard && !i)
+			if (dream_pad.connected() || (dream_pad.settings.allow_keyboard && !i))
 			{
 				const ControllerData& pad = dream_pad.dreamcast_data();
 				// SADX's internal deadzone is 12 of 127. It doesn't set the relative forward direction

@@ -56,7 +56,7 @@ extern "C"
 
 	__declspec(dllexport) void Init(const char* path, const HelperFunctions&)
 	{
-		std::string dll = move(build_mod_path(path, "SDL2.dll"));
+		std::string dll = build_mod_path(path, "SDL2.dll");
 
 		const auto handle = LoadLibraryA(dll.c_str());
 
@@ -109,7 +109,7 @@ extern "C"
 		input::controller_enabled[0] = true;
 		input::controller_enabled[1] = true;
 
-		std::string dbpath = move(build_mod_path(path, "gamecontrollerdb.txt"));
+		std::string dbpath = build_mod_path(path, "gamecontrollerdb.txt");
 
 		if (FileExists(dbpath))
 		{
@@ -125,7 +125,7 @@ extern "C"
 			}
 		}
 
-		std::string config = move(build_mod_path(path, "config.ini"));
+		std::string config = build_mod_path(path, "config.ini");
 
 		if (!FileExists(config))
 		{
@@ -152,7 +152,7 @@ extern "C"
 			{
 				DreamPad::Settings& settings = DreamPad::controllers[i].settings;
 
-				std::string section = move("Controller " + std::to_string(i + 1));
+				std::string section = "Controller " + std::to_string(i + 1);
 				const char* section_cstr = section.c_str();
 
 				const int deadzone_l = GetPrivateProfileIntA(section_cstr, "DeadzoneL", GAMEPAD_LEFT_THUMB_DEADZONE, config_cstr);

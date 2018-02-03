@@ -25,11 +25,11 @@ namespace rumble
 
 	inline void set_instance(Uint32 port, Motor motor, ObjectMaster* ptr)
 	{
-		auto i = static_cast<int>(motor) - 1;
+		const auto i = static_cast<int>(motor) - 1;
 		instances[port][i] = ptr;
 	}
 
-	Sint32 __cdecl pdVibMxStop_r(Uint32 port)
+	Sint32 __cdecl pdVibMxStop_r(Uint32)
 	{
 		for (auto& i : instances)
 		{
@@ -46,9 +46,8 @@ namespace rumble
 			}
 		}
 
-		for (Uint32 i = 0; i < GAMEPAD_COUNT; i++)
+		for (auto& pad : DreamPad::controllers)
 		{
-			auto& pad = DreamPad::controllers[i];
 			if (pad.get_active_motor() != Motor::none)
 			{
 				pad.set_active_motor(Motor::both, false);
@@ -179,7 +178,7 @@ namespace rumble
 					{
 						idk = 2;
 					}
-					else if (time == -1)
+					else if (static_cast<Sint32>(time) == -1)
 					{
 						idk = -2;
 					}
