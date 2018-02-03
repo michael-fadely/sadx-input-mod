@@ -1,12 +1,6 @@
 #include "stdafx.h"
 #include "KeyboardMouse.h"
 
-DataPointer(int, MouseMode, 0x03B0EAE0);
-DataPointer(int, CursorY, 0x03B0E990);
-DataPointer(int, CursorX, 0x03B0E994);
-DataPointer(int, CursorMagnitude, 0x03B0E998);
-DataPointer(int, CursorCos, 0x03B0E99C);
-DataPointer(int, CursorSin, 0x03B0E9A0);
 DataPointer(HWND, hWnd, 0x3D0FD30);
 
 ControllerData KeyboardMouse::pad           = {};

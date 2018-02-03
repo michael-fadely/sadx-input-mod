@@ -9,6 +9,7 @@
 #include "minmax.h"
 #include "typedefs.h"
 #include <SADXModLoader.h>
+#include <IniFile.hpp>
 #include <Windows.h>
 #include <algorithm>
 #include <cstdint>

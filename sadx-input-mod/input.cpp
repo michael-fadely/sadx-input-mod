@@ -13,8 +13,6 @@ struct AnalogThing
 	float magnitude;
 };
 
-DataArray(AnalogThing, NormalizedAnalogs, 0x03B0E7A0, 8);
-
 namespace input
 {
 	ControllerData raw_input[GAMEPAD_COUNT];

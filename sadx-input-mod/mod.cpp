@@ -8,6 +8,7 @@
 #include "SDL.h"
 
 #include <SADXModLoader.h>
+#include <IniFile.hpp>
 
 #include "typedefs.h"
 #include "FileExists.h"
@@ -46,7 +47,7 @@ static std::string build_mod_path(const char* modpath, const char* path)
 
 extern "C"
 {
-	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer };
+	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer, nullptr, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0 };
 	__declspec(dllexport) PointerList Jumps[] = { { arrayptrandlengthT(jumps, int) } };
 
 	__declspec(dllexport) void OnInput()
@@ -125,9 +126,9 @@ extern "C"
 			}
 		}
 
-		std::string config = build_mod_path(path, "config.ini");
+		const std::string config_path = build_mod_path(path, "config.ini");
 
-		if (!FileExists(config))
+		if (!FileExists(config_path))
 		{
 			for (int i = 0; i < GAMEPAD_COUNT; i++)
 			{
@@ -137,45 +138,45 @@ extern "C"
 		else
 		{
 		#ifdef _DEBUG
-			bool debug_default = true;
+			const bool debug_default = true;
 		#else
-			bool debug_default = false;
+			const bool debug_default = false;
 		#endif
 
-			const char* config_cstr = config.c_str();
-			input::debug = GetPrivateProfileIntA("Config", "Debug", static_cast<int>(debug_default), config_cstr) != 0;
+			auto ini = new IniFile(config_path);
+
+			input::debug = ini->getBool("Config", "Debug", debug_default);
 
 			// This defaults RadialR to enabled if smooth-cam is detected.
-			int smooth_cam = GetModuleHandleA("smooth-cam.dll") != nullptr ? 1 : 0;
+			const bool smooth_cam = GetModuleHandleA("smooth-cam.dll") != nullptr;
 
 			for (ushort i = 0; i < GAMEPAD_COUNT; i++)
 			{
 				DreamPad::Settings& settings = DreamPad::controllers[i].settings;
 
-				std::string section = "Controller " + std::to_string(i + 1);
-				const char* section_cstr = section.c_str();
+				const std::string section = "Controller " + std::to_string(i + 1);
+				const IniGroup* group = ini->getGroup(section);
 
-				const int deadzone_l = GetPrivateProfileIntA(section_cstr, "DeadzoneL", GAMEPAD_LEFT_THUMB_DEADZONE, config_cstr);
-				const int deadzone_r = GetPrivateProfileIntA(section_cstr, "DeadzoneR", GAMEPAD_RIGHT_THUMB_DEADZONE, config_cstr);
+				if (group != nullptr)
+				{
+					const int deadzone_l = group->getInt("DeadzoneL", GAMEPAD_LEFT_THUMB_DEADZONE);
+					const int deadzone_r = group->getInt("DeadzoneR", GAMEPAD_RIGHT_THUMB_DEADZONE);
 
-				settings.set_deadzone_l(deadzone_l);
-				settings.set_deadzone_r(deadzone_r);
+					settings.set_deadzone_l(deadzone_l);
+					settings.set_deadzone_r(deadzone_r);
 
-				settings.radial_l = GetPrivateProfileIntA(section_cstr, "RadialL", 1, config_cstr) != 0;
-				settings.radial_r = GetPrivateProfileIntA(section_cstr, "RadialR", smooth_cam, config_cstr) != 0;
+					settings.radial_l = group->getBool("RadialL", true);
+					settings.radial_r = group->getBool("RadialR", smooth_cam);
 
-				settings.trigger_threshold = GetPrivateProfileIntA(section_cstr, "TriggerThreshold", GAMEPAD_TRIGGER_THRESHOLD, config_cstr);
+					settings.trigger_threshold = group->getInt("TriggerThreshold", GAMEPAD_TRIGGER_THRESHOLD);
 
-				// honestly how else would I do it
-				char float_buffer[256] {};
+					settings.rumble_factor = clamp(group->getFloat("RumbleFactor", 1.0f), 0.0f, 1.0f);
 
-				GetPrivateProfileStringA(section_cstr, "RumbleFactor", "1.0", float_buffer, LengthOfArray(float_buffer), config_cstr);
-				settings.rumble_factor = clamp(static_cast<float>(atof(float_buffer)), 0.0f, 1.0f);
+					settings.mega_rumble = group->getBool("MegaRumble", false);
+					settings.rumble_min_time = static_cast<ushort>(group->getInt("RumbleMinTime", 0));
 
-				settings.mega_rumble = GetPrivateProfileIntA(section_cstr, "MegaRumble", 0, config_cstr) != 0;
-				settings.rumble_min_time = static_cast<ushort>(GetPrivateProfileIntA(section_cstr, "RumbleMinTime", 0, config_cstr));
-
-				settings.allow_keyboard = GetPrivateProfileIntA(section_cstr, "AllowKeyboard", !i, config_cstr) != 0;
+					settings.allow_keyboard = group->getBool("AllowKeyboard", !i);
+				}
 
 				if (input::debug)
 				{
@@ -183,6 +184,8 @@ extern "C"
 							   settings.deadzone_l, settings.deadzone_r, settings.trigger_threshold);
 				}
 			}
+
+			delete ini;
 		}
 
 		PrintDebug("[Input] Initialization complete.\n");
