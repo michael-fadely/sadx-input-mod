@@ -29,7 +29,7 @@ namespace input
 				default:
 					break;
 
-				case SDL_CONTROLLERDEVICEADDED:
+				case SDL_JOYDEVICEADDED:
 				{
 					const int which = event.cdevice.which;
 					for (auto& controller : DreamPad::controllers)
@@ -45,7 +45,7 @@ namespace input
 					break;
 				}
 
-				case SDL_CONTROLLERDEVICEREMOVED:
+				case SDL_JOYDEVICEREMOVED:
 				{
 					const int which = event.cdevice.which;
 					for (auto& controller : DreamPad::controllers)
