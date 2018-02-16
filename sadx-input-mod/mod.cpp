@@ -128,64 +128,48 @@ extern "C"
 
 		const std::string config_path = build_mod_path(path, "config.ini");
 
-		if (!FileExists(config_path))
-		{
-			for (int i = 0; i < GAMEPAD_COUNT; i++)
-			{
-				DreamPad::controllers[i].settings.allow_keyboard = !i;
-			}
-		}
-		else
-		{
 		#ifdef _DEBUG
 			const bool debug_default = true;
 		#else
 			const bool debug_default = false;
 		#endif
 
-			auto ini = new IniFile(config_path);
+		IniFile config(config_path);
 
-			input::debug = ini->getBool("Config", "Debug", debug_default);
+		input::debug = config.getBool("Config", "Debug", debug_default);
 
-			// This defaults RadialR to enabled if smooth-cam is detected.
-			const bool smooth_cam = GetModuleHandleA("smooth-cam.dll") != nullptr;
+		// This defaults RadialR to enabled if smooth-cam is detected.
+		const bool smooth_cam = GetModuleHandleA("smooth-cam.dll") != nullptr;
 
-			for (ushort i = 0; i < GAMEPAD_COUNT; i++)
+		for (ushort i = 0; i < GAMEPAD_COUNT; i++)
+		{
+			DreamPad::Settings& settings = DreamPad::controllers[i].settings;
+
+			const std::string section = "Controller " + std::to_string(i + 1);
+
+			const int deadzone_l = config.getInt(section, "DeadzoneL", GAMEPAD_LEFT_THUMB_DEADZONE);
+			const int deadzone_r = config.getInt(section, "DeadzoneR", GAMEPAD_RIGHT_THUMB_DEADZONE);
+
+			settings.set_deadzone_l(deadzone_l);
+			settings.set_deadzone_r(deadzone_r);
+
+			settings.radial_l = config.getBool(section, "RadialL", true);
+			settings.radial_r = config.getBool(section, "RadialR", smooth_cam);
+
+			settings.trigger_threshold = config.getInt(section, "TriggerThreshold", GAMEPAD_TRIGGER_THRESHOLD);
+
+			settings.rumble_factor = clamp(config.getFloat(section, "RumbleFactor", 1.0f), 0.0f, 1.0f);
+
+			settings.mega_rumble = config.getBool(section, "MegaRumble", false);
+			settings.rumble_min_time = static_cast<ushort>(config.getInt(section, "RumbleMinTime", 0));
+
+			settings.allow_keyboard = config.getBool(section, "AllowKeyboard", !i);
+
+			if (input::debug)
 			{
-				DreamPad::Settings& settings = DreamPad::controllers[i].settings;
-
-				const std::string section = "Controller " + std::to_string(i + 1);
-				const IniGroup* group = ini->getGroup(section);
-
-				if (group != nullptr)
-				{
-					const int deadzone_l = group->getInt("DeadzoneL", GAMEPAD_LEFT_THUMB_DEADZONE);
-					const int deadzone_r = group->getInt("DeadzoneR", GAMEPAD_RIGHT_THUMB_DEADZONE);
-
-					settings.set_deadzone_l(deadzone_l);
-					settings.set_deadzone_r(deadzone_r);
-
-					settings.radial_l = group->getBool("RadialL", true);
-					settings.radial_r = group->getBool("RadialR", smooth_cam);
-
-					settings.trigger_threshold = group->getInt("TriggerThreshold", GAMEPAD_TRIGGER_THRESHOLD);
-
-					settings.rumble_factor = clamp(group->getFloat("RumbleFactor", 1.0f), 0.0f, 1.0f);
-
-					settings.mega_rumble = group->getBool("MegaRumble", false);
-					settings.rumble_min_time = static_cast<ushort>(group->getInt("RumbleMinTime", 0));
-
-					settings.allow_keyboard = group->getBool("AllowKeyboard", !i);
-				}
-
-				if (input::debug)
-				{
-					PrintDebug("[Input] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
-							   settings.deadzone_l, settings.deadzone_r, settings.trigger_threshold);
-				}
+				PrintDebug("[Input] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
+							settings.deadzone_l, settings.deadzone_r, settings.trigger_threshold);
 			}
-
-			delete ini;
 		}
 
 		PrintDebug("[Input] Initialization complete.\n");
