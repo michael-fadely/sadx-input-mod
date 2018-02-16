@@ -82,7 +82,7 @@ extern "C"
 
 		// Disable call to CreateKeyboardDevice
 		WriteData<5>(reinterpret_cast<void*>(0x0077F0D7), 0x90i8);
-		// Disable call to CreateMousedevice
+		// Disable call to CreateMouseDevice
 		WriteData<5>(reinterpret_cast<void*>(0x0077F03E), 0x90i8);
 		// Disable call to DirectInput_Init
 		WriteData<5>(reinterpret_cast<void*>(0x0077F205), 0x90i8);
