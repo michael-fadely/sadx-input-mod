@@ -19,7 +19,7 @@ namespace input
 	bool controller_enabled[GAMEPAD_COUNT];
 	bool debug = false;
 
-	void poll_controllers()
+	inline void poll_sdl()
 	{
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
@@ -60,6 +60,11 @@ namespace input
 				}
 			}
 		}
+	}
+
+	void poll_controllers()
+	{
+		poll_sdl();
 
 		KeyboardMouse::poll();
 
