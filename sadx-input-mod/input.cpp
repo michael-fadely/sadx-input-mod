@@ -22,6 +22,7 @@ namespace input
 	inline void poll_sdl()
 	{
 		SDL_Event event;
+
 		while (SDL_PollEvent(&event))
 		{
 			switch (event.type)
@@ -32,10 +33,11 @@ namespace input
 				case SDL_JOYDEVICEADDED:
 				{
 					const int which = event.cdevice.which;
+
 					for (auto& controller : DreamPad::controllers)
 					{
-						// Checking for both in cases like the DualShock 4 and DS4Windows where the controller might be
-						// "connected" twice with the same ID. DreamPad::Open automatically closes if already open.
+						// Checking for both in cases like the DualShock 4 and (e.g.) DS4Windows where the controller might be
+						// "connected" twice with the same ID. DreamPad::open automatically closes if already open.
 						if (!controller.connected() || controller.controller_id() == which)
 						{
 							controller.open(which);
@@ -48,6 +50,7 @@ namespace input
 				case SDL_JOYDEVICEREMOVED:
 				{
 					const int which = event.cdevice.which;
+
 					for (auto& controller : DreamPad::controllers)
 					{
 						if (controller.controller_id() == which)
@@ -60,6 +63,8 @@ namespace input
 				}
 			}
 		}
+
+		SDL_GameControllerUpdate();
 	}
 
 	void poll_controllers()
@@ -73,7 +78,7 @@ namespace input
 			DreamPad& dreampad = DreamPad::controllers[i];
 
 			dreampad.poll();
-			dreampad.copy(raw_input[i]);
+			raw_input[i] = dreampad.dreamcast_data();
 
 			// Compatibility for mods which use ControllersRaw directly.
 			// This will only copy the first four controllers.
@@ -86,12 +91,13 @@ namespace input
 			if (debug && raw_input[i].HeldButtons & Buttons_C)
 			{
 				const ControllerData& pad = raw_input[i];
-				Motor m = DreamPad::controllers[i].get_active_motor();
+				Motor m = DreamPad::controllers[i].active_motor();
 
 				DisplayDebugStringFormatted(NJM_LOCATION(0, 8 + (3 * i)), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
-					pad.HeldButtons, pad.LTriggerPressure, pad.RTriggerPressure, (m & Motor::large), (m & Motor::small) >> 1);
+											pad.HeldButtons, pad.LTriggerPressure, pad.RTriggerPressure, (m & Motor::large), (m & Motor::small) >> 1);
 				DisplayDebugStringFormatted(NJM_LOCATION(4, 9 + (3 * i)), "LS: %4d/%4d (%f) RS: %4d/%4d (%f)",
-					pad.LeftStickX, pad.LeftStickY, dreampad.normalized_l(), pad.RightStickX, pad.RightStickY, dreampad.normalized_r());
+											pad.LeftStickX, pad.LeftStickY, dreampad.normalized_l(), pad.RightStickX, pad.RightStickY,
+											dreampad.normalized_r());
 
 				if (pad.HeldButtons & Buttons_Z)
 				{
@@ -114,7 +120,7 @@ namespace input
 					}
 
 					DisplayDebugStringFormatted(NJM_LOCATION(4, 10 + (3 * i)),
-						"Rumble factor (U/D): %f (L/R to test)", dreampad.settings.rumble_factor);
+												"Rumble factor (U/D): %f (L/R to test)", dreampad.settings.rumble_factor);
 				}
 			}
 #endif

@@ -27,48 +27,58 @@ class DreamPad
 {
 	static KeyboardMouse keyboard;
 
-	bool connected_ = false;
-	int controller_id_;
-	SDL_GameController* gamepad;
+	ControllerData dc_pad = {};
 
-	SDL_Haptic* haptic;
-	SDL_HapticEffect effect;
-	int effect_id;
-	Motor rumble_state;
+	SDL_GameController* gamepad = nullptr;
+	SDL_Haptic*         haptic  = nullptr;
+	SDL_HapticEffect    effect  = {};
 
-	ControllerData pad;
-	float normalized_l_, normalized_r_;
+	int controller_id_ = -1;
+	int effect_id      = -1;
+
+	bool  connected_   = false;
+	Motor rumble_state = Motor::none;
+
+	float normalized_l_ = 0.0f;
+	float normalized_r_ = 0.0f;
 
 public:
-	DreamPad();
+	static DreamPad controllers[GAMEPAD_COUNT];
+
+	DreamPad(DreamPad&& other) noexcept;
+	DreamPad(const DreamPad& other) = delete;
+	DreamPad() = default;
 	~DreamPad();
 
-	/// <summary>
-	/// Opens the specified controller ID.
-	/// </summary>
-	/// <param name="id">Controller ID to open.</param>
-	/// <returns><c>true</c> on success. Note that haptic can fail and the function will still return true.</returns>
+	DreamPad& operator=(DreamPad&& other) noexcept;
+	DreamPad& operator=(const DreamPad& other) = delete;
+
+	/**
+	 * \brief Opens the specified controller ID.
+	 * \param id Controller ID to open.
+	 * \return \a true on success. Note that haptic can fail and the function will still return true.
+	 */
 	bool open(int id);
-	/// <summary>
-	/// Closes this instance.
-	/// </summary>
+
+	/**
+	 * \brief Closes this instance.
+	 */
 	void close();
-	/// <summary>
-	/// Polls input for this instance.
-	/// </summary>
+
+	/**
+	 * \brief Polls input for this instance.
+	 */
 	void poll();
 
-	// Poor man's properties
-	Motor get_active_motor() const { return rumble_state; }
+	Motor active_motor() const;
 	void  set_active_motor(Motor motor, bool enable);
-	bool  connected() const { return connected_; }
-	int   controller_id() const { return controller_id_; }
-	float normalized_l() const { return normalized_l_; }
-	float normalized_r() const { return normalized_r_; }
-	// SDL -> Dreamcast converted input data (ControllerData).
-	const ControllerData& dreamcast_data() const { return pad; }
+	bool  connected() const;
+	int   controller_id() const;
+	float normalized_l() const;
+	float normalized_r() const;
 
-	void copy(ControllerData& dest) const;
+	// SDL -> Dreamcast converted input data (ControllerData).
+	const ControllerData& dreamcast_data() const;
 
 	struct Settings
 	{
@@ -88,21 +98,26 @@ public:
 		void set_deadzone_r(short deadzone);
 	} settings;
 
-
-	static int digital_trigger(ushort trigger, ushort threshold, int button);
-
-	/// <summary>
-	/// Converts from SDL (-32768 to 32767) to Dreamcast (-127 to 127) axes, including scaled deadzone.
-	/// </summary>
-	/// <param name="dest">The destination axes (Dreamcast).</param>
-	/// <param name="source">The source axes (SDL).</param>
-	/// <param name="deadzone">The deadzone.</param>
-	/// <param name="radial">If set to <c>true</c>, the deadzone is treated as fully radial. (i.e one axis exceeding deadzone implies the other)</param>
+	/**
+	 * \brief Converts from SDL (-32768 to 32767) to Dreamcast (-127 to 127) axes, including scaled deadzone.
+	 * \param dest The destination axes (Dreamcast).
+	 * \param source The source axes (SDL).
+	 * \param deadzone The deadzone.
+	 * \param radial If set to \a true, the deadzone is treated as fully radial. (i.e one axis exceeding deadzone implies the other)
+	 * \return The axis magnitude.
+	 */
 	static float convert_axes(NJS_POINT2I* dest, const NJS_POINT2I& source, short deadzone, bool radial);
 
-	static DreamPad controllers[GAMEPAD_COUNT];
+	/**
+	 * \brief Updates the various button fields in the provided
+	 * Dreamcast controller structure with the provided buttons.
+	 * \param pad The Dreamcast controller data to update.
+	 * \param buttons The buttons to add.
+	 */
+	static void update_buttons(ControllerData& pad, Uint32 buttons);
 
-	static void update_buttons(ControllerData& data, Uint32 buttons);
+private:
+	void move_from(DreamPad&& other);
 };
 
 enum PDD_DEV_SUPPORT : uint32_t

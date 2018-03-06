@@ -48,7 +48,7 @@ namespace rumble
 
 		for (auto& pad : DreamPad::controllers)
 		{
-			if (pad.get_active_motor() != Motor::none)
+			if (pad.active_motor() != Motor::none)
 			{
 				pad.set_active_motor(Motor::both, false);
 			}
@@ -145,11 +145,11 @@ namespace rumble
 		}
 	}
 
-	/// <summary>
-	/// Rumbles the large motor. Used for things like explosions, springs, dash panels, etc.
-	/// </summary>
-	/// <param name="port">Controller port.></param>
-	/// <param name="time">Time to rumble.</param>
+	/**
+	 * \brief Rumbles the large motor. Used for things like explosions, springs, dash panels, etc.
+	 * \param port Controller port.
+	 * \param time Time to rumble.
+	 */
 	void __cdecl RumbleA_r(Uint32 port, Uint32 time)
 	{
 		if (RumbleEnabled && !DemoPlaying && input::controller_enabled[port])
@@ -158,13 +158,13 @@ namespace rumble
 		}
 	}
 
-	/// <summary>
-	/// Rumbles the small motor. Used for things like taking damage.
-	/// </summary>
-	/// <param name="port">Controller port.</param>
-	/// <param name="time">Time to rumble.</param>
-	/// <param name="a3">Unknown.</param>
-	/// <param name="a4">Unknown.</param>
+	/**
+	 * \brief Rumbles the small motor. Used for things like taking damage.
+	 * \param port Controller port.
+	 * \param time Time to rumble.
+	 * \param a3 Unknown.
+	 * \param a4 Unknown.
+	 */
 	void __cdecl RumbleB_r(Uint32 port, Uint32 time, int a3, int a4)
 	{
 		if (RumbleEnabled && !DemoPlaying && input::controller_enabled[port])
@@ -218,9 +218,10 @@ namespace rumble
 
 	// ReSharper disable once CppDeclaratorNeverUsed
 	static const auto loc_0042D534 = reinterpret_cast<const void*>(0x0042D534);
-	/// <summary>
-	/// Enables rumble by default when a new save file is created.
-	/// </summary>
+
+	/**
+	 * \brief Enables rumble by default when a new save file is created.
+	 */
 	void __declspec(naked) default_rumble()
 	{
 		__asm
