@@ -1,4 +1,5 @@
 #include "stdafx.h"
+
 #include <string>
 #include <wtypes.h>
 
@@ -12,5 +13,5 @@ bool FileExists(const std::string& path)
 #endif
 
 	return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
-			!(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+	        !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }

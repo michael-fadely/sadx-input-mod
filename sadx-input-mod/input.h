@@ -1,6 +1,5 @@
 #pragma once
 
-#include "typedefs.h"
 #include "DreamPad.h"
 
 namespace input

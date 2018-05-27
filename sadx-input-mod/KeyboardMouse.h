@@ -1,6 +1,5 @@
 #pragma once
 
-#include "minmax.h"
 #include <ninja.h>
 #include <SADXStructs.h>
 

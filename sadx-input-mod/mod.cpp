@@ -66,7 +66,7 @@ extern "C"
 			PrintDebug("[Input] Unable to load SDL2.dll.\n");
 
 			MessageBoxA(nullptr, "Error loading SDL. See debug message for details.",
-						"SDL Load Error", MB_OK | MB_ICONERROR);
+			            "SDL Load Error", MB_OK | MB_ICONERROR);
 
 			return;
 		}
@@ -76,7 +76,7 @@ extern "C"
 		{
 			PrintDebug("[Input] Unable to initialize SDL. Error code: %i\n", init);
 			MessageBoxA(nullptr, "Error initializing SDL. See debug message for details.",
-						"SDL Init Error", MB_OK | MB_ICONERROR);
+			            "SDL Init Error", MB_OK | MB_ICONERROR);
 			return;
 		}
 
@@ -128,11 +128,11 @@ extern "C"
 
 		const std::string config_path = build_mod_path(path, "config.ini");
 
-		#ifdef _DEBUG
-			const bool debug_default = true;
-		#else
-			const bool debug_default = false;
-		#endif
+	#ifdef _DEBUG
+		const bool debug_default = true;
+	#else
+		const bool debug_default = false;
+	#endif
 
 		IniFile config(config_path);
 
@@ -168,7 +168,7 @@ extern "C"
 			if (input::debug)
 			{
 				PrintDebug("[Input] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
-							settings.deadzone_l, settings.deadzone_r, settings.trigger_threshold);
+				           settings.deadzone_l, settings.deadzone_r, settings.trigger_threshold);
 			}
 		}
 

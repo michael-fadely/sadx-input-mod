@@ -1,8 +1,9 @@
 ﻿#include "stdafx.h"
 
 #include <SADXModLoader.h>
-#include "minmax.h"
 
+#include "minmax.h"
+#include "typedefs.h"
 #include "input.h"
 #include "rumble.h"
 #include "DreamPad.h"
@@ -87,17 +88,17 @@ namespace input
 				ControllersRaw[i] = raw_input[i];
 			}
 
-#ifdef EXTENDED_BUTTONS
+		#ifdef EXTENDED_BUTTONS
 			if (debug && raw_input[i].HeldButtons & Buttons_C)
 			{
 				const ControllerData& pad = raw_input[i];
 				Motor m = DreamPad::controllers[i].active_motor();
 
 				DisplayDebugStringFormatted(NJM_LOCATION(0, 8 + (3 * i)), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
-											pad.HeldButtons, pad.LTriggerPressure, pad.RTriggerPressure, (m & Motor::large), (m & Motor::small) >> 1);
+				                            pad.HeldButtons, pad.LTriggerPressure, pad.RTriggerPressure, (m & Motor::large), (m & Motor::small) >> 1);
 				DisplayDebugStringFormatted(NJM_LOCATION(4, 9 + (3 * i)), "LS: %4d/%4d (%f) RS: %4d/%4d (%f)",
-											pad.LeftStickX, pad.LeftStickY, dreampad.normalized_l(), pad.RightStickX, pad.RightStickY,
-											dreampad.normalized_r());
+				                            pad.LeftStickX, pad.LeftStickY, dreampad.normalized_l(), pad.RightStickX, pad.RightStickY,
+				                            dreampad.normalized_r());
 
 				if (pad.HeldButtons & Buttons_Z)
 				{
@@ -120,10 +121,10 @@ namespace input
 					}
 
 					DisplayDebugStringFormatted(NJM_LOCATION(4, 10 + (3 * i)),
-												"Rumble factor (U/D): %f (L/R to test)", dreampad.settings.rumble_factor);
+					                            "Rumble factor (U/D): %f (L/R to test)", dreampad.settings.rumble_factor);
 				}
 			}
-#endif
+		#endif
 		}
 	}
 

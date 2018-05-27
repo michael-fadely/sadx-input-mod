@@ -1,4 +1,6 @@
 #include "stdafx.h"
+
+#include "minmax.h"
 #include "KeyboardMouse.h"
 
 DataPointer(HWND, hWnd, 0x3D0FD30);

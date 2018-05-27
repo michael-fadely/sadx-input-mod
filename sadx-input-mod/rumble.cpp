@@ -60,7 +60,7 @@ namespace rumble
 	static void __cdecl Rumble_Main_hook(ObjectMaster* _this)
 	{
 		auto data = static_cast<RumbleTimer*>(_this->UnknownA_ptr);
-		auto& pad  = DreamPad::controllers[data->port];
+		auto& pad = DreamPad::controllers[data->port];
 
 		if (data->frames-- <= 0)
 		{
@@ -140,7 +140,7 @@ namespace rumble
 			{
 				auto time_ms = static_cast<Uint32>(time_scaled * (1000.0f / (60.0f / static_cast<float>(FrameIncrement))));
 				PrintDebug("[Input] [%u] Rumble %u: %s, %u frames (%ums)\n",
-					FrameCounter, data->port, (motor == Motor::small ? "R" : "L"), time_scaled, time_ms);
+				           FrameCounter, data->port, (motor == Motor::small ? "R" : "L"), time_scaled, time_ms);
 			}
 		}
 	}
