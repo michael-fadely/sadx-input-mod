@@ -65,12 +65,12 @@ bool CenterKey = false;
 
 Uint32 FindKey(std::string KeyString)
 {
+	if (KeyString == "None") return 0;
 	for (int i = 0; i < LengthOfArray(KeyArray); i++)
 	{
 		if (KeyArray[i].KeyConfigName == KeyString) return KeyArray[i].WindowsCode;
 	}
-	if (KeyString == "None") return 0;
-	PrintDebug("Incorrect key '%s'\n", KeyString.c_str());
+	PrintDebug("Input mod: incorrect config key '%s'\n", KeyString.c_str());
 	return 0;
 }
 
