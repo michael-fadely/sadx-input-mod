@@ -113,6 +113,7 @@ xcopy /Y /D "$(SolutionDir)SDL2\README-SDL.txt" "$(OutDir)"</Command>
     <ClCompile Include="FileExists.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="KeyboardMouse.cpp" />
+    <ClCompile Include="KeyboardRemap.cpp" />
     <ClCompile Include="mod.cpp" />
     <ClCompile Include="rumble.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -129,6 +130,8 @@ xcopy /Y /D "$(SolutionDir)SDL2\README-SDL.txt" "$(OutDir)"</Command>
     <ClInclude Include="DreamPad.h" />
     <ClInclude Include="FileExists.h" />
     <ClInclude Include="KeyboardMouse.h" />
+    <ClInclude Include="KeyboardRemap.h" />
+    <ClInclude Include="KeyboardVariables.h" />
     <ClInclude Include="minmax.h" />
     <ClInclude Include="rumble.h" />
     <ClInclude Include="SDL.h" />

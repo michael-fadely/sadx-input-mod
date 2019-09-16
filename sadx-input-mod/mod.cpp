@@ -14,6 +14,7 @@
 #include "FileExists.h"
 #include "input.h"
 #include "rumble.h"
+#include "KeyboardVariables.h"
 
 static void* RumbleA_ptr            = reinterpret_cast<void*>(0x004BCBC0);
 static void* RumbleB_ptr            = reinterpret_cast<void*>(0x004BCC10);
@@ -172,7 +173,75 @@ extern "C"
 			}
 		}
 
+		// Load keyboard settings.
+		WriteCall((void*)0x437547, GetEKey); // Return true when the correct key is held.
+		// Layout 1
+		KButton_A = FindKey(config.getString("Layout 1", "Button A", "X"));
+		KButton_B = FindKey(config.getString("Layout 1", "Button B", "Z"));
+		KButton_X = FindKey(config.getString("Layout 1", "Button X", "A"));
+		KButton_Y = FindKey(config.getString("Layout 1", "Button Y", "S"));
+		KButton_Z = FindKey(config.getString("Layout 1", "Button Z", "None"));
+		KButton_C = FindKey(config.getString("Layout 1", "Button C", "None"));
+		KButton_D = FindKey(config.getString("Layout 1", "Button D", "None"));
+		KButton_Start = FindKey(config.getString("Layout 1", "Button Start", "Enter"));
+		KButton_L = FindKey(config.getString("Layout 1", "Trigger L", "Q"));
+		KButton_R = FindKey(config.getString("Layout 1", "Trigger R", "W"));
+		KButton_Up = FindKey(config.getString("Layout 1", "Analog Up", "Up"));
+		KButton_Down = FindKey(config.getString("Layout 1", "Analog Down", "Down"));
+		KButton_Left = FindKey(config.getString("Layout 1", "Analog Left", "Left"));
+		KButton_Right = FindKey(config.getString("Layout 1", "Analog Right", "Right"));
+		KButton_DPadUp = FindKey(config.getString("Layout 1", "D-Pad Up", "I"));
+		KButton_DPadDown = FindKey(config.getString("Layout 1", "D-Pad Down", "M"));
+		KButton_DPadLeft = FindKey(config.getString("Layout 1", "D-Pad Left", "J"));
+		KButton_DPadRight = FindKey(config.getString("Layout 1", "D-Pad Right", "K"));
+		KButton_Center = FindKey(config.getString("Layout 1", "Center Camera", "E"));
+		// Layout 2
+		KButton2_A = FindKey(config.getString("Layout 2", "Button A", "Space"));
+		KButton2_B = FindKey(config.getString("Layout 2", "Button B", "Escape"));
+		KButton2_X = FindKey(config.getString("Layout 2", "Button X", "None"));
+		KButton2_Y = FindKey(config.getString("Layout 2", "Button Y", "None"));
+		KButton2_Z = FindKey(config.getString("Layout 2", "Button Z", "None"));
+		KButton2_C = FindKey(config.getString("Layout 2", "Button C", "None"));
+		KButton2_D = FindKey(config.getString("Layout 2", "Button D", "None"));
+		KButton2_Start = FindKey(config.getString("Layout 2", "Button Start", "Home"));
+		KButton2_L = FindKey(config.getString("Layout 2", "Trigger L", "None"));
+		KButton2_R = FindKey(config.getString("Layout 2", "Trigger R", "None"));
+		KButton2_Up = FindKey(config.getString("Layout 2", "Analog Up", "R"));
+		KButton2_Down = FindKey(config.getString("Layout 2", "Analog Down", "C"));
+		KButton2_Left = FindKey(config.getString("Layout 2", "Analog Left", "D"));
+		KButton2_Right = FindKey(config.getString("Layout 2", "Analog Right", "F"));
+		KButton2_DPadUp = FindKey(config.getString("Layout 2", "D-Pad Up", "None"));
+		KButton2_DPadDown = FindKey(config.getString("Layout 2", "D-Pad Down", "None"));
+		KButton2_DPadLeft = FindKey(config.getString("Layout 2", "D-Pad Left", "None"));
+		KButton2_DPadRight = FindKey(config.getString("Layout 2", "D-Pad Right", "None"));
+		KButton2_Center = FindKey(config.getString("Layout 2", "Center Camera", "None"));
+		// Layout 3
+		KButton3_A = FindKey(config.getString("Layout 3", "Button A", "None"));
+		KButton3_B = FindKey(config.getString("Layout 3", "Button B", "V"));
+		KButton3_X = FindKey(config.getString("Layout 3", "Button X", "None"));
+		KButton3_Y = FindKey(config.getString("Layout 3", "Button Y", "None"));
+		KButton3_Z = FindKey(config.getString("Layout 3", "Button Z", "None"));
+		KButton3_C = FindKey(config.getString("Layout 3", "Button C", "None"));
+		KButton3_D = FindKey(config.getString("Layout 3", "Button D", "None"));
+		KButton3_Start = FindKey(config.getString("Layout 3", "Button Start", "None"));
+		KButton3_L = FindKey(config.getString("Layout 3", "Trigger L", "None"));
+		KButton3_R = FindKey(config.getString("Layout 3", "Trigger R", "None"));
+		KButton3_Up = FindKey(config.getString("Layout 3", "Analog Up", "Numpad 8"));
+		KButton3_Down = FindKey(config.getString("Layout 3", "Analog Down", "Numpad 2"));
+		KButton3_Left = FindKey(config.getString("Layout 3", "Analog Left", "Numpad 4"));
+		KButton3_Right = FindKey(config.getString("Layout 3", "Analog Right", "Numpad 6"));
+		KButton3_DPadUp = FindKey(config.getString("Layout 3", "D-Pad Up", "None"));
+		KButton3_DPadDown = FindKey(config.getString("Layout 3", "D-Pad Down", "None"));
+		KButton3_DPadLeft = FindKey(config.getString("Layout 3", "D-Pad Left", "None"));
+		KButton3_DPadRight = FindKey(config.getString("Layout 3", "D-Pad Right", "None"));
+		KButton3_Center = FindKey(config.getString("Layout 3", "Center Camera", "None"));
+
 		PrintDebug("[Input] Initialization complete.\n");
+	}
+
+	__declspec(dllexport) void OnFrame()
+	{
+		ClearVanillaKeys();
 	}
 
 	__declspec(dllexport) void OnExit()
