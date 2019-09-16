@@ -82,7 +82,7 @@ char GetEKey(char index)
 
 void ClearVanillaKeys()
 {
-	for (int i = 0; i < LengthOfArray(KeyArray); i++)
+	for (int i = 0; i < LengthOfArray(KeyArray) - 26; i++) //-26 because there are 26 lowercase keys
 	{
 		KeyArray[i].VanillaKeyPointer.pressed = 0;
 	}
@@ -107,6 +107,7 @@ void SetVanillaSADXKey(Uint32 key, bool down)
 				if (input::debug) PrintDebug(" (held)\n");
 			}
 			KeyArray[i].VanillaKeyPointer.held = down;
+			return;
 		}
 	}
 }
