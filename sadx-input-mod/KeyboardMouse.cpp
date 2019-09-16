@@ -19,6 +19,8 @@ Sint16         KeyboardMouse::mouse_x       = 0;
 Sint16         KeyboardMouse::mouse_y       = 0;
 WNDPROC        KeyboardMouse::lpPrevWndFunc = nullptr;
 
+bool DisableMouse = false;
+
 inline void set_button(Uint32& i, Uint32 value, bool down)
 {
 	down ? i |= value : i &= ~value;
@@ -193,7 +195,7 @@ void KeyboardMouse::update_keyboard_buttons(Uint32 key, bool down)
 
 void KeyboardMouse::update_cursor(Sint32 xrel, Sint32 yrel)
 {
-	if (!mouse_active)
+	if (!mouse_active || DisableMouse)
 	{
 		return;
 	}
@@ -257,6 +259,7 @@ void KeyboardMouse::reset_cursor()
 
 void KeyboardMouse::update_mouse_buttons(Uint32 button, bool down)
 {
+	if (DisableMouse) return;
 	bool last_rmb = right_button;
 
 	switch (button)

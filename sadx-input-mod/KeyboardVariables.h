@@ -61,6 +61,7 @@ extern Uint32 KButton3_DPadRight;
 extern Uint32 KButton3_Center;
 
 extern bool CenterKey;
+extern bool DisableMouse;
 
 Uint32 FindKey(std::string KeyString);
 void SetVanillaSADXKey(Uint32 key, bool down);

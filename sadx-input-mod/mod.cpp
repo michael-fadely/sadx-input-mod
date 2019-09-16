@@ -173,8 +173,9 @@ extern "C"
 			}
 		}
 
-		// Load keyboard settings.
+		// Load keyboard and mouse settings.
 		WriteCall((void*)0x437547, GetEKey); // Return true when the correct key is held.
+		DisableMouse = config.getBool("Config", "DisableMouse", false);
 		// Layout 1
 		KButton_A = FindKey(config.getString("Layout 1", "Button A", "X"));
 		KButton_B = FindKey(config.getString("Layout 1", "Button B", "Z"));
