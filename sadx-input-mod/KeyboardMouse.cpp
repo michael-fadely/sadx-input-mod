@@ -172,25 +172,25 @@ void KeyboardMouse::update_keyboard_buttons(Uint32 key, bool down)
 {
 	SetVanillaSADXKey(key, down);
 	if (key == VK_SHIFT) half_press = down;
-	if (key == KButton_A || key == KButton2_A || key == KButton3_A) set_button(pad.HeldButtons, Buttons_A, down);
-	if (key == KButton_B || key == KButton2_B || key == KButton3_B) set_button(pad.HeldButtons, Buttons_B, down);
-	if (key == KButton_X || key == KButton2_X || key == KButton3_X) set_button(pad.HeldButtons, Buttons_X, down);
-	if (key == KButton_Y || key == KButton2_Y || key == KButton3_Y) set_button(pad.HeldButtons, Buttons_Y, down);
-	if (key == KButton_L || key == KButton2_L || key == KButton3_L) set_button(pad.HeldButtons, Buttons_L, down);
-	if (key == KButton_R || key == KButton2_R || key == KButton3_R) set_button(pad.HeldButtons, Buttons_R, down);
-	if (key == KButton_Z || key == KButton2_Z || key == KButton3_Z) set_button(pad.HeldButtons, Buttons_Z, down);
-	if (key == KButton_C || key == KButton2_C || key == KButton3_C) set_button(pad.HeldButtons, Buttons_C, down);
-	if (key == KButton_D || key == KButton2_D || key == KButton3_D) set_button(pad.HeldButtons, Buttons_D, down);
-	if (key == KButton_Center || key == KButton2_Center || key == KButton3_Center) CenterKey = down;
-	if (key == KButton_Start || key == KButton2_Start || key == KButton3_Start) set_button(pad.HeldButtons, Buttons_Start, down);
-	if (key == KButton_DPadUp || key == KButton2_DPadUp || key == KButton3_DPadUp) set_button(sticks[1].directions, Buttons_Up, down);
-	if (key == KButton_DPadDown || key == KButton2_DPadDown || key == KButton3_DPadDown) set_button(sticks[1].directions, Buttons_Down, down);
-	if (key == KButton_DPadLeft || key == KButton2_DPadLeft || key == KButton3_DPadLeft) set_button(sticks[1].directions, Buttons_Left, down);
-	if (key == KButton_DPadRight || key == KButton2_DPadRight || key == KButton3_DPadRight) set_button(sticks[1].directions, Buttons_Right, down);
-	if (key == KButton_Up || key == KButton2_Up || key == KButton3_Up) set_button(sticks[0].directions, Buttons_Up, down);
-	if (key == KButton_Down || key == KButton2_Down || key == KButton3_Down) set_button(sticks[0].directions, Buttons_Down, down);
-	if (key == KButton_Left || key == KButton2_Left || key == KButton3_Left) set_button(sticks[0].directions, Buttons_Left, down);
-	if (key == KButton_Right || key == KButton2_Right || key == KButton3_Right) set_button(sticks[0].directions, Buttons_Right, down);
+	else if (key == KButton_A || key == KButton2_A || key == KButton3_A) set_button(pad.HeldButtons, Buttons_A, down);
+	else if (key == KButton_B || key == KButton2_B || key == KButton3_B) set_button(pad.HeldButtons, Buttons_B, down);
+	else if (key == KButton_X || key == KButton2_X || key == KButton3_X) set_button(pad.HeldButtons, Buttons_X, down);
+	else if (key == KButton_Y || key == KButton2_Y || key == KButton3_Y) set_button(pad.HeldButtons, Buttons_Y, down);
+	else if (key == KButton_L || key == KButton2_L || key == KButton3_L) set_button(pad.HeldButtons, Buttons_L, down);
+	else if (key == KButton_R || key == KButton2_R || key == KButton3_R) set_button(pad.HeldButtons, Buttons_R, down);
+	else if (key == KButton_Z || key == KButton2_Z || key == KButton3_Z) set_button(pad.HeldButtons, Buttons_Z, down);
+	else if (key == KButton_C || key == KButton2_C || key == KButton3_C) set_button(pad.HeldButtons, Buttons_C, down);
+	else if (key == KButton_D || key == KButton2_D || key == KButton3_D) set_button(pad.HeldButtons, Buttons_D, down);
+	else if (key == KButton_Center || key == KButton2_Center || key == KButton3_Center) CenterKey = down;
+	else if (key == KButton_Start || key == KButton2_Start || key == KButton3_Start) set_button(pad.HeldButtons, Buttons_Start, down);
+	else if (key == KButton_DPadUp || key == KButton2_DPadUp || key == KButton3_DPadUp) set_button(sticks[1].directions, Buttons_Up, down);
+	else if (key == KButton_DPadDown || key == KButton2_DPadDown || key == KButton3_DPadDown) set_button(sticks[1].directions, Buttons_Down, down);
+	else if (key == KButton_DPadLeft || key == KButton2_DPadLeft || key == KButton3_DPadLeft) set_button(sticks[1].directions, Buttons_Left, down);
+	else if (key == KButton_DPadRight || key == KButton2_DPadRight || key == KButton3_DPadRight) set_button(sticks[1].directions, Buttons_Right, down);
+	else if (key == KButton_Up || key == KButton2_Up || key == KButton3_Up) set_button(sticks[0].directions, Buttons_Up, down);
+	else if (key == KButton_Down || key == KButton2_Down || key == KButton3_Down) set_button(sticks[0].directions, Buttons_Down, down);
+	else if (key == KButton_Left || key == KButton2_Left || key == KButton3_Left) set_button(sticks[0].directions, Buttons_Left, down);
+	else if (key == KButton_Right || key == KButton2_Right || key == KButton3_Right) set_button(sticks[0].directions, Buttons_Right, down);
 }
 
 void KeyboardMouse::update_cursor(Sint32 xrel, Sint32 yrel)
