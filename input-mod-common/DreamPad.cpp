@@ -318,9 +318,9 @@ float DreamPad::convert_axes(Point2I* dest, const Point2I& source, short deadzon
 
 	const float m = std::sqrt(x * x + y * y);
 
-	const float nx = (m < deadzone) ? 0 : (x / m); // Normalized (X)
-	const float ny = (m < deadzone) ? 0 : (y / m); // Normalized (Y)
-	const float n  = (min(static_cast<float>(short_max), m) - deadzone) / static_cast<float>(short_max - deadzone);
+	const float nx = (m < static_cast<float>(deadzone)) ? 0 : (x / m); // Normalized (X)
+	const float ny = (m < static_cast<float>(deadzone)) ? 0 : (y / m); // Normalized (Y)
+	const float n  = (min(static_cast<float>(short_max), m) - static_cast<float>(deadzone)) / static_cast<float>(short_max - deadzone);
 
 	if (!radial && abs(source.x) < deadzone)
 	{
