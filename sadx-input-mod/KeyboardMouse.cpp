@@ -1,22 +1,27 @@
 #include "stdafx.h"
 
-#include "minmax.h"
+#include <algorithm>
+
 #include "KeyboardMouse.h"
+
+using std::min;
+using std::max;
+using std::clamp;
 
 DataPointer(HWND, hWnd, 0x3D0FD30);
 
-ControllerData KeyboardMouse::pad           = {};
-float          KeyboardMouse::normalized_l_ = 0.0f;
-float          KeyboardMouse::normalized_r_ = 0.0f;
-bool           KeyboardMouse::mouse_active  = false;
-bool           KeyboardMouse::left_button   = false;
-bool           KeyboardMouse::right_button  = false;
-bool           KeyboardMouse::half_press    = false;
-NJS_POINT2I    KeyboardMouse::cursor        = {};
-KeyboardStick  KeyboardMouse::sticks[2]     = {};
-Sint16         KeyboardMouse::mouse_x       = 0;
-Sint16         KeyboardMouse::mouse_y       = 0;
-WNDPROC        KeyboardMouse::lpPrevWndFunc = nullptr;
+DCControllerData KeyboardMouse::pad           = {};
+float            KeyboardMouse::normalized_l_ = 0.0f;
+float            KeyboardMouse::normalized_r_ = 0.0f;
+bool             KeyboardMouse::mouse_active  = false;
+bool             KeyboardMouse::left_button   = false;
+bool             KeyboardMouse::right_button  = false;
+bool             KeyboardMouse::half_press    = false;
+Point2I          KeyboardMouse::cursor        = {};
+KeyboardStick    KeyboardMouse::sticks[2]     = {};
+Sint16           KeyboardMouse::mouse_x       = 0;
+Sint16           KeyboardMouse::mouse_y       = 0;
+WNDPROC          KeyboardMouse::lpPrevWndFunc = nullptr;
 
 inline void set_button(Uint32& i, Uint32 value, bool down)
 {
@@ -28,11 +33,11 @@ LRESULT __stdcall poll_keyboard_mouse(HWND handle, UINT Msg, WPARAM wParam, LPAR
 	return KeyboardMouse::read_window_message(handle, Msg, wParam, lParam);
 }
 
-inline void normalize(const NJS_POINT2I& src, float* magnitude, short* out_x, short* out_y)
+inline void normalize(const Point2I& src, float* magnitude, short* out_x, short* out_y)
 {
 	constexpr auto short_max = std::numeric_limits<short>::max();
-	auto x = static_cast<float>(clamp<short>(src.x, -short_max, short_max));
-	auto y = static_cast<float>(clamp<short>(src.y, -short_max, short_max));
+	auto x = static_cast<float>(std::clamp<short>(src.x, -short_max, short_max));
+	auto y = static_cast<float>(std::clamp<short>(src.y, -short_max, short_max));
 	float m = sqrt(x * x + y * y);
 
 	if (m < FLT_EPSILON)
@@ -132,12 +137,13 @@ void KeyboardMouse::poll()
 
 	sticks[0].update();
 	sticks[1].update();
-	NJS_POINT2I stick;
+	
+	Point2I stick {};
 
 	if (sticks[0].x || sticks[0].y)
 	{
 		reset_cursor();
-		stick = static_cast<NJS_POINT2I>(sticks[0]);
+		stick = static_cast<Point2I>(sticks[0]);
 	}
 	else
 	{

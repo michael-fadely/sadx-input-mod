@@ -1,11 +1,8 @@
 #pragma once
 
-#include <ninja.h>
-#include <SADXStructs.h>
-
-struct KeyboardStick : NJS_POINT2I
+struct KeyboardStick : Point2I
 {
-	Uint32 directions;
+	uint32_t directions;
 	static constexpr auto amount = 8192;
 
 	void update();
@@ -14,7 +11,7 @@ struct KeyboardStick : NJS_POINT2I
 class KeyboardMouse
 {
 public:
-	static const ControllerData& dreamcast_data()
+	static const DCControllerData& dreamcast_data()
 	{
 		return pad;
 	}
@@ -28,23 +25,23 @@ public:
 	}
 
 	static void poll();
-	static void update_keyboard_buttons(Uint32 key, bool down);
-	static void update_cursor(Sint32 xrel, Sint32 yrel);
+	static void update_keyboard_buttons(uint32_t key, bool down);
+	static void update_cursor(int32_t xrel, int32_t yrel);
 	static void reset_cursor();
-	static void update_mouse_buttons(Uint32 button, bool down);
+	static void update_mouse_buttons(uint32_t button, bool down);
 	static LRESULT read_window_message(HWND handle, UINT Msg, WPARAM wParam, LPARAM lParam);
 	static void hook_wnd_proc();
 
 private:
-	static ControllerData pad;
+	static DCControllerData pad;
 	static float normalized_l_, normalized_r_;
 	static bool mouse_active;
 	static bool left_button;
 	static bool right_button;
 	static bool half_press;
-	static NJS_POINT2I cursor;
+	static Point2I cursor;
 	static KeyboardStick sticks[2];
-	static Sint16 mouse_x;
-	static Sint16 mouse_y;
+	static int16_t mouse_x;
+	static int16_t mouse_y;
 	static WNDPROC lpPrevWndFunc;
 };

@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{3F122E9B-E722-461F-9DCE-4A82957736B0}</ProjectGuid>
+    <ProjectGuid>{555AC1F5-182E-48CA-8EE9-94F30F443EF2}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>xinput</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
@@ -44,13 +44,13 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)bin\sadx-input-mod</OutDir>
+    <OutDir>$(SolutionDir)bin\sa2-input-mod</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)bin\sadx-input-mod</OutDir>
+    <OutDir>$(SolutionDir)bin\sa2-input-mod</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -58,7 +58,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>EXTENDED_BUTTONS;WIN32;_CRT_SECURE_NO_WARNINGS;NOMINMAX;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)sadx-mod-loader\SADXModLoader\include;..\input-mod-common;$(SolutionDir)SDL2\include;$(SolutionDir)sadx-mod-loader\mod-loader-common\ModLoaderCommon</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)sa2-mod-loader\SA2ModLoader\include;..\input-mod-common;$(SolutionDir)SDL2\include;$(SolutionDir)sa2-mod-loader\mod-loader-common\ModLoaderCommon</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -86,7 +86,7 @@ xcopy /Y /D "$(SolutionDir)SDL2\README-SDL.txt" "$(OutDir)"</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>EXTENDED_BUTTONS;WIN32;_CRT_SECURE_NO_WARNINGS;NOMINMAX;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)sadx-mod-loader\SADXModLoader\include;..\input-mod-common;$(SolutionDir)SDL2\include;$(SolutionDir)sadx-mod-loader\mod-loader-common\ModLoaderCommon</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)sa2-mod-loader\SA2ModLoader\include;..\input-mod-common;$(SolutionDir)SDL2\include;$(SolutionDir)sa2-mod-loader\mod-loader-common\ModLoaderCommon</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -109,10 +109,9 @@ xcopy /Y /D "$(SolutionDir)SDL2\README-SDL.txt" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\sadx-mod-loader\mod-loader-common\ModLoaderCommon\IniFile.cpp" />
-    <ClCompile Include="..\sadx-mod-loader\mod-loader-common\ModLoaderCommon\TextConv.cpp" />
+    <ClCompile Include="..\sa2-mod-loader\mod-loader-common\ModLoaderCommon\IniFile.cpp" />
+    <ClCompile Include="..\sa2-mod-loader\mod-loader-common\ModLoaderCommon\TextConv.cpp" />
     <ClCompile Include="input.cpp" />
-    <ClCompile Include="KeyboardMouse.cpp" />
     <ClCompile Include="mod.cpp" />
     <ClCompile Include="rumble.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -124,11 +123,12 @@ xcopy /Y /D "$(SolutionDir)SDL2\README-SDL.txt" "$(OutDir)"</Command>
     <None Include="mod.ini" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sadx-mod-loader\mod-loader-common\ModLoaderCommon\IniFile.hpp" />
-    <ClInclude Include="..\sadx-mod-loader\mod-loader-common\ModLoaderCommon\TextConv.hpp" />
-    <ClInclude Include="KeyboardMouse.h" />
+    <ClInclude Include="..\sa2-mod-loader\mod-loader-common\ModLoaderCommon\IniFile.hpp" />
+    <ClInclude Include="..\sa2-mod-loader\mod-loader-common\ModLoaderCommon\TextConv.hpp" />
     <ClInclude Include="rumble.h" />
+    <ClInclude Include="SDL.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="typedefs.h" />
     <ClInclude Include="input.h" />
   </ItemGroup>
   <ItemGroup>

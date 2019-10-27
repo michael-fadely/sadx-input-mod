@@ -1,18 +1,12 @@
 ﻿#include "stdafx.h"
 
-#include <algorithm>
-
 #include <SADXModLoader.h>
 
+#include "minmax.h"
 #include "typedefs.h"
 #include "input.h"
 #include "rumble.h"
 #include "DreamPad.h"
-#include "KeyboardMouse.h"
-
-using std::min;
-using std::max;
-using std::clamp;
 
 struct AnalogThing
 {
@@ -22,7 +16,7 @@ struct AnalogThing
 
 namespace input
 {
-	DCControllerData raw_input[GAMEPAD_COUNT];
+	ControllerData raw_input[GAMEPAD_COUNT];
 	bool controller_enabled[GAMEPAD_COUNT];
 	bool debug = false;
 
@@ -91,13 +85,13 @@ namespace input
 			// This will only copy the first four controllers.
 			if (i < ControllersRaw_Length)
 			{
-				ControllersRaw[i] = *reinterpret_cast<ControllerData*>(&raw_input[i]);
+				ControllersRaw[i] = raw_input[i];
 			}
 
 		#ifdef EXTENDED_BUTTONS
 			if (debug && raw_input[i].HeldButtons & Buttons_C)
 			{
-				const DCControllerData& pad = raw_input[i];
+				const ControllerData& pad = raw_input[i];
 				Motor m = DreamPad::controllers[i].active_motor();
 
 				DisplayDebugStringFormatted(NJM_LOCATION(0, 8 + (3 * i)), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
@@ -153,7 +147,7 @@ namespace input
 
 			if (dream_pad.connected() || (dream_pad.settings.allow_keyboard && !i))
 			{
-				const DCControllerData& pad = dream_pad.dreamcast_data();
+				const ControllerData& pad = dream_pad.dreamcast_data();
 				// SADX's internal deadzone is 12 of 127. It doesn't set the relative forward direction
 				// unless this is exceeded in WriteAnalogs(), so the analog shouldn't be set otherwise.
 				if (abs(pad.LeftStickX) > 12 || abs(pad.LeftStickY) > 12)
@@ -178,7 +172,7 @@ namespace input
 	{
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
-			ControllerPointers[i] = reinterpret_cast<ControllerData*>(&raw_input[i]);
+			ControllerPointers[i] = &raw_input[i];
 		}
 	}
 

@@ -4,30 +4,26 @@
 // That code doesn't actually compile due to name discrepancies, but it was a good starting point.
 
 // XInput default deadzones blatantly copied, pasted, and renamed.
-#define GAMEPAD_LEFT_THUMB_DEADZONE  7849
-#define GAMEPAD_RIGHT_THUMB_DEADZONE 8689
-#define GAMEPAD_TRIGGER_THRESHOLD    30
+constexpr auto GAMEPAD_LEFT_THUMB_DEADZONE  = 7849;
+constexpr auto GAMEPAD_RIGHT_THUMB_DEADZONE = 8689;
+constexpr auto GAMEPAD_TRIGGER_THRESHOLD    = 30;
 // Limit is now 8, the maximum supported by the game (depending on where you look; sometimes it's 4). XInput is no longer a limiting factor.
-#define GAMEPAD_COUNT 8
+constexpr auto GAMEPAD_COUNT = 8;
 
-#include "SDL.h"
-#include <SADXModLoader.h>
+#include "sdlhack.h"
 #include "typedefs.h"
-#include "KeyboardMouse.h"
+#include "types.h"
+#include "../better-enums/enum.h"
 
-enum Motor : int8
-{
-	none,
-	large,
-	small,
-	both
-};
+BETTER_ENUM(Motor, int8,
+            none,
+            large = 1 << 0,
+            small = 1 << 1,
+            both)
 
 class DreamPad
 {
-	static KeyboardMouse keyboard;
-
-	ControllerData dc_pad = {};
+	DCControllerData dc_pad = {};
 
 	SDL_GameController* gamepad = nullptr;
 	SDL_Haptic*         haptic  = nullptr;
@@ -77,8 +73,8 @@ public:
 	float normalized_l() const;
 	float normalized_r() const;
 
-	// SDL -> Dreamcast converted input data (ControllerData).
-	const ControllerData& dreamcast_data() const;
+	// SDL -> Dreamcast converted input data (DCControllerData).
+	const DCControllerData& dreamcast_data() const;
 
 	struct Settings
 	{
@@ -106,7 +102,7 @@ public:
 	 * \param radial If set to \a true, the deadzone is treated as fully radial. (i.e one axis exceeding deadzone implies the other)
 	 * \return The axis magnitude.
 	 */
-	static float convert_axes(NJS_POINT2I* dest, const NJS_POINT2I& source, short deadzone, bool radial);
+	static float convert_axes(Point2I* dest, const Point2I& source, short deadzone, bool radial);
 
 	/**
 	 * \brief Updates the various button fields in the provided
@@ -114,56 +110,8 @@ public:
 	 * \param pad The Dreamcast controller data to update.
 	 * \param buttons The buttons to add.
 	 */
-	static void update_buttons(ControllerData& pad, Uint32 buttons);
+	static void update_buttons(DCControllerData& pad, Uint32 buttons);
 
 private:
 	void move_from(DreamPad&& other);
-};
-
-enum PDD_DEV_SUPPORT : uint32_t
-{
-	//	Right stick Y
-	PDD_DEV_SUPPORT_AY2 = (1 << 21),
-	//	Right stick X
-	PDD_DEV_SUPPORT_AX2 = (1 << 20),
-	//	Left stick Y
-	PDD_DEV_SUPPORT_AY1 = (1 << 19),
-	//	Left stick X
-	PDD_DEV_SUPPORT_AX1 = (1 << 18),
-	//	Analog trigger L
-	PDD_DEV_SUPPORT_AL = (1 << 17),
-	//	Analog trigger R
-	PDD_DEV_SUPPORT_AR = (1 << 16),
-	//	D-Pad B Right
-	PDD_DEV_SUPPORT_KRB = (1 << 15),
-	//	D-Pad B Left
-	PDD_DEV_SUPPORT_KLB = (1 << 14),
-	//	D-Pad B Down
-	PDD_DEV_SUPPORT_KDB = (1 << 13),
-	//	D-Pad B Up
-	PDD_DEV_SUPPORT_KUB = (1 << 12),
-	//	D button
-	PDD_DEV_SUPPORT_TD = (1 << 11),
-	//	X button
-	PDD_DEV_SUPPORT_TX = (1 << 10),
-	//	Y button
-	PDD_DEV_SUPPORT_TY = (1 << 9),
-	//	Z button
-	PDD_DEV_SUPPORT_TZ = (1 << 8),
-	//	D-Pad A Right
-	PDD_DEV_SUPPORT_KR = (1 << 7),
-	//	D-Pad A Left
-	PDD_DEV_SUPPORT_KL = (1 << 6),
-	//	D-Pad A Down
-	PDD_DEV_SUPPORT_KD = (1 << 5),
-	//	D-Pad A Up
-	PDD_DEV_SUPPORT_KU = (1 << 4),
-	//	Start button
-	PDD_DEV_SUPPORT_ST = (1 << 3),
-	//	A button
-	PDD_DEV_SUPPORT_TA = (1 << 2),
-	//	B button
-	PDD_DEV_SUPPORT_TB = (1 << 1),
-	//	C button
-	PDD_DEV_SUPPORT_TC = (1 << 0),
 };

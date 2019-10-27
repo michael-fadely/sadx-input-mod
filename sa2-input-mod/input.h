@@ -10,7 +10,7 @@ namespace input
 	void __cdecl EnableController_r(Uint8 index);
 	void __cdecl DisableController_r(Uint8 index);
 
-	extern DCControllerData raw_input[GAMEPAD_COUNT];
+	extern ControllerData raw_input[GAMEPAD_COUNT];
 	extern bool controller_enabled[GAMEPAD_COUNT];
 	extern bool debug;
 }

@@ -10,10 +10,10 @@ namespace rumble
 {
 	struct RumbleTimer
 	{
-		bool applied  = false;
-		Uint8 port    = 0;
-		Motor motor   = Motor::none;
-		Sint32 frames = 0;
+		bool applied;
+		Uint8 port;
+		Motor motor;
+		Sint32 frames;
 	};
 
 	static ObjectMaster* instances[GAMEPAD_COUNT][2] = {};
@@ -48,7 +48,7 @@ namespace rumble
 
 		for (auto& pad : DreamPad::controllers)
 		{
-			if (pad.active_motor()._to_integral() != Motor::none)
+			if (pad.active_motor() != Motor::none)
 			{
 				pad.set_active_motor(Motor::both, false);
 			}
@@ -140,7 +140,7 @@ namespace rumble
 			{
 				auto time_ms = static_cast<Uint32>(time_scaled * (1000.0f / (60.0f / static_cast<float>(FrameIncrement))));
 				PrintDebug("[Input] [%u] Rumble %u: %s, %u frames (%ums)\n",
-				           FrameCounter, data->port, (motor._to_integral() == Motor::small ? "R" : "L"), time_scaled, time_ms);
+				           FrameCounter, data->port, (motor == Motor::small ? "R" : "L"), time_scaled, time_ms);
 			}
 		}
 	}
@@ -154,7 +154,7 @@ namespace rumble
 	{
 		if (RumbleEnabled && !DemoPlaying && input::controller_enabled[port])
 		{
-			Rumble_Load_hook(port, std::clamp(time, 1u, 255u), Motor::large);
+			Rumble_Load_hook(port, clamp(time, 1u, 255u), Motor::large);
 		}
 	}
 

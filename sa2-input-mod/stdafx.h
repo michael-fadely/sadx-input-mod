@@ -6,6 +6,7 @@
 #include "FileExists.h"
 #include "input.h"
 #include "SDL.h"
+#include "minmax.h"
 #include "typedefs.h"
 #include <SADXModLoader.h>
 #include <IniFile.hpp>

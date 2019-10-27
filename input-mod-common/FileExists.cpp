@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <string>
 #include <wtypes.h>
 

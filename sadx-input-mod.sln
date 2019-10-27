@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2005
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29418.71
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sadx-input-mod", "sadx-input-mod\sadx-input-mod.vcxproj", "{3F122E9B-E722-461F-9DCE-4A82957736B0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "input-mod-common", "input-mod-common\input-mod-common.vcxproj", "{020152A7-7C6F-4AD5-A30D-34C271DF817C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sa2-input-mod", "sa2-input-mod\sa2-input-mod.vcxproj", "{555AC1F5-182E-48CA-8EE9-94F30F443EF2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{3F122E9B-E722-461F-9DCE-4A82957736B0}.Debug|Win32.Build.0 = Debug|Win32
 		{3F122E9B-E722-461F-9DCE-4A82957736B0}.Release|Win32.ActiveCfg = Release|Win32
 		{3F122E9B-E722-461F-9DCE-4A82957736B0}.Release|Win32.Build.0 = Release|Win32
+		{020152A7-7C6F-4AD5-A30D-34C271DF817C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{020152A7-7C6F-4AD5-A30D-34C271DF817C}.Debug|Win32.Build.0 = Debug|Win32
+		{020152A7-7C6F-4AD5-A30D-34C271DF817C}.Release|Win32.ActiveCfg = Release|Win32
+		{020152A7-7C6F-4AD5-A30D-34C271DF817C}.Release|Win32.Build.0 = Release|Win32
+		{555AC1F5-182E-48CA-8EE9-94F30F443EF2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{555AC1F5-182E-48CA-8EE9-94F30F443EF2}.Debug|Win32.Build.0 = Debug|Win32
+		{555AC1F5-182E-48CA-8EE9-94F30F443EF2}.Release|Win32.ActiveCfg = Release|Win32
+		{555AC1F5-182E-48CA-8EE9-94F30F443EF2}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

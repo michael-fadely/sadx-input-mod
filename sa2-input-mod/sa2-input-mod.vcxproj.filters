@@ -33,14 +33,11 @@
     <ClCompile Include="rumble.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyboardMouse.cpp">
+    <ClCompile Include="..\sa2-mod-loader\mod-loader-common\ModLoaderCommon\IniFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sadx-mod-loader\mod-loader-common\ModLoaderCommon\IniFile.cpp">
-      <Filter>Source Files\external</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sadx-mod-loader\mod-loader-common\ModLoaderCommon\TextConv.cpp">
-      <Filter>Source Files\external</Filter>
+    <ClCompile Include="..\sa2-mod-loader\mod-loader-common\ModLoaderCommon\TextConv.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -49,6 +46,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="typedefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -58,14 +61,11 @@
     <ClInclude Include="rumble.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardMouse.h">
+    <ClInclude Include="..\sa2-mod-loader\mod-loader-common\ModLoaderCommon\IniFile.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sadx-mod-loader\mod-loader-common\ModLoaderCommon\IniFile.hpp">
-      <Filter>Header Files\external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sadx-mod-loader\mod-loader-common\ModLoaderCommon\TextConv.hpp">
-      <Filter>Header Files\external</Filter>
+    <ClInclude Include="..\sa2-mod-loader\mod-loader-common\ModLoaderCommon\TextConv.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -158,7 +158,7 @@ extern "C"
 
 			settings.trigger_threshold = config.getInt(section, "TriggerThreshold", GAMEPAD_TRIGGER_THRESHOLD);
 
-			settings.rumble_factor = std::clamp(config.getFloat(section, "RumbleFactor", 1.0f), 0.0f, 1.0f);
+			settings.rumble_factor = clamp(config.getFloat(section, "RumbleFactor", 1.0f), 0.0f, 1.0f);
 
 			settings.mega_rumble = config.getBool(section, "MegaRumble", false);
 			settings.rumble_min_time = static_cast<ushort>(config.getInt(section, "RumbleMinTime", 0));
