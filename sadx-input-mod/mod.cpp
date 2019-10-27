@@ -5,7 +5,7 @@
 #include <string>
 #include <sstream>	// because
 
-#include "SDL.h"
+#include <sdlhack.h>
 
 #include <SADXModLoader.h>
 #include <IniFile.hpp>

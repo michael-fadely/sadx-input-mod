@@ -5,23 +5,15 @@
 #include <string>
 #include <sstream>	// because
 
-#include "SDL.h"
+#include <sdlhack.h>
 
-#include <SADXModLoader.h>
-#include <IniFile.hpp>
+#include <SA2ModLoader.h>
 
-#include "typedefs.h"
 #include "FileExists.h"
 #include "input.h"
-#include "rumble.h"
 
-static void* RumbleA_ptr            = reinterpret_cast<void*>(0x004BCBC0);
-static void* RumbleB_ptr            = reinterpret_cast<void*>(0x004BCC10);
-static void* UpdateControllers_ptr  = reinterpret_cast<void*>(0x0040F460);
-static void* AnalogHook_ptr         = reinterpret_cast<void*>(0x0040F343);
-static void* InitRawControllers_ptr = reinterpret_cast<void*>(0x0040F451); // End of function (hook)
-
-PointerInfo jumps[] = {
+// UNDONE
+/*PointerInfo jumps[] = {
 	{ rumble::pdVibMxStop, rumble::pdVibMxStop_r },
 	{ RumbleA_ptr, rumble::RumbleA_r },
 	{ RumbleB_ptr, rumble::RumbleB_r },
@@ -33,7 +25,7 @@ PointerInfo jumps[] = {
 	// Used to skip over the standard controller update function.
 	// This has no effect on the OnInput hook.
 	{ UpdateControllers_ptr, reinterpret_cast<void*>(0x0040FDB3) }
-};
+};*/
 
 static std::string build_mod_path(const char* modpath, const char* path)
 {
@@ -47,8 +39,8 @@ static std::string build_mod_path(const char* modpath, const char* path)
 
 extern "C"
 {
-	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer, nullptr, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0 };
-	__declspec(dllexport) PointerList Jumps[] = { { arrayptrandlengthT(jumps, int) } };
+	__declspec(dllexport) ModInfo SA2ModInfo = { ModLoaderVer, nullptr, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0 };
+	//__declspec(dllexport) PointerList Jumps[] = { { arrayptrandlengthT(jumps, int) } };
 
 	__declspec(dllexport) void OnInput()
 	{
@@ -134,6 +126,10 @@ extern "C"
 		const bool debug_default = false;
 	#endif
 
+		// HACK
+		input::debug = debug_default;
+
+		/* // UNDONE
 		IniFile config(config_path);
 
 		input::debug = config.getBool("Config", "Debug", debug_default);
@@ -173,6 +169,7 @@ extern "C"
 		}
 
 		PrintDebug("[Input] Initialization complete.\n");
+		*/
 	}
 
 	__declspec(dllexport) void OnExit()

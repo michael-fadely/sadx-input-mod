@@ -5,7 +5,7 @@
 #include "DreamPad.h"
 #include "FileExists.h"
 #include "input.h"
-#include "SDL.h"
+#include <sdlhack.h>
 #include "typedefs.h"
 #include <SADXModLoader.h>
 #include <IniFile.hpp>

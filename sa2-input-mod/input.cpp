@@ -1,22 +1,15 @@
 ﻿#include "stdafx.h"
 
-#include <SADXModLoader.h>
+#include <SA2ModLoader.h>
+#include <algorithm>
 
-#include "minmax.h"
 #include "typedefs.h"
 #include "input.h"
-#include "rumble.h"
 #include "DreamPad.h"
-
-struct AnalogThing
-{
-	Angle angle;
-	float magnitude;
-};
 
 namespace input
 {
-	ControllerData raw_input[GAMEPAD_COUNT];
+	DCControllerData raw_input[GAMEPAD_COUNT];
 	bool controller_enabled[GAMEPAD_COUNT];
 	bool debug = false;
 
@@ -72,7 +65,7 @@ namespace input
 	{
 		poll_sdl();
 
-		KeyboardMouse::poll();
+		//KeyboardMouse::poll();
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
@@ -85,13 +78,15 @@ namespace input
 			// This will only copy the first four controllers.
 			if (i < ControllersRaw_Length)
 			{
-				ControllersRaw[i] = raw_input[i];
+				ControllersRaw[i] = *reinterpret_cast<PDS_PERIPHERAL*>(&raw_input[i]);
 			}
 
 		#ifdef EXTENDED_BUTTONS
 			if (debug && raw_input[i].HeldButtons & Buttons_C)
 			{
-				const ControllerData& pad = raw_input[i];
+				const DCControllerData& pad = raw_input[i];
+
+			#if 0
 				Motor m = DreamPad::controllers[i].active_motor();
 
 				DisplayDebugStringFormatted(NJM_LOCATION(0, 8 + (3 * i)), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
@@ -99,6 +94,7 @@ namespace input
 				DisplayDebugStringFormatted(NJM_LOCATION(4, 9 + (3 * i)), "LS: %4d/%4d (%f) RS: %4d/%4d (%f)",
 				                            pad.LeftStickX, pad.LeftStickY, dreampad.normalized_l(), pad.RightStickX, pad.RightStickY,
 				                            dreampad.normalized_r());
+			#endif
 
 				if (pad.HeldButtons & Buttons_Z)
 				{
@@ -113,15 +109,17 @@ namespace input
 					}
 					else if (pressed & Buttons_Left)
 					{
-						rumble::RumbleA_r(i, 0);
+						//rumble::RumbleA_r(i, 0);
 					}
 					else if (pressed & Buttons_Right)
 					{
-						rumble::RumbleB_r(i, 7, 59, 6);
+						//rumble::RumbleB_r(i, 7, 59, 6);
 					}
 
+				#if 0
 					DisplayDebugStringFormatted(NJM_LOCATION(4, 10 + (3 * i)),
 					                            "Rumble factor (U/D): %f (L/R to test)", dreampad.settings.rumble_factor);
+				#endif
 				}
 			}
 		#endif
@@ -131,10 +129,10 @@ namespace input
 	// ReSharper disable once CppDeclaratorNeverUsed
 	static void WriteAnalogs_c()
 	{
-		if (!ControlEnabled)
+		/*if (!ControlEnabled) // UNDONE
 		{
 			return;
-		}
+		}*/
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
@@ -147,12 +145,12 @@ namespace input
 
 			if (dream_pad.connected() || (dream_pad.settings.allow_keyboard && !i))
 			{
-				const ControllerData& pad = dream_pad.dreamcast_data();
-				// SADX's internal deadzone is 12 of 127. It doesn't set the relative forward direction
+				const DCControllerData& pad = dream_pad.dreamcast_data();
+				// SA2's internal deadzone is 12 of 127. It doesn't set the relative forward direction
 				// unless this is exceeded in WriteAnalogs(), so the analog shouldn't be set otherwise.
 				if (abs(pad.LeftStickX) > 12 || abs(pad.LeftStickY) > 12)
 				{
-					NormalizedAnalogs[i].magnitude = dream_pad.normalized_l();
+					AnalogThings[i].magnitude = dream_pad.normalized_l();
 				}
 			}
 		}
@@ -172,16 +170,13 @@ namespace input
 	{
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
-			ControllerPointers[i] = &raw_input[i];
-		}
-	}
+			if (ControllerPointers[i])
+			{
+				auto info = ControllerPointers[i]->info;
+				raw_input[i].Info = info;
+			}
 
-	void __declspec(naked) InitRawControllers_hook()
-	{
-		__asm
-		{
-			call redirect_raw_controllers
-			ret
+			ControllerPointers[i] = reinterpret_cast<PDS_PERIPHERAL*>(&raw_input[i]);
 		}
 	}
 
@@ -196,7 +191,7 @@ namespace input
 
 		if (index > GAMEPAD_COUNT)
 		{
-			for (Uint32 i = 0; i < min(index, static_cast<Uint8>(GAMEPAD_COUNT)); i++)
+			for (Uint32 i = 0; i < std::min(index, static_cast<Uint8>(GAMEPAD_COUNT)); i++)
 			{
 				EnableController_r(i);
 			}
@@ -218,7 +213,7 @@ namespace input
 
 		if (index > GAMEPAD_COUNT)
 		{
-			for (Uint32 i = 0; i < min(index, static_cast<Uint8>(GAMEPAD_COUNT)); i++)
+			for (Uint32 i = 0; i < std::min(index, static_cast<Uint8>(GAMEPAD_COUNT)); i++)
 			{
 				DisableController_r(i);
 			}

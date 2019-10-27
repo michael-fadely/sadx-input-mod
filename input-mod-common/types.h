@@ -8,6 +8,8 @@ struct Point2I
 	int16_t y;
 };
 
+#ifndef IS_SA2
+
 enum PDD_DEV_SUPPORT : uint32_t
 {
 	//	Right stick Y
@@ -77,6 +79,8 @@ enum PDD_DGT
 	PDD_DGT_TB  = (1 << 1),     /* B button             */
 	PDD_DGT_TC  = (1 << 0),     /* C button             */
 };
+
+#endif
 
 struct DCControllerData
 {
