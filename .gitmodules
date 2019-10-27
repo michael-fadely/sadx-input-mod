@@ -1,3 +1,9 @@
 [submodule "sadx-mod-loader"]
 	path = sadx-mod-loader
 	url = https://github.com/sonicretro/sadx-mod-loader.git
+[submodule "sa2-mod-loader"]
+	path = sa2-mod-loader
+	url = https://github.com/sonicretro/sa2-mod-loader.git
+[submodule "better-enums"]
+	path = better-enums
+	url = https://github.com/aantron/better-enums.git
