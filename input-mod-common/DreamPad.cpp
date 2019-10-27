@@ -9,16 +9,16 @@ using std::min;
 using std::max;
 using std::clamp;
 
-static const uint32_t PAD_SUPPORT =
+DreamPad DreamPad::controllers[GAMEPAD_COUNT];
+
+const uint32_t DreamPad::PAD_SUPPORT =
 	PDD_DEV_SUPPORT_TA | PDD_DEV_SUPPORT_TB | PDD_DEV_SUPPORT_TX | PDD_DEV_SUPPORT_TY | PDD_DEV_SUPPORT_ST
-	#ifdef EXTENDED_BUTTONS
+#ifdef EXTENDED_BUTTONS
 	| PDD_DEV_SUPPORT_TC | PDD_DEV_SUPPORT_TD | PDD_DEV_SUPPORT_TZ
-	#endif
+#endif
 	| PDD_DEV_SUPPORT_AR | PDD_DEV_SUPPORT_AL
 	| PDD_DEV_SUPPORT_KU | PDD_DEV_SUPPORT_KD | PDD_DEV_SUPPORT_KL | PDD_DEV_SUPPORT_KR
 	| PDD_DEV_SUPPORT_AX1 | PDD_DEV_SUPPORT_AY1 | PDD_DEV_SUPPORT_AX2 | PDD_DEV_SUPPORT_AY2;
-
-DreamPad DreamPad::controllers[GAMEPAD_COUNT];
 
 inline int digital_trigger(const ushort trigger, const ushort threshold, const int button)
 {

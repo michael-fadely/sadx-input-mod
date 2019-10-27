@@ -72,6 +72,16 @@ extern "C"
 			return;
 		}
 
+		for (size_t i = 0; i < 4; i++)
+		{
+			auto& device = input::raw_input[i];
+			device.support = DreamPad::PAD_SUPPORT;
+			device.info = &PeripheralInfo[i];
+		}
+
+		WriteJump(reinterpret_cast<void*>(0x004421A4), input::WriteAnalogs_c);
+
+	#if 0 // UNDONE
 		// Disable call to CreateKeyboardDevice
 		WriteData<5>(reinterpret_cast<void*>(0x0077F0D7), 0x90i8);
 		// Disable call to CreateMouseDevice
@@ -98,6 +108,7 @@ extern "C"
 
 		// WriteAnalogs
 		WriteData(reinterpret_cast<bool**>(0x40F30C), input::controller_enabled);
+	#endif
 
 		input::controller_enabled[0] = true;
 		input::controller_enabled[1] = true;

@@ -13,12 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\external">
-      <UniqueIdentifier>{c4323acf-7926-4deb-87cf-92c9d4064dc3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\external">
-      <UniqueIdentifier>{420145a2-e0a8-4315-b084-eff0992d6012}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mod.cpp">

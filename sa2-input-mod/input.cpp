@@ -7,9 +7,15 @@
 #include "input.h"
 #include "DreamPad.h"
 
+/*
+ * TODO: hook up to VibTask
+ * TODO: handle controller enabled states
+ * TODO: don't call redirect_raw_controllers every poll
+ */
+
 namespace input
 {
-	DCControllerData raw_input[GAMEPAD_COUNT];
+	PDS_PERIPHERAL raw_input[GAMEPAD_COUNT];
 	bool controller_enabled[GAMEPAD_COUNT];
 	bool debug = false;
 
@@ -61,8 +67,11 @@ namespace input
 		SDL_GameControllerUpdate();
 	}
 
+	void redirect_raw_controllers();
+	
 	void poll_controllers()
 	{
+		redirect_raw_controllers();
 		poll_sdl();
 
 		//KeyboardMouse::poll();
@@ -72,16 +81,27 @@ namespace input
 			DreamPad& dreampad = DreamPad::controllers[i];
 
 			dreampad.poll();
-			raw_input[i] = dreampad.dreamcast_data();
+			raw_input[i] = *reinterpret_cast<const PDS_PERIPHERAL*>(&dreampad.dreamcast_data());
 
 			// Compatibility for mods which use ControllersRaw directly.
 			// This will only copy the first four controllers.
 			if (i < ControllersRaw_Length)
 			{
-				ControllersRaw[i] = *reinterpret_cast<PDS_PERIPHERAL*>(&raw_input[i]);
+				auto& game_raw = ControllersRaw[i];
+				auto& mod_raw = raw_input[i];
+
+				const auto name   = game_raw.name;
+				const auto info   = game_raw.info;
+				const auto extend = game_raw.extend;
+
+				mod_raw.name   = name;
+				mod_raw.info   = info;
+				mod_raw.extend = extend;
+
+				game_raw = *reinterpret_cast<PDS_PERIPHERAL*>(&mod_raw);
 			}
 
-		#ifdef EXTENDED_BUTTONS
+		#if 0 // UNDONE
 			if (debug && raw_input[i].HeldButtons & Buttons_C)
 			{
 				const DCControllerData& pad = raw_input[i];
@@ -126,13 +146,14 @@ namespace input
 		}
 	}
 
-	// ReSharper disable once CppDeclaratorNeverUsed
-	static void WriteAnalogs_c()
+	DataPointer(bool, ControllersEnabled, 0x0174affe);
+
+	void WriteAnalogs_c()
 	{
-		/*if (!ControlEnabled) // UNDONE
+		if (!ControllersEnabled)
 		{
 			return;
-		}*/
+		}
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
@@ -146,9 +167,10 @@ namespace input
 			if (dream_pad.connected() || (dream_pad.settings.allow_keyboard && !i))
 			{
 				const DCControllerData& pad = dream_pad.dreamcast_data();
-				// SA2's internal deadzone is 12 of 127. It doesn't set the relative forward direction
+
+				// SA2's internal deadzone is 14 of 127. It doesn't set the relative forward direction
 				// unless this is exceeded in WriteAnalogs(), so the analog shouldn't be set otherwise.
-				if (abs(pad.LeftStickX) > 12 || abs(pad.LeftStickY) > 12)
+				if (abs(pad.LeftStickX) > 14 || abs(pad.LeftStickY) > 14)
 				{
 					AnalogThings[i].magnitude = dream_pad.normalized_l();
 				}
@@ -156,27 +178,12 @@ namespace input
 		}
 	}
 
-	void __declspec(naked) WriteAnalogs_hook()
-	{
-		__asm
-		{
-			call WriteAnalogs_c
-			ret
-		}
-	}
-
-	// ReSharper disable once CppDeclaratorNeverUsed
 	static void redirect_raw_controllers()
 	{
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
-			if (ControllerPointers[i])
-			{
-				auto info = ControllerPointers[i]->info;
-				raw_input[i].Info = info;
-			}
-
-			ControllerPointers[i] = reinterpret_cast<PDS_PERIPHERAL*>(&raw_input[i]);
+			auto& ptr = ControllerPointers[i];
+			ptr = reinterpret_cast<PDS_PERIPHERAL*>(&raw_input[i]);
 		}
 	}
 
