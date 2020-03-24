@@ -75,7 +75,7 @@ extern "C"
 		for (size_t i = 0; i < 4; i++)
 		{
 			auto& device = input::raw_input[i];
-			device.support = DreamPad::PAD_SUPPORT;
+			device.support = DreamPad::pad_support;
 			device.info = &PeripheralInfo[i];
 		}
 

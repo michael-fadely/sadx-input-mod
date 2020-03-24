@@ -22,8 +22,8 @@ struct AnalogThing
 
 namespace input
 {
-	DCControllerData raw_input[GAMEPAD_COUNT];
-	bool controller_enabled[GAMEPAD_COUNT];
+	DCControllerData raw_input[GAMEPAD_COUNT] {};
+	bool controller_enabled[GAMEPAD_COUNT] {};
 	bool debug = false;
 
 	inline void poll_sdl()
@@ -82,10 +82,10 @@ namespace input
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
-			DreamPad& dreampad = DreamPad::controllers[i];
+			DreamPad& dream_pad = DreamPad::controllers[i];
 
-			dreampad.poll();
-			raw_input[i] = dreampad.dreamcast_data();
+			dream_pad.poll();
+			raw_input[i] = dream_pad.dreamcast_data();
 
 			// Compatibility for mods which use ControllersRaw directly.
 			// This will only copy the first four controllers.
@@ -103,19 +103,19 @@ namespace input
 				DisplayDebugStringFormatted(NJM_LOCATION(0, 8 + (3 * i)), "P%d  B: %08X LT/RT: %03d/%03d V: %d%d", (i + 1),
 				                            pad.HeldButtons, pad.LTriggerPressure, pad.RTriggerPressure, (m & Motor::large), (m & Motor::small) >> 1);
 				DisplayDebugStringFormatted(NJM_LOCATION(4, 9 + (3 * i)), "LS: %4d/%4d (%f) RS: %4d/%4d (%f)",
-				                            pad.LeftStickX, pad.LeftStickY, dreampad.normalized_l(), pad.RightStickX, pad.RightStickY,
-				                            dreampad.normalized_r());
+				                            pad.LeftStickX, pad.LeftStickY, dream_pad.normalized_l(), pad.RightStickX, pad.RightStickY,
+				                            dream_pad.normalized_r());
 
 				if (pad.HeldButtons & Buttons_Z)
 				{
 					const int pressed = pad.PressedButtons;
 					if (pressed & Buttons_Up)
 					{
-						dreampad.settings.rumble_factor += 0.125f;
+						dream_pad.settings.rumble_factor += 0.125f;
 					}
 					else if (pressed & Buttons_Down)
 					{
-						dreampad.settings.rumble_factor -= 0.125f;
+						dream_pad.settings.rumble_factor -= 0.125f;
 					}
 					else if (pressed & Buttons_Left)
 					{
@@ -127,7 +127,7 @@ namespace input
 					}
 
 					DisplayDebugStringFormatted(NJM_LOCATION(4, 10 + (3 * i)),
-					                            "Rumble factor (U/D): %f (L/R to test)", dreampad.settings.rumble_factor);
+					                            "Rumble factor (U/D): %f (L/R to test)", dream_pad.settings.rumble_factor);
 				}
 			}
 		#endif

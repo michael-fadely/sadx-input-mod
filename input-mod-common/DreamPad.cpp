@@ -11,7 +11,7 @@ using std::clamp;
 
 DreamPad DreamPad::controllers[GAMEPAD_COUNT];
 
-const uint32_t DreamPad::PAD_SUPPORT =
+const uint32_t DreamPad::pad_support =
 	PDD_DEV_SUPPORT_TA | PDD_DEV_SUPPORT_TB | PDD_DEV_SUPPORT_TX | PDD_DEV_SUPPORT_TY | PDD_DEV_SUPPORT_ST
 #ifdef EXTENDED_BUTTONS
 	| PDD_DEV_SUPPORT_TC | PDD_DEV_SUPPORT_TD | PDD_DEV_SUPPORT_TZ
@@ -56,7 +56,7 @@ bool DreamPad::open(int id)
 		return false;
 	}
 
-	dc_pad.Support = PAD_SUPPORT;
+	dc_pad.Support = pad_support;
 
 	SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad);
 

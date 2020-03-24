@@ -39,7 +39,7 @@ class DreamPad
 	float normalized_r_ = 0.0f;
 
 public:
-	static const uint32_t PAD_SUPPORT;
+	static const uint32_t pad_support;
 	
 	static DreamPad controllers[GAMEPAD_COUNT];
 

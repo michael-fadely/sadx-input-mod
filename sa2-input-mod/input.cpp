@@ -15,8 +15,8 @@
 
 namespace input
 {
-	PDS_PERIPHERAL raw_input[GAMEPAD_COUNT];
-	bool controller_enabled[GAMEPAD_COUNT];
+	PDS_PERIPHERAL raw_input[GAMEPAD_COUNT] {};
+	bool controller_enabled[GAMEPAD_COUNT] {};
 	bool debug = false;
 
 	inline void poll_sdl()
@@ -78,10 +78,10 @@ namespace input
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
 		{
-			DreamPad& dreampad = DreamPad::controllers[i];
+			DreamPad& dream_pad = DreamPad::controllers[i];
 
-			dreampad.poll();
-			raw_input[i] = *reinterpret_cast<const PDS_PERIPHERAL*>(&dreampad.dreamcast_data());
+			dream_pad.poll();
+			raw_input[i] = *reinterpret_cast<const PDS_PERIPHERAL*>(&dream_pad.dreamcast_data());
 
 			// Compatibility for mods which use ControllersRaw directly.
 			// This will only copy the first four controllers.

@@ -1,7 +1,5 @@
 #pragma once
 
-#define WIN32_LEAN_AND_MEAN
-
 #include "DreamPad.h"
 #include "FileExists.h"
 #include "input.h"
