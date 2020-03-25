@@ -168,7 +168,6 @@ void KeyboardMouse::poll()
 
 void UpdateVanillaSADXKey(Uint32 key, bool down)
 {
-	if (key == SDLK_LALT && Key_F2.pressed) PrintDebug("Ass!");
 	for (int i = 0; i < LengthOfArray(SADXKeyArray); i++)
 	{
 		if (key == SADXKeyArray[i].WindowsCode)
