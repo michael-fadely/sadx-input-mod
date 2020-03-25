@@ -19,7 +19,6 @@ namespace input
 	ControllerData raw_input[GAMEPAD_COUNT];
 	bool controller_enabled[GAMEPAD_COUNT];
 	bool debug = false;
-	bool sadx_remapper = false;
 	bool mouse_disabled = false;
 
 	inline void poll_sdl()

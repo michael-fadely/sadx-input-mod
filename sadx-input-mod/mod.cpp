@@ -138,8 +138,6 @@ extern "C"
 
 		input::debug = config.getBool("Config", "Debug", debug_default);
 
-		input::sadx_remapper = GetModuleHandleA("sadx-keyboard-remap.dll") != nullptr;
-
 		input::mouse_disabled = config.getBool("Config", "DisableMouse", false);
 
 		// This defaults RadialR to enabled if smooth-cam is detected.

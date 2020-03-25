@@ -193,7 +193,6 @@ void UpdateVanillaSADXKey(Uint32 key, bool down)
 void KeyboardMouse::update_keyboard_buttons(Uint32 key, bool down)
 {
 	UpdateVanillaSADXKey(key, down);
-	if (input::sadx_remapper) return;
 	switch (key)
 	{
 		default:
