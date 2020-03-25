@@ -20,6 +20,7 @@ namespace input
 	bool controller_enabled[GAMEPAD_COUNT];
 	bool debug = false;
 	bool sadx_remapper = false;
+	bool mouse_disabled = false;
 
 	inline void poll_sdl()
 	{
@@ -72,7 +73,7 @@ namespace input
 	void poll_controllers()
 	{
 		poll_sdl();
-
+		ClearVanillaSADXKeys();
 		KeyboardMouse::poll();
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)

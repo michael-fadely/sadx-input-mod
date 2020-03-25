@@ -166,30 +166,29 @@ void KeyboardMouse::poll()
 	pad.RTriggerPressure = !!(pad.HeldButtons & Buttons_R) ? uchar_max : 0;
 }
 
+void ClearVanillaSADXKeys()
+{
+	for (int i = 0; i < LengthOfArray(SADXKeyArray); i++)
+	{
+		SADXKeyArray[i].VanillaKeyPointer.old = SADXKeyArray[i].VanillaKeyPointer.held;
+		SADXKeyArray[i].VanillaKeyPointer.pressed = 0;
+	}
+}
+
 void UpdateVanillaSADXKey(Uint32 key, bool down)
 {
 	for (int i = 0; i < LengthOfArray(SADXKeyArray); i++)
 	{
 		if (key == SADXKeyArray[i].WindowsCode)
 		{
-			if (input::debug) PrintDebug("Key match: %s / code %X, previous state: %d, new state: %d", SADXKeyArray[i].KeyConfigName.c_str(), SADXKeyArray[i].WindowsCode, SADXKeyArray[i].VanillaKeyPointer.old, SADXKeyArray[i].VanillaKeyPointer.held);
+			if (input::debug) PrintDebug("Key match: %s / code %X, previous state: %d, new state: %d\n", SADXKeyArray[i].DebugString.c_str(), SADXKeyArray[i].WindowsCode, SADXKeyArray[i].VanillaKeyPointer.old, SADXKeyArray[i].VanillaKeyPointer.held);
 			SADXKeyArray[i].VanillaKeyPointer.old = SADXKeyArray[i].VanillaKeyPointer.held;
-			if (down && SADXKeyArray[i].VanillaKeyPointer.old == 0)
-			{
-				SADXKeyArray[i].VanillaKeyPointer.pressed = 1;
-				if (input::debug) PrintDebug(" (pressed)\n");
-			}
-			else
-			{
-				SADXKeyArray[i].VanillaKeyPointer.pressed = 0;
-				if (input::debug) PrintDebug(" (held)\n");
-			}
+			if (!(SADXKeyArray[i].VanillaKeyPointer.held)) SADXKeyArray[i].VanillaKeyPointer.pressed = down;
 			SADXKeyArray[i].VanillaKeyPointer.held = down;
 			return;
 		}
 	}
 }
-
 
 void KeyboardMouse::update_keyboard_buttons(Uint32 key, bool down)
 {
@@ -282,7 +281,7 @@ void KeyboardMouse::update_keyboard_buttons(Uint32 key, bool down)
 
 void KeyboardMouse::update_cursor(Sint32 xrel, Sint32 yrel)
 {
-	if (!mouse_active)
+	if (!mouse_active || input::mouse_disabled)
 	{
 		return;
 	}
@@ -335,6 +334,7 @@ void KeyboardMouse::update_cursor(Sint32 xrel, Sint32 yrel)
 
 void KeyboardMouse::reset_cursor()
 {
+	if (input::mouse_disabled) return;
 	CursorMagnitude = 0;
 	CursorCos       = 0;
 	CursorSin       = 0;
@@ -346,6 +346,7 @@ void KeyboardMouse::reset_cursor()
 
 void KeyboardMouse::update_mouse_buttons(Uint32 button, bool down)
 {
+	if (input::mouse_disabled) return;
 	bool last_rmb = right_button;
 
 	switch (button)
