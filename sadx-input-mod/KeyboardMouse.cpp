@@ -2,6 +2,7 @@
 
 #include "minmax.h"
 #include "KeyboardMouse.h"
+#include "SADXKeyboard.h"
 
 DataPointer(HWND, hWnd, 0x3D0FD30);
 
@@ -165,8 +166,36 @@ void KeyboardMouse::poll()
 	pad.RTriggerPressure = !!(pad.HeldButtons & Buttons_R) ? uchar_max : 0;
 }
 
+void UpdateVanillaSADXKey(Uint32 key, bool down)
+{
+	if (key == SDLK_LALT && Key_F2.pressed) PrintDebug("Ass!");
+	for (int i = 0; i < LengthOfArray(SADXKeyArray); i++)
+	{
+		if (key == SADXKeyArray[i].WindowsCode)
+		{
+			if (input::debug) PrintDebug("Key match: %s / code %X, previous state: %d, new state: %d", SADXKeyArray[i].KeyConfigName.c_str(), SADXKeyArray[i].WindowsCode, SADXKeyArray[i].VanillaKeyPointer.old, SADXKeyArray[i].VanillaKeyPointer.held);
+			SADXKeyArray[i].VanillaKeyPointer.old = SADXKeyArray[i].VanillaKeyPointer.held;
+			if (down && SADXKeyArray[i].VanillaKeyPointer.old == 0)
+			{
+				SADXKeyArray[i].VanillaKeyPointer.pressed = 1;
+				if (input::debug) PrintDebug(" (pressed)\n");
+			}
+			else
+			{
+				SADXKeyArray[i].VanillaKeyPointer.pressed = 0;
+				if (input::debug) PrintDebug(" (held)\n");
+			}
+			SADXKeyArray[i].VanillaKeyPointer.held = down;
+			return;
+		}
+	}
+}
+
+
 void KeyboardMouse::update_keyboard_buttons(Uint32 key, bool down)
 {
+	UpdateVanillaSADXKey(key, down);
+	if (input::sadx_remapper) return;
 	switch (key)
 	{
 		default:

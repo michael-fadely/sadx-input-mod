@@ -138,6 +138,8 @@ extern "C"
 
 		input::debug = config.getBool("Config", "Debug", debug_default);
 
+		input::sadx_remapper = GetModuleHandleA("sadx-keyboard-remap.dll") != nullptr;
+
 		// This defaults RadialR to enabled if smooth-cam is detected.
 		const bool smooth_cam = GetModuleHandleA("smooth-cam.dll") != nullptr;
 
