@@ -6,8 +6,8 @@
       <Property name="Debug" type="bool" defaultvalue="False">
         <HelpText>Enables ingame controller debugging information.</HelpText>
       </Property>
-      <Property name="DisableMouse" type="bool" defaultvalue="False">
-        <HelpText>Disable mouse input.</HelpText>
+      <Property name="DisableMouse" type="bool" defaultvalue="False" display="Disable mouse">
+        <HelpText>Disables mouse input.</HelpText>
       </Property>
     </Group>
 
