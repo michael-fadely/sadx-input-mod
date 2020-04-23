@@ -19,7 +19,7 @@ namespace input
 	ControllerData raw_input[GAMEPAD_COUNT];
 	bool controller_enabled[GAMEPAD_COUNT];
 	bool debug = false;
-
+	KeyboardMapping keys;
 	inline void poll_sdl()
 	{
 		SDL_Event event;

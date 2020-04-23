@@ -167,89 +167,35 @@ void KeyboardMouse::poll()
 
 void KeyboardMouse::update_keyboard_buttons(Uint32 key, bool down)
 {
-	switch (key)
-	{
-		default:
-			break;
-
-		case VK_SHIFT:
-			half_press = down;
-			break;
-
-		case 'X':
-		case VK_SPACE:
-			set_button(pad.HeldButtons, Buttons_A, down);
-			break;
-		case 'Z':
-			set_button(pad.HeldButtons, Buttons_B, down);
-			break;
-		case 'A':
-			set_button(pad.HeldButtons, Buttons_X, down);
-			break;
-		case 'S':
-			set_button(pad.HeldButtons, Buttons_Y, down);
-			break;
-		case 'Q':
-			set_button(pad.HeldButtons, Buttons_L, down);
-			break;
-		case 'W':
-			set_button(pad.HeldButtons, Buttons_R, down);
-			break;
-		case VK_RETURN:
-			set_button(pad.HeldButtons, Buttons_Start, down);
-			break;
-		case 'D':
-			set_button(pad.HeldButtons, Buttons_Z, down);
-			break;
-		case 'C':
-			set_button(pad.HeldButtons, Buttons_C, down);
-			break;
-		case 'E':
-			set_button(pad.HeldButtons, Buttons_D, down);
-			break;
-
-			// D-Pad
-		case VK_NUMPAD8:
-			set_button(pad.HeldButtons, Buttons_Up, down);
-			break;
-		case VK_NUMPAD5:
-			set_button(pad.HeldButtons, Buttons_Down, down);
-			break;
-		case VK_NUMPAD4:
-			set_button(pad.HeldButtons, Buttons_Left, down);
-			break;
-		case VK_NUMPAD6:
-			set_button(pad.HeldButtons, Buttons_Right, down);
-			break;
-
-			// Left stick
-		case VK_UP:
-			set_button(sticks[0].directions, Buttons_Up, down);
-			break;
-		case VK_DOWN:
-			set_button(sticks[0].directions, Buttons_Down, down);
-			break;
-		case VK_LEFT:
-			set_button(sticks[0].directions, Buttons_Left, down);
-			break;
-		case VK_RIGHT:
-			set_button(sticks[0].directions, Buttons_Right, down);
-			break;
-
-			// Right stick
-		case 'I':
-			set_button(sticks[1].directions, Buttons_Up, down);
-			break;
-		case 'K':
-			set_button(sticks[1].directions, Buttons_Down, down);
-			break;
-		case 'J':
-			set_button(sticks[1].directions, Buttons_Left, down);
-			break;
-		case 'L':
-			set_button(sticks[1].directions, Buttons_Right, down);
-			break;
-	}
+	// Half press
+	if (key == input::keys.Button_RightStick) half_press = down;
+	// Buttons
+	else if (key == input::keys.Button_A) set_button(pad.HeldButtons, Buttons_A, down);
+	else if (key == input::keys.Button_B) set_button(pad.HeldButtons, Buttons_B, down);
+	else if (key == input::keys.Button_X) set_button(pad.HeldButtons, Buttons_X, down);
+	else if (key == input::keys.Button_Y) set_button(pad.HeldButtons, Buttons_Y, down);
+	else if (key == input::keys.Button_RightShoulder) set_button(pad.HeldButtons, Buttons_Z, down);
+	else if (key == input::keys.Button_LeftShoulder) set_button(pad.HeldButtons, Buttons_C, down);
+	else if (key == input::keys.Button_Back) set_button(pad.HeldButtons, Buttons_D, down);
+	else if (key == input::keys.Button_Start) set_button(pad.HeldButtons, Buttons_Start, down);
+	// Triggers
+	else if (key == input::keys.LT) set_button(pad.HeldButtons, Buttons_L, down);
+	else if (key == input::keys.RT) set_button(pad.HeldButtons, Buttons_R, down);
+	// D-Pad
+	else if (key == input::keys.DPad_Up) set_button(pad.HeldButtons, Buttons_Up, down);
+	else if (key == input::keys.DPad_Down) set_button(pad.HeldButtons, Buttons_Down, down);
+	else if (key == input::keys.DPad_Left) set_button(pad.HeldButtons, Buttons_Left, down);
+	else if (key == input::keys.DPad_Right) set_button(pad.HeldButtons, Buttons_Right, down);
+	// Left stick
+	else if (key == input::keys.Analog1_Up) set_button(sticks[0].directions, Buttons_Up, down);
+	else if (key == input::keys.Analog1_Down) set_button(sticks[0].directions, Buttons_Down, down);
+	else if (key == input::keys.Analog1_Left) set_button(sticks[0].directions, Buttons_Left, down);
+	else if (key == input::keys.Analog1_Right) set_button(sticks[0].directions, Buttons_Right, down);
+	// Right stick
+	else if (key == input::keys.Analog2_Up) set_button(sticks[1].directions, Buttons_Up, down);
+	else if (key == input::keys.Analog2_Down) set_button(sticks[1].directions, Buttons_Down, down);
+	else if (key == input::keys.Analog2_Left) set_button(sticks[1].directions, Buttons_Left, down);
+	else if (key == input::keys.Analog2_Right) set_button(sticks[1].directions, Buttons_Right, down);
 }
 
 void KeyboardMouse::update_cursor(Sint32 xrel, Sint32 yrel)
@@ -357,60 +303,99 @@ void KeyboardMouse::update_mouse_buttons(Uint32 button, bool down)
 	}
 }
 
+WPARAM MapLeftRightKeys(WPARAM vk, LPARAM lParam)
+{
+	//Solution from https://stackoverflow.com/questions/5681284/how-do-i-distinguish-between-left-and-right-keys-ctrl-and-alt
+	WPARAM new_vk = vk;
+	UINT scancode = (lParam & 0x00ff0000) >> 16;
+	int extended = (lParam & 0x01000000) != 0;
+
+	switch (vk) {
+	case VK_RETURN:
+		if (lParam & 0x01000000) new_vk = 256;
+		else new_vk = vk;
+		break;
+	case VK_SHIFT:
+		new_vk = MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX);
+		break;
+	case VK_CONTROL:
+		new_vk = extended ? VK_RCONTROL : VK_LCONTROL;
+		break;
+	case VK_MENU:
+		new_vk = extended ? VK_RMENU : VK_LMENU;
+		break;
+	default:
+		new_vk = vk;
+		break;
+	}
+	return new_vk;
+}
+
 LRESULT KeyboardMouse::read_window_message(HWND handle, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (Msg)
 	{
-		case WM_KILLFOCUS:
-			sticks[0].directions = 0;
-			sticks[1].directions = 0;
-			pad.HeldButtons = 0;
-			pad.LeftStickX  = 0;
-			pad.LeftStickY  = 0;
-			pad.RightStickX = 0;
-			pad.RightStickY = 0;
-			reset_cursor();
-			break;
+	case WM_KILLFOCUS:
+		sticks[0].directions = 0;
+		sticks[1].directions = 0;
+		pad.HeldButtons = 0;
+		pad.LeftStickX  = 0;
+		pad.LeftStickY  = 0;
+		pad.RightStickX = 0;
+		pad.RightStickY = 0;
+		reset_cursor();
+		break;
 
-		case WM_LBUTTONDOWN:
-		case WM_LBUTTONUP:
-			update_mouse_buttons(VK_LBUTTON, Msg == WM_LBUTTONDOWN);
-			break;
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+		update_mouse_buttons(VK_LBUTTON, Msg == WM_LBUTTONDOWN);
+		break;
 
-		case WM_RBUTTONDOWN:
-		case WM_RBUTTONUP:
-			update_mouse_buttons(VK_RBUTTON, Msg == WM_RBUTTONDOWN);
-			break;
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+		update_mouse_buttons(VK_RBUTTON, Msg == WM_RBUTTONDOWN);
+		break;
 
-		case WM_MBUTTONDOWN:
-		case WM_MBUTTONUP:
-			update_mouse_buttons(VK_MBUTTON, Msg == WM_MBUTTONDOWN);
-			break;
+	case WM_MBUTTONDOWN:
+	case WM_MBUTTONUP:
+		update_mouse_buttons(VK_MBUTTON, Msg == WM_MBUTTONDOWN);
+		break;
 
-		case WM_MOUSEMOVE:
+	case WM_MOUSEMOVE:
+	{
+		auto x = static_cast<short>(lParam & 0xFFFF);
+		auto y = static_cast<short>(lParam >> 16);
+
+		update_cursor(x - mouse_x, y - mouse_y);
+
+		mouse_x = x;
+		mouse_y = y;
+		break;
+	}
+
+	case WM_MOUSEWHEEL:
+		break; // TODO
+
+	case WM_SYSKEYUP:
+		update_keyboard_buttons(MapLeftRightKeys(wParam, lParam), Msg == WM_KEYDOWN || Msg == WM_SYSKEYDOWN);
+		break;
+
+	case WM_SYSKEYDOWN:
+		if (wParam == VK_F2 && !(lParam & 0x40000000) && GameMode != 1 && GameMode != 8)
 		{
-			auto x = static_cast<short>(lParam & 0xFFFF);
-			auto y = static_cast<short>(lParam >> 16);
-
-			update_cursor(x - mouse_x, y - mouse_y);
-
-			mouse_x = x;
-			mouse_y = y;
-			break;
+			if (input::debug) PrintDebug("Soft reset\n");
+			WriteData<1>((char*)0x3B0EAA0, 0x01u);
 		}
+		update_keyboard_buttons(MapLeftRightKeys(wParam, lParam), Msg == WM_KEYDOWN || Msg == WM_SYSKEYDOWN);
+		break;
 
-		case WM_MOUSEWHEEL:
-			break; // TODO
+	case WM_KEYDOWN:
+	case WM_KEYUP:
+		update_keyboard_buttons(MapLeftRightKeys(wParam, lParam), Msg == WM_KEYDOWN || Msg == WM_SYSKEYDOWN);
+		break;
 
-		case WM_SYSKEYUP:
-		case WM_SYSKEYDOWN:
-		case WM_KEYDOWN:
-		case WM_KEYUP:
-			update_keyboard_buttons(wParam, Msg == WM_KEYDOWN || Msg == WM_SYSKEYDOWN);
-			break;
-
-		default:
-			break;
+	default:
+		break;
 	}
 
 	return CallWindowProc(lpPrevWndFunc, handle, Msg, wParam, lParam);

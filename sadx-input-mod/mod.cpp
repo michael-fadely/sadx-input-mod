@@ -137,7 +137,31 @@ extern "C"
 		IniFile config(config_path);
 
 		input::debug = config.getBool("Config", "Debug", debug_default);
-
+		// Keyboard mappings
+		input::keys.Analog1_Up = config.getInt("Keyboard", "-lefty", 38);
+		input::keys.Analog1_Down = config.getInt("Keyboard", "+lefty", 40);
+		input::keys.Analog1_Left = config.getInt("Keyboard", "-leftx", 37);
+		input::keys.Analog1_Right = config.getInt("Keyboard", "+leftx", 39);
+		input::keys.Analog2_Up = config.getInt("Keyboard", "-righty", 73);
+		input::keys.Analog2_Down = config.getInt("Keyboard", "+righty", 77);
+		input::keys.Analog2_Left = config.getInt("Keyboard", "-rightx", 74);
+		input::keys.Analog2_Right = config.getInt("Keyboard", "+rightx", 76);
+		input::keys.Button_A = config.getInt("Keyboard", "a", 88);
+		input::keys.Button_B = config.getInt("Keyboard", "b", 90);
+		input::keys.Button_X = config.getInt("Keyboard", "x", 65);
+		input::keys.Button_Y = config.getInt("Keyboard", "y", 83);
+		input::keys.Button_Start = config.getInt("Keyboard", "start", 13);
+		input::keys.Button_Back = config.getInt("Keyboard", "back", 86);
+		input::keys.LT = config.getInt("Keyboard", "lefttrigger", 81);
+		input::keys.RT = config.getInt("Keyboard", "righttrigger", 87);
+		input::keys.Button_LeftShoulder = config.getInt("Keyboard", "leftshoulder", 67);
+		input::keys.Button_RightShoulder = config.getInt("Keyboard", "rightshoulder", 66);
+		input::keys.Button_LeftStick = config.getInt("Keyboard", "leftstick", 69);
+		input::keys.Button_RightStick = config.getInt("Keyboard", "rightstick", 160);
+		input::keys.DPad_Up = config.getInt("Keyboard", "dpup", 104);
+		input::keys.DPad_Down = config.getInt("Keyboard", "dpdown", 98);
+		input::keys.DPad_Left = config.getInt("Keyboard", "dpleft", 100);
+		input::keys.DPad_Right = config.getInt("Keyboard", "dpright", 102);
 		// This defaults RadialR to enabled if smooth-cam is detected.
 		const bool smooth_cam = GetModuleHandleA("smooth-cam.dll") != nullptr;
 
