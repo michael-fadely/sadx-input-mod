@@ -45,6 +45,16 @@ static std::string build_mod_path(const char* modpath, const char* path)
 	return result.str();
 }
 
+int GetEKey(int index)
+{
+	if (input::e_held)
+	{
+		input::e_held = false;
+		return 1;
+	}
+	return 0;
+}
+
 extern "C"
 {
 	__declspec(dllexport) ModInfo SADXModInfo = { ModLoaderVer, nullptr, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0 };
@@ -79,7 +89,8 @@ extern "C"
 			            "SDL Init Error", MB_OK | MB_ICONERROR);
 			return;
 		}
-
+		// Replace function to get the E key for centering camera on character
+		WriteCall((void*)0x00437547, GetEKey);
 		// Disable call to CreateKeyboardDevice
 		WriteData<5>(reinterpret_cast<void*>(0x0077F0D7), 0x90i8);
 		// Disable call to CreateMouseDevice

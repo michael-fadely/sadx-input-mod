@@ -223,6 +223,8 @@ void DreamPad::poll()
 		{
 			buttons |= Buttons_Z;
 		}
+		e_held = SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_LEFTSTICK);
+		half_press = SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_RIGHTSTICK);
 #endif
 
 		if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP))
@@ -248,6 +250,16 @@ void DreamPad::poll()
 		buttons |= kb.HeldButtons;
 	}
 
+	if (half_press)
+	{
+		dc_pad.LeftStickX /= 2;
+		dc_pad.LeftStickY /= 2;
+		dc_pad.RightStickX /= 2;
+		dc_pad.RightStickY /= 2;
+		normalized_l_ /= 2.0f;
+		normalized_r_ /= 2.0f;
+	}
+
 	update_buttons(dc_pad, buttons);
 }
 
@@ -259,6 +271,11 @@ Motor DreamPad::active_motor() const
 bool DreamPad::connected() const
 {
 	return connected_;
+}
+
+bool DreamPad::e_held_pad() const
+{
+	return e_held;
 }
 
 int DreamPad::controller_id() const

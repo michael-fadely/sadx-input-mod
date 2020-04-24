@@ -12,6 +12,7 @@ bool           KeyboardMouse::mouse_active  = false;
 bool           KeyboardMouse::left_button   = false;
 bool           KeyboardMouse::right_button  = false;
 bool           KeyboardMouse::half_press    = false;
+bool           KeyboardMouse::e_held	    = false;
 NJS_POINT2I    KeyboardMouse::cursor        = {};
 KeyboardStick  KeyboardMouse::sticks[2]     = {};
 Sint16         KeyboardMouse::mouse_x       = 0;
@@ -163,12 +164,15 @@ void KeyboardMouse::poll()
 
 	pad.LTriggerPressure = !!(pad.HeldButtons & Buttons_L) ? uchar_max : 0;
 	pad.RTriggerPressure = !!(pad.HeldButtons & Buttons_R) ? uchar_max : 0;
+	if (e_held) input::e_held = true;
 }
 
 void KeyboardMouse::update_keyboard_buttons(Uint32 key, bool down)
 {
 	// Half press
 	if (key == input::keys.Button_RightStick) half_press = down;
+	// Center camera
+	else if (key == input::keys.Button_LeftStick) e_held = down;
 	// Buttons
 	else if (key == input::keys.Button_A) set_button(pad.HeldButtons, Buttons_A, down);
 	else if (key == input::keys.Button_B) set_button(pad.HeldButtons, Buttons_B, down);

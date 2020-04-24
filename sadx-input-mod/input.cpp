@@ -20,6 +20,7 @@ namespace input
 	bool controller_enabled[GAMEPAD_COUNT];
 	bool debug = false;
 	bool disablemouse = true;
+	bool e_held;
 	KeyboardMapping keys;
 	inline void poll_sdl()
 	{
@@ -90,6 +91,7 @@ namespace input
 			}
 
 		#ifdef EXTENDED_BUTTONS
+			if (dreampad.e_held_pad()) input::e_held = true;
 			if (debug && raw_input[i].HeldButtons & Buttons_C)
 			{
 				const ControllerData& pad = raw_input[i];

@@ -42,6 +42,7 @@ private:
 	static bool left_button;
 	static bool right_button;
 	static bool half_press;
+	static bool e_held;
 	static NJS_POINT2I cursor;
 	static KeyboardStick sticks[2];
 	static Sint16 mouse_x;
