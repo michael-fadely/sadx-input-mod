@@ -19,6 +19,7 @@ namespace input
 	ControllerData raw_input[GAMEPAD_COUNT];
 	bool controller_enabled[GAMEPAD_COUNT];
 	bool debug = false;
+	bool disablemouse = true;
 	KeyboardMapping keys;
 	inline void poll_sdl()
 	{

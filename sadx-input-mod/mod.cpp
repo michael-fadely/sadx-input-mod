@@ -137,6 +137,7 @@ extern "C"
 		IniFile config(config_path);
 
 		input::debug = config.getBool("Config", "Debug", debug_default);
+		input::disablemouse = config.getBool("Config", "DisableMouse", true);
 		// Keyboard mappings
 		input::keys.Analog1_Up = config.getInt("Keyboard", "-lefty", 38);
 		input::keys.Analog1_Down = config.getInt("Keyboard", "+lefty", 40);

@@ -41,5 +41,6 @@ namespace input
 	extern ControllerData raw_input[GAMEPAD_COUNT];
 	extern bool controller_enabled[GAMEPAD_COUNT];
 	extern bool debug;
+	extern bool disablemouse;
 	extern KeyboardMapping keys;
 }
