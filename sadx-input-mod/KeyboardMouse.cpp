@@ -36,7 +36,6 @@ void KeyboardMouse::update_sadx_key(Uint32 key, bool down)
 	{
 		if (key == SADX2004Keys[i].WindowsCode)
 		{
-			//PrintDebug("Key press: code %d, SADX code %d, Steam code %d\n", key, SADX2004Keys[i].SADX2004Code, SADX2004Keys[i].SADXSteamCode);
 			if (KeyboardKeys[SADX2004Keys[i].SADX2004Code].old != down) KeyboardKeys[SADX2004Keys[i].SADX2004Code].pressed = down;
 			KeyboardKeys[SADX2004Keys[i].SADX2004Code].old = KeyboardKeys[SADX2004Keys[i].SADX2004Code].held;
 			KeyboardKeys[SADX2004Keys[i].SADX2004Code].held = down;
