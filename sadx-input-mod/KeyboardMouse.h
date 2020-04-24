@@ -34,6 +34,8 @@ public:
 	static void update_mouse_buttons(Uint32 button, bool down);
 	static LRESULT read_window_message(HWND handle, UINT Msg, WPARAM wParam, LPARAM lParam);
 	static void hook_wnd_proc();
+	static void clear_sadx_keys(bool force);
+	static void update_sadx_key(Uint32 key, bool down);
 
 private:
 	static ControllerData pad;

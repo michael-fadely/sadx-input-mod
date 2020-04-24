@@ -2,6 +2,7 @@
 
 #include "minmax.h"
 #include "KeyboardMouse.h"
+#include "SADXKeyboard.h"
 
 DataPointer(HWND, hWnd, 0x3D0FD30);
 
@@ -18,6 +19,31 @@ KeyboardStick  KeyboardMouse::sticks[2]     = {};
 Sint16         KeyboardMouse::mouse_x       = 0;
 Sint16         KeyboardMouse::mouse_y       = 0;
 WNDPROC        KeyboardMouse::lpPrevWndFunc = nullptr;
+
+void KeyboardMouse::clear_sadx_keys(bool force)
+{
+	for (int i = 0; i < LengthOfArray(SADX2004Keys); i++)
+	{
+		KeyboardKeys[SADX2004Keys[i].SADX2004Code].old = KeyboardKeys[SADX2004Keys[i].SADX2004Code].held;
+		KeyboardKeys[SADX2004Keys[i].SADX2004Code].pressed = 0;
+		if (force) KeyboardKeys[SADX2004Keys[i].SADX2004Code].held = 0;
+	}
+}
+
+void KeyboardMouse::update_sadx_key(Uint32 key, bool down)
+{
+	for (int i = 0; i < LengthOfArray(SADX2004Keys); i++)
+	{
+		if (key == SADX2004Keys[i].WindowsCode)
+		{
+			//PrintDebug("Key press: code %d, SADX code %d, Steam code %d\n", key, SADX2004Keys[i].SADX2004Code, SADX2004Keys[i].SADXSteamCode);
+			if (KeyboardKeys[SADX2004Keys[i].SADX2004Code].old != down) KeyboardKeys[SADX2004Keys[i].SADX2004Code].pressed = down;
+			KeyboardKeys[SADX2004Keys[i].SADX2004Code].old = KeyboardKeys[SADX2004Keys[i].SADX2004Code].held;
+			KeyboardKeys[SADX2004Keys[i].SADX2004Code].held = down;
+			return;
+		}
+	}
+}
 
 inline void set_button(Uint32& i, Uint32 value, bool down)
 {
@@ -169,6 +195,8 @@ void KeyboardMouse::poll()
 
 void KeyboardMouse::update_keyboard_buttons(Uint32 key, bool down)
 {
+	// Update vanilla SADX array
+	update_sadx_key(key, down);
 	// Half press
 	if (key == input::keys.Button_RightStick) half_press = down;
 	// Center camera
@@ -349,6 +377,7 @@ LRESULT KeyboardMouse::read_window_message(HWND handle, UINT Msg, WPARAM wParam,
 		pad.RightStickX = 0;
 		pad.RightStickY = 0;
 		reset_cursor();
+		clear_sadx_keys(true);
 		break;
 
 	case WM_LBUTTONDOWN:
