@@ -30,6 +30,7 @@ public:
 	static void poll();
 	static void update_keyboard_buttons(Uint32 key, bool down);
 	static void update_cursor(Sint32 xrel, Sint32 yrel);
+	static void update_wheel(WPARAM wParam);
 	static void reset_cursor();
 	static void update_mouse_buttons(Uint32 button, bool down);
 	static LRESULT read_window_message(HWND handle, UINT Msg, WPARAM wParam, LPARAM lParam);
@@ -41,6 +42,7 @@ private:
 	static ControllerData pad;
 	static float normalized_l_, normalized_r_;
 	static bool mouse_active;
+	static bool wheel_active;
 	static bool left_button;
 	static bool right_button;
 	static bool half_press;
@@ -49,5 +51,6 @@ private:
 	static KeyboardStick sticks[2];
 	static Sint16 mouse_x;
 	static Sint16 mouse_y;
+	static Sint16 wheel_delta;
 	static WNDPROC lpPrevWndFunc;
 };

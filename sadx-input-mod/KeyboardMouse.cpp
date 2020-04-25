@@ -10,6 +10,7 @@ ControllerData KeyboardMouse::pad           = {};
 float          KeyboardMouse::normalized_l_ = 0.0f;
 float          KeyboardMouse::normalized_r_ = 0.0f;
 bool           KeyboardMouse::mouse_active  = false;
+bool           KeyboardMouse::wheel_active  = false;
 bool           KeyboardMouse::left_button   = false;
 bool           KeyboardMouse::right_button  = false;
 bool           KeyboardMouse::half_press    = false;
@@ -18,6 +19,7 @@ NJS_POINT2I    KeyboardMouse::cursor        = {};
 KeyboardStick  KeyboardMouse::sticks[2]     = {};
 Sint16         KeyboardMouse::mouse_x       = 0;
 Sint16         KeyboardMouse::mouse_y       = 0;
+Sint16         KeyboardMouse::wheel_delta	= 0;
 WNDPROC        KeyboardMouse::lpPrevWndFunc = nullptr;
 
 void KeyboardMouse::clear_sadx_keys(bool force)
@@ -183,6 +185,30 @@ void KeyboardMouse::poll()
 		normalized_r_ /= 2.0f;
 	}
 
+	if (wheel_active)
+	{
+		if (wheel_delta > 0)
+		{
+			set_button(pad.HeldButtons, Buttons_R, true);
+			set_button(pad.HeldButtons, Buttons_L, false);
+			wheel_delta--;
+		}
+
+		else if (wheel_delta < 0)
+		{
+			set_button(pad.HeldButtons, Buttons_L, true);
+			set_button(pad.HeldButtons, Buttons_R, false);
+			wheel_delta++;
+		}
+
+		else if (wheel_delta == 0)
+		{
+			wheel_active = false;
+			set_button(pad.HeldButtons, Buttons_L, false);
+			set_button(pad.HeldButtons, Buttons_R, false);
+		}
+	}
+
 	DreamPad::update_buttons(pad, pad.HeldButtons);
 
 	constexpr auto uchar_max = std::numeric_limits<uchar>::max();
@@ -280,6 +306,24 @@ void KeyboardMouse::update_cursor(Sint32 xrel, Sint32 yrel)
 	p.y = static_cast<Sint16>(clamp(static_cast<int>(v.y / 128.0f * short_max), -short_max, short_max));
 
 	njPopMatrix(1);
+}
+
+void KeyboardMouse::update_wheel(WPARAM wParam)
+{
+	if (input::disablemouse)
+	{
+		return;
+	}
+	if ((int)wParam > 0)
+	{
+		wheel_delta = -15;
+		wheel_active = true;
+	}
+	else if ((int)wParam < 0)
+	{
+		wheel_delta = 15;
+		wheel_active = true;
+	}
 }
 
 void KeyboardMouse::reset_cursor()
@@ -407,7 +451,8 @@ LRESULT KeyboardMouse::read_window_message(HWND handle, UINT Msg, WPARAM wParam,
 	}
 
 	case WM_MOUSEWHEEL:
-		break; // TODO
+		update_wheel(wParam);
+		break;
 
 	case WM_SYSKEYUP:
 		update_keyboard_buttons(MapLeftRightKeys(wParam, lParam), Msg == WM_KEYDOWN || Msg == WM_SYSKEYDOWN);
