@@ -20,7 +20,7 @@ namespace input
 	bool controller_enabled[GAMEPAD_COUNT];
 	bool debug = false;
 	bool disable_mouse = true;
-	bool e_held;
+	bool e_held = false;
 	bool demo;
 	KeyboardMapping keys;
 	inline void poll_sdl()
