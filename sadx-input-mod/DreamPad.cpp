@@ -260,7 +260,7 @@ void DreamPad::poll()
 		normalized_r_ /= 2.0f;
 	}
 
-	if (dc_pad.HeldButtons == 0x606 && dc_pad.ReleasedButtons == Buttons_Start && GameMode != 1 && GameMode != 8)
+	if (dc_pad.HeldButtons == (Buttons_A | Buttons_B | Buttons_X | Buttons_Y) && dc_pad.ReleasedButtons == Buttons_Start && GameMode != 1 && GameMode != 8)
 	{
 		if (input::debug) PrintDebug("Soft reset\n");
 		WriteData<1>((char*)0x3B0EAA0, 0x01u);
