@@ -131,7 +131,6 @@ xcopy /Y /D "$(SolutionDir)SDL2\README-SDL.txt" "$(OutDir)"</Command>
     <ClInclude Include="KeyboardMouse.h" />
     <ClInclude Include="minmax.h" />
     <ClInclude Include="rumble.h" />
-    <ClInclude Include="SADXKeyboard.h" />
     <ClInclude Include="SDL.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="typedefs.h" />

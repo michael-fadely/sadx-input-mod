@@ -88,9 +88,6 @@
     <ClInclude Include="..\sadx-mod-loader\mod-loader-common\ModLoaderCommon\TextConv.hpp">
       <Filter>Header Files\external</Filter>
     </ClInclude>
-    <ClInclude Include="SADXKeyboard.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="configschema.xml">

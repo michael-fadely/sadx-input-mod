@@ -3,6 +3,15 @@
 #include <ninja.h>
 #include <SADXStructs.h>
 
+struct KeyboardKey
+{
+	char held;
+	char old;
+	char pressed;
+};
+
+DataArray(KeyboardKey, KeyboardKeys, 0x03B0E3E0, 256);
+
 struct KeyboardStick : NJS_POINT2I
 {
 	Uint32 directions;

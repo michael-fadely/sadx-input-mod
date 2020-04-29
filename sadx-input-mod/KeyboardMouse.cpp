@@ -2,7 +2,7 @@
 
 #include "minmax.h"
 #include "KeyboardMouse.h"
-#include "SADXKeyboard.h"
+#include <map>
 
 DataPointer(HWND, hWnd, 0x3D0FD30);
 DataPointer(char, SoftResetByte, 0x3B0EAA0);
@@ -23,7 +23,7 @@ Sint16         KeyboardMouse::mouse_y       = 0;
 Sint16         KeyboardMouse::wheel_delta	= 0;
 WNDPROC        KeyboardMouse::lpPrevWndFunc = nullptr;
 
-KeyData SADX2004Keys[] = {
+std::map<int, int>SADX2004Keys = {
 	{ VK_ESCAPE, 41 },
 	{ VK_F1, 58 },
 	{ VK_F2, 59 },
@@ -98,7 +98,7 @@ KeyData SADX2004Keys[] = {
 	{ VK_NUMPAD4, 92 }, //Num 4 (Left)
 	{ VK_NUMPAD5, 93 }, //Num 5
 	{ VK_NUMPAD6, 94 }, //Num 6 (Right)
-	{ VK_LSHIFT }, //Left Shift (doesn't exist in vanilla SADX)
+	{ VK_LSHIFT, 152 }, //Left Shift (doesn't exist in vanilla SADX)
 	{ 0x5A, 29 }, //Z
 	{ 0x58, 27 }, //X
 	{ 0x43, 6 }, //C
@@ -125,31 +125,33 @@ KeyData SADX2004Keys[] = {
 	{ VK_RIGHT, 79 },
 	{ VK_NUMPAD0, 98 },
 	{ 110, 150 }, //Numpad Delete (doesn't exist in vanilla SADX)
-	{ 256, 151 }, //Numpad Enter (doesn't exist in vanilla SADX)
+	{ 256, 151 }, //Numpad Enter (doesn't exist in vanilla SADX)};
 };
 
 void KeyboardMouse::clear_sadx_keys(bool force)
 {
-	for (int i = 0; i < LengthOfArray(SADX2004Keys); i++)
+	for (auto& pair : SADX2004Keys)
 	{
-		KeyboardKeys[SADX2004Keys[i].SADX2004Code].old = KeyboardKeys[SADX2004Keys[i].SADX2004Code].held;
-		KeyboardKeys[SADX2004Keys[i].SADX2004Code].pressed = 0;
-		if (force) KeyboardKeys[SADX2004Keys[i].SADX2004Code].held = 0;
+		KeyboardKeys[pair.second].old = KeyboardKeys[pair.second].held;
+		KeyboardKeys[pair.second].pressed = 0;
+		if (force) KeyboardKeys[pair.second].held = 0;
 	}
 }
 
 void KeyboardMouse::update_sadx_key(Uint32 key, bool down)
 {
-	for (int i = 0; i < LengthOfArray(SADX2004Keys); i++)
+	auto it = SADX2004Keys.find(key);
+	// No equivalent Windows -> SADX mapping available
+	if (it == SADX2004Keys.end())
 	{
-		if (key == SADX2004Keys[i].WindowsCode)
-		{
-			if (KeyboardKeys[SADX2004Keys[i].SADX2004Code].old != down) KeyboardKeys[SADX2004Keys[i].SADX2004Code].pressed = down;
-			KeyboardKeys[SADX2004Keys[i].SADX2004Code].old = KeyboardKeys[SADX2004Keys[i].SADX2004Code].held;
-			KeyboardKeys[SADX2004Keys[i].SADX2004Code].held = down;
-			return;
-		}
+		return;
 	}
+
+	auto& keyboard_key = KeyboardKeys[it->second];
+
+	if (keyboard_key.old != down) keyboard_key.pressed = down;
+	keyboard_key.old = keyboard_key.held;
+	keyboard_key.held = down;
 }
 
 inline void set_button(Uint32& i, Uint32 value, bool down)
