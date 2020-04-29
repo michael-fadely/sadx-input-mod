@@ -21,7 +21,7 @@ namespace input
 	bool debug = false;
 	bool disable_mouse = true;
 	bool e_held = false;
-	bool demo;
+	bool demo = false;
 	KeyboardMapping keys;
 	inline void poll_sdl()
 	{
