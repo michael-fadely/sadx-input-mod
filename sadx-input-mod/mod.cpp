@@ -14,8 +14,7 @@
 #include "FileExists.h"
 #include "input.h"
 #include "rumble.h"
-
-DataPointer(char, SoftResetByte, 0x3B0EAA0);
+#include "Variables_SADX.h"
 
 static void* RumbleA_ptr            = reinterpret_cast<void*>(0x004BCBC0);
 static void* RumbleB_ptr            = reinterpret_cast<void*>(0x004BCC10);
@@ -65,10 +64,56 @@ extern "C"
 	__declspec(dllexport) void OnInput()
 	{
 		input::poll_controllers();
+
+		//Soft reset
 		if (ControllerPointers[0]->HeldButtons == (Buttons_A | Buttons_B | Buttons_X | Buttons_Y) && ControllerPointers[0]->ReleasedButtons == Buttons_Start && GameMode != 1 && GameMode != 8)
 		{
 			if (input::debug) PrintDebug("Soft reset\n");
 			SoftResetByte = 1;
+		}
+
+		//Demo playback
+		if (DemoPlaying && Demo_Enabled && Demo_Cutscene < 0 && !input::demo) input::demo = true; //Ignore everything but the Start button
+		if (input::demo)
+		{
+			DemoControllerData* demo_memory = (DemoControllerData*)HeapThing;
+			if (input::debug) PrintDebug("Demo frame:%d\n", Demo_Frame);
+			if (GameState == 15)
+			{
+				
+				if (input::raw_input[0].HeldButtons & Buttons_Start || Demo_Frame > Demo_MaxFrame || demo_memory[Demo_Frame].HeldButtons == -1)
+				{
+					Demo_Enabled = 0;
+					StartLevelCutscene(6);
+					input::demo = false;
+					Demo_Frame = 0;
+				}
+				ControllerPointers[0]->HeldButtons = demo_memory[Demo_Frame].HeldButtons;
+				ControllerPointers[0]->LTriggerPressure = demo_memory[Demo_Frame].LTrigger;
+				ControllerPointers[0]->RTriggerPressure = demo_memory[Demo_Frame].RTrigger;
+				ControllerPointers[0]->LeftStickX = demo_memory[Demo_Frame].StickX;
+				ControllerPointers[0]->LeftStickY = demo_memory[Demo_Frame].StickY;
+				ControllerPointers[0]->RightStickX = 0;
+				ControllerPointers[0]->RightStickY = 0;
+				ControllerPointers[0]->NotHeldButtons = demo_memory[Demo_Frame].NotHeldButtons;
+				ControllerPointers[0]->PressedButtons = demo_memory[Demo_Frame].PressedButtons;
+				ControllerPointers[0]->ReleasedButtons = demo_memory[Demo_Frame].ReleasedButtons;
+			}
+			else
+			{
+				input::raw_input[0].LeftStickX = 0;
+				input::raw_input[0].LeftStickY = 0;
+				input::raw_input[0].HeldButtons = 0;
+				input::raw_input[0].LTriggerPressure = 0;
+				input::raw_input[0].RTriggerPressure = 0;
+				input::raw_input[0].LeftStickX = 0;
+				input::raw_input[0].LeftStickY = 0;
+				input::raw_input[0].RightStickX = 0;
+				input::raw_input[0].RightStickY = 0;
+				input::raw_input[0].NotHeldButtons = -1;
+				input::raw_input[0].PressedButtons = 0;
+				input::raw_input[0].ReleasedButtons = 0;
+			}
 		}
 	}
 

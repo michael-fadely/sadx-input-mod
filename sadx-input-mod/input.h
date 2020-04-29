@@ -30,6 +30,18 @@ struct KeyboardMapping
 	Uint8 Button_RightStick;
 };
 
+struct DemoControllerData
+{
+	int HeldButtons;
+	__int16 LTrigger;
+	__int16 RTrigger;
+	__int16 StickX;
+	__int16 StickY;
+	int NotHeldButtons;
+	int PressedButtons;
+	int ReleasedButtons;
+};
+
 namespace input
 {
 	void poll_controllers();
@@ -43,5 +55,6 @@ namespace input
 	extern bool debug;
 	extern bool disable_mouse;
 	extern bool e_held;
+	extern bool demo;
 	extern KeyboardMapping keys;
 }
