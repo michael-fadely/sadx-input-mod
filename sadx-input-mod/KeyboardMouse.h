@@ -10,8 +10,6 @@ struct KeyboardKey
 	char pressed;
 };
 
-DataArray(KeyboardKey, KeyboardKeys, 0x03B0E3E0, 256);
-
 struct KeyboardStick : NJS_POINT2I
 {
 	Uint32 directions;

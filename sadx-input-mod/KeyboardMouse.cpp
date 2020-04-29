@@ -6,6 +6,7 @@
 
 DataPointer(HWND, hWnd, 0x3D0FD30);
 DataPointer(char, SoftResetByte, 0x3B0EAA0);
+DataArray(KeyboardKey, KeyboardKeys, 0x03B0E3E0, 256);
 
 ControllerData KeyboardMouse::pad           = {};
 float          KeyboardMouse::normalized_l_ = 0.0f;
