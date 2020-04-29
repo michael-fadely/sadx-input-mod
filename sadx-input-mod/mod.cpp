@@ -15,6 +15,8 @@
 #include "input.h"
 #include "rumble.h"
 
+DataPointer(char, SoftResetByte, 0x3B0EAA0);
+
 static void* RumbleA_ptr            = reinterpret_cast<void*>(0x004BCBC0);
 static void* RumbleB_ptr            = reinterpret_cast<void*>(0x004BCC10);
 static void* UpdateControllers_ptr  = reinterpret_cast<void*>(0x0040F460);
@@ -66,7 +68,7 @@ extern "C"
 		if (ControllerPointers[0]->HeldButtons == (Buttons_A | Buttons_B | Buttons_X | Buttons_Y) && ControllerPointers[0]->ReleasedButtons == Buttons_Start && GameMode != 1 && GameMode != 8)
 		{
 			if (input::debug) PrintDebug("Soft reset\n");
-			WriteData<1>((char*)0x3B0EAA0, 0x01u);
+			SoftResetByte = 1;
 		}
 	}
 

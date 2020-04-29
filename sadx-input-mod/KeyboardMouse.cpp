@@ -5,6 +5,7 @@
 #include "SADXKeyboard.h"
 
 DataPointer(HWND, hWnd, 0x3D0FD30);
+DataPointer(char, SoftResetByte, 0x3B0EAA0);
 
 ControllerData KeyboardMouse::pad           = {};
 float          KeyboardMouse::normalized_l_ = 0.0f;
@@ -462,7 +463,7 @@ LRESULT KeyboardMouse::read_window_message(HWND handle, UINT Msg, WPARAM wParam,
 		if (wParam == VK_F2 && !(lParam & 0x40000000) && GameMode != 1 && GameMode != 8)
 		{
 			if (input::debug) PrintDebug("Soft reset\n");
-			WriteData<1>((char*)0x3B0EAA0, 0x01u);
+			SoftResetByte = 1;
 		}
 		update_keyboard_buttons(MapLeftRightKeys(wParam, lParam), Msg == WM_KEYDOWN || Msg == WM_SYSKEYDOWN);
 		break;
