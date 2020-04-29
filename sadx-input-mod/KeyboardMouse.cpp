@@ -258,7 +258,7 @@ void KeyboardMouse::update_keyboard_buttons(Uint32 key, bool down)
 
 void KeyboardMouse::update_cursor(Sint32 xrel, Sint32 yrel)
 {
-	if (!mouse_active || input::disablemouse)
+	if (!mouse_active || input::disable_mouse)
 	{
 		return;
 	}
@@ -311,7 +311,7 @@ void KeyboardMouse::update_cursor(Sint32 xrel, Sint32 yrel)
 
 void KeyboardMouse::update_wheel(WPARAM wParam)
 {
-	if (input::disablemouse)
+	if (input::disable_mouse)
 	{
 		return;
 	}
@@ -340,7 +340,7 @@ void KeyboardMouse::reset_cursor()
 
 void KeyboardMouse::update_mouse_buttons(Uint32 button, bool down)
 {
-	if (input::disablemouse) return;
+	if (input::disable_mouse) return;
 	bool last_rmb = right_button;
 
 	switch (button)
