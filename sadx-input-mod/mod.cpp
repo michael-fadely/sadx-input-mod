@@ -263,6 +263,11 @@ extern "C"
 		PrintDebug("[Input] Initialization complete.\n");
 	}
 
+	__declspec(dllexport) void OnFrame()
+	{
+		KeyboardMouse::clear_sadx_keys(false);
+	}
+
 	__declspec(dllexport) void OnExit()
 	{
 		for (auto& i : DreamPad::controllers)

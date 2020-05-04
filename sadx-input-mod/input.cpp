@@ -74,7 +74,6 @@ namespace input
 	void poll_controllers()
 	{
 		poll_sdl();
-		KeyboardMouse::clear_sadx_keys(false);
 		KeyboardMouse::poll();
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
