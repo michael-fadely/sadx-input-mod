@@ -38,7 +38,7 @@ std::map<int, int>SADX2004Keys = {
 	{ VK_SNAPSHOT, 70 },
 	{ VK_SCROLL, 71 },
 	{ VK_PAUSE, 72 },
-	{ 0xC0, 140 }, //~ (doesn't exist in vanilla SADX)
+	{ 0xC0, 99 }, //~ (doesn't exist in vanilla SADX)
 	{ 0x31, 30 }, //1
 	{ 0x32, 31 }, //2
 	{ 0x33, 32 }, //3
@@ -70,9 +70,9 @@ std::map<int, int>SADX2004Keys = {
 	{ 0x49, 12 }, //I
 	{ 0x4F, 18 }, //O
 	{ 0x50, 19 }, //P
-	{ 219, 141 }, //[ (doesn't exist in vanilla SADX)
-	{ 221, 142 }, //] (doesn't exist in vanilla SADX)
-	{ 220, 135 }, //Backslash
+	{ 219, 100 }, //[ (doesn't exist in vanilla SADX)
+	{ 221, 101 }, //] (doesn't exist in vanilla SADX)
+	{ 220, 102 }, //Backslash (doesn't exist in vanilla SADX)
 	{ VK_DELETE, 76 },
 	{ VK_END, 77 },
 	{ VK_NEXT, 78 }, //Page Down
@@ -80,7 +80,7 @@ std::map<int, int>SADX2004Keys = {
 	{ VK_NUMPAD8, 96 }, //Num 8 (Up)
 	{ VK_NUMPAD9, 97 }, //Num 9 (Page Up)
 	{ VK_ADD, 87 }, //Num Plus
-	{ VK_CAPITAL, 143 }, //Caps Lock (doesn't exist in vanilla SADX)
+	{ VK_CAPITAL, 103 }, //Caps Lock (doesn't exist in vanilla SADX)
 	{ 0x41, 4 }, //A
 	{ 0x53, 22 }, //S
 	{ 0x44, 7 }, //D
@@ -96,7 +96,7 @@ std::map<int, int>SADX2004Keys = {
 	{ VK_NUMPAD4, 92 }, //Num 4 (Left)
 	{ VK_NUMPAD5, 93 }, //Num 5
 	{ VK_NUMPAD6, 94 }, //Num 6 (Right)
-	{ VK_LSHIFT, 152 }, //Left Shift (doesn't exist in vanilla SADX)
+	{ VK_LSHIFT, 104 }, //Left Shift (doesn't exist in vanilla SADX)
 	{ 0x5A, 29 }, //Z
 	{ 0x58, 27 }, //X
 	{ 0x43, 6 }, //C
@@ -107,35 +107,32 @@ std::map<int, int>SADX2004Keys = {
 	{ VK_OEM_COMMA, 54 },
 	{ VK_OEM_PERIOD, 55 },
 	{ VK_OEM_2, 56 }, //Slash
-	{ VK_RSHIFT, 144 }, //Right Shift (doesn't exist in vanilla SADX)
+	{ VK_RSHIFT, 105 }, //Right Shift (doesn't exist in vanilla SADX)
 	{ VK_UP, 82 }, //Up
 	{ VK_NUMPAD1, 89 }, //Num 1 (End)
 	{ VK_NUMPAD2, 90 }, //Num 2 (Down)
 	{ VK_NUMPAD3, 91 }, //Num 3 (Page Down)
-	{ VK_LCONTROL, 145 }, //Left Control (doesn't exist in vanilla SADX)
-	{ VK_LMENU, 146 }, //Left Alt (doesn't exist in vanilla SADX)
+	{ VK_LCONTROL, 106 }, //Left Control (doesn't exist in vanilla SADX)
+	{ VK_LMENU, 107 }, //Left Alt (doesn't exist in vanilla SADX)
 	{ VK_SPACE, 44 },
-	{ VK_RMENU, 147 }, //Right Alt (doesn't exist in vanilla SADX)
-	{ VK_APPS, 148 }, //Menu (doesn't exist in vanilla SADX)
-	{ VK_RCONTROL, 149 }, //Right Control (doesn't exist in vanilla SADX)
+	{ VK_RMENU, 108 }, //Right Alt (doesn't exist in vanilla SADX)
+	{ VK_APPS, 109 }, //Menu (doesn't exist in vanilla SADX)
+	{ VK_RCONTROL, 110 }, //Right Control (doesn't exist in vanilla SADX)
 	{ VK_LEFT, 80 },
 	{ VK_DOWN, 81 },
 	{ VK_RIGHT, 79 },
 	{ VK_NUMPAD0, 98 },
-	{ 110, 150 }, //Numpad Delete (doesn't exist in vanilla SADX)
-	{ 256, 151 }, //Numpad Enter (doesn't exist in vanilla SADX)};
+	{ 110, 111 }, //Numpad Delete (doesn't exist in vanilla SADX)
+	{ 256, 112 }, //Numpad Enter (doesn't exist in vanilla SADX)};
 };
 
-void KeyboardMouse::clear_sadx_keys(bool force)
+void KeyboardMouse::clear_sadx_keys()
 {
-	for (auto& pair : SADX2004Keys)
+	for (int i = 0; i < 6; i++)
 	{
-		KeyboardKeys[pair.second].old = KeyboardKeys[pair.second].held;
-		KeyboardKeys[pair.second].pressed = 0;
-		if (force) KeyboardKeys[pair.second].held = 0;
+		KeyboardInputPointer->indices[i] = 0;
 	}
 }
-
 void KeyboardMouse::update_sadx_key(Uint32 key, bool down)
 {
 	auto it = SADX2004Keys.find(key);
@@ -144,12 +141,25 @@ void KeyboardMouse::update_sadx_key(Uint32 key, bool down)
 	{
 		return;
 	}
-
-	auto& keyboard_key = KeyboardKeys[it->second];
-
-	if (keyboard_key.old != down) keyboard_key.pressed = down;
-	keyboard_key.old = keyboard_key.held;
-	keyboard_key.held = down;
+	// Update vanilla keyboard with up to 6 keys
+	for (int i = 0; i < 6; i++)
+	{
+		if (down)
+		{
+			if (KeyboardInputPointer->indices[i] == 0)
+			{
+				KeyboardInputPointer->indices[i] = it->second;
+				break;
+			}
+		}
+		else
+		{
+			if (KeyboardInputPointer->indices[i] == it->second)
+			{
+				KeyboardInputPointer->indices[i] = 0;
+			}
+		}
+	}
 }
 
 inline void set_button(Uint32& i, Uint32 value, bool down)
@@ -322,6 +332,7 @@ void KeyboardMouse::poll()
 	pad.LTriggerPressure = !!(pad.HeldButtons & Buttons_L) ? uchar_max : 0;
 	pad.RTriggerPressure = !!(pad.HeldButtons & Buttons_R) ? uchar_max : 0;
 	if (e_held) input::e_held = true;
+	KeyboardUpdate();
 }
 
 void KeyboardMouse::update_keyboard_buttons(Uint32 key, bool down)
@@ -526,7 +537,7 @@ LRESULT KeyboardMouse::read_window_message(HWND handle, UINT Msg, WPARAM wParam,
 		pad.RightStickX = 0;
 		pad.RightStickY = 0;
 		reset_cursor();
-		clear_sadx_keys(true);
+		clear_sadx_keys();
 		break;
 
 	case WM_LBUTTONDOWN:

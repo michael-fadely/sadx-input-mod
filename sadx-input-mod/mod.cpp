@@ -22,6 +22,8 @@ static void* UpdateControllers_ptr  = reinterpret_cast<void*>(0x0040F460);
 static void* AnalogHook_ptr         = reinterpret_cast<void*>(0x0040F343);
 static void* InitRawControllers_ptr = reinterpret_cast<void*>(0x0040F451); // End of function (hook)
 
+KeyboardInput SADXKeyboard = { 0, 0, { 0, 0, 0, 0, 0, 0 }, nullptr };
+
 PointerInfo jumps[] = {
 	{ rumble::pdVibMxStop, rumble::pdVibMxStop_r },
 	{ RumbleA_ptr, rumble::RumbleA_r },
@@ -54,6 +56,11 @@ int GetEKey(int index)
 		return 1;
 	}
 	return 0;
+}
+
+void CreateSADXKeyboard(KeyboardInput* ptr, int length)
+{
+	KeyboardInputPointer = &SADXKeyboard;
 }
 
 extern "C"
@@ -142,9 +149,9 @@ extern "C"
 			return;
 		}
 		// Replace function to get the E key for centering camera on character
-		WriteCall((void*)0x00437547, GetEKey);
-		// Disable call to CreateKeyboardDevice
-		WriteData<5>(reinterpret_cast<void*>(0x0077F0D7), 0x90i8);
+		WriteCall(reinterpret_cast<void*>(0x00437547), GetEKey);
+		// Replace call to CreateKeyboardDevice to set up SADX keyboard pointer
+		WriteCall(reinterpret_cast<void*>(0x0077F0D7), CreateSADXKeyboard);
 		// Disable call to CreateMouseDevice
 		WriteData<5>(reinterpret_cast<void*>(0x0077F03E), 0x90i8);
 		// Disable call to DirectInput_Init
@@ -261,11 +268,6 @@ extern "C"
 		}
 
 		PrintDebug("[Input] Initialization complete.\n");
-	}
-
-	__declspec(dllexport) void OnFrame()
-	{
-		KeyboardMouse::clear_sadx_keys(false);
 	}
 
 	__declspec(dllexport) void OnExit()
