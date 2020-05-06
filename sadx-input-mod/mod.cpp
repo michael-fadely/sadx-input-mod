@@ -87,7 +87,7 @@ extern "C"
 			if (input::debug) PrintDebug("Demo frame:%d\n", Demo_Frame);
 			if (GameState == 15)
 			{
-				
+
 				if (input::raw_input[0].HeldButtons & Buttons_Start || Demo_Frame > Demo_MaxFrame || demo_memory[Demo_Frame].HeldButtons == -1)
 				{
 					Demo_Enabled = 0;
@@ -135,7 +135,7 @@ extern "C"
 			PrintDebug("[Input] Unable to load SDL2.dll.\n");
 
 			MessageBoxA(nullptr, "Error loading SDL. See debug message for details.",
-			            "SDL Load Error", MB_OK | MB_ICONERROR);
+				"SDL Load Error", MB_OK | MB_ICONERROR);
 
 			return;
 		}
@@ -145,7 +145,7 @@ extern "C"
 		{
 			PrintDebug("[Input] Unable to initialize SDL. Error code: %i\n", init);
 			MessageBoxA(nullptr, "Error initializing SDL. See debug message for details.",
-			            "SDL Init Error", MB_OK | MB_ICONERROR);
+				"SDL Init Error", MB_OK | MB_ICONERROR);
 			return;
 		}
 		// Replace function to get the E key for centering camera on character
@@ -198,14 +198,14 @@ extern "C"
 
 		const std::string config_path = build_mod_path(path, "config.ini");
 
-	#ifdef _DEBUG
+#ifdef _DEBUG
 		const bool debug_default = true;
-	#else
+#else
 		const bool debug_default = false;
-	#endif
+#endif
 
 		IniFile config(config_path);
-
+		ushort KeyboardPlayer = max(0, min(7, config.getInt("Config", "KeyboardPlayer", 0)));
 		input::debug = config.getBool("Config", "Debug", debug_default);
 		input::disable_mouse = config.getBool("Config", "DisableMouse", true);
 		// Keyboard mappings
@@ -258,12 +258,12 @@ extern "C"
 			settings.mega_rumble = config.getBool(section, "MegaRumble", false);
 			settings.rumble_min_time = static_cast<ushort>(config.getInt(section, "RumbleMinTime", 0));
 
-			settings.allow_keyboard = config.getBool(section, "AllowKeyboard", !i);
+			if (i == KeyboardPlayer) settings.allow_keyboard = true; else settings.allow_keyboard = false;
 
 			if (input::debug)
 			{
 				PrintDebug("[Input] Deadzones for P%d (L/R/T): %05d / %05d / %05d\n", (i + 1),
-				           settings.deadzone_l, settings.deadzone_r, settings.trigger_threshold);
+					settings.deadzone_l, settings.deadzone_r, settings.trigger_threshold);
 			}
 		}
 

@@ -31,6 +31,7 @@ Configurable controller fields are as follows:
 | `TriggerThreshold`       | integer     | `0`, `32767` |        `30` | Trigger to digital conversion threshold. |
 | `RumbleFactor`           | float       | `0.0`, `1.0` |       `1.0` | Rumble multiplier. Values below 0 or above 1 have no effect. |
 | `MegaRumble`             | boolean     | `0`, `1`     |         `0` | Always fire both motors while rumbling, never independently. |
+| `RumbleMinTime`          | integer     | `0`, `32767` |         `0` | Minimum rumble duration. |
 
 #### Example
 ```ini
@@ -48,12 +49,14 @@ This section allows you to configure general mod settings.
 | ------------------------ | ----------- | ------------ | -----------:| ----------- |
 | `Debug`                  | boolean     | `0`, `1`     |         `0` | Enables ingame controller debugging information. |
 | `DisableMouse`           | boolean     | `0`, `1`     |         `1` | Disable mouse controls. |
+| `KeyboardPlayer`         | integer     | `0`, `7`     |         `0` | Select which controller is associated with keyboard bindings. |
 
 #### Example
 ```ini
 [Config]
 Debug = 1
 DisableMouse = 0
+KeyboardPlayer = 0
 ```
 
 ### `[Keyboard]` section

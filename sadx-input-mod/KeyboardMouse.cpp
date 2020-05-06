@@ -133,6 +133,7 @@ void KeyboardMouse::clear_sadx_keys()
 		KeyboardInputPointer->indices[i] = 0;
 	}
 }
+
 void KeyboardMouse::update_sadx_key(Uint32 key, bool down)
 {
 	auto it = SADX2004Keys.find(key);

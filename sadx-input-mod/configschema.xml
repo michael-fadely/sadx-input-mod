@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ConfigSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.sonicretro.org">
   <Groups>
-
+    
     <Group name="Config">
       <Property name="Debug" type="bool" defaultvalue="False">
         <HelpText>Enables ingame controller debugging information.</HelpText>
       </Property>
-    <Property name="DisableMouse" type="bool" defaultvalue="True" display="Disable mouse">
+      <Property name="DisableMouse" type="bool" defaultvalue="True" display="Disable mouse">
         <HelpText>Disable mouse input.</HelpText>
       </Property>
+      <Property name="KeyboardPlayer" type="Players" defaultvalue="0" display="Keyboard controller">
+        <HelpText>Select which gamepad is controller by the keyboard/mouse.</HelpText>
+      </Property>
     </Group>
-
+    
     <Group name="Controller 1">
       <Property name="DeadzoneL" type="int" defaultvalue="7849" min="0" max="32767" display="Left stick deadzone">
         <HelpText>Left analog stick deadzone (from 0 to 32767).</HelpText>
@@ -35,9 +38,6 @@
       </Property>
       <Property name="RumbleMinTime" type="int" defaultvalue="0" min="0" max="32767" display="Minimum rumble time">
         <HelpText>Minimum rumble time (from 0 to 32767).</HelpText>
-      </Property>
-      <Property name="AllowKeyboard" type="bool" defaultvalue="True" display="Allow keyboard">
-        <HelpText>Enable keyboard input for this controller.</HelpText>
       </Property>
     </Group>
 
@@ -66,9 +66,6 @@
       <Property name="RumbleMinTime" type="int" defaultvalue="0" min="0" max="32767" display="Minimum rumble time">
         <HelpText>Minimum rumble time (from 0 to 32767).</HelpText>
       </Property>
-      <Property name="AllowKeyboard" type="bool" defaultvalue="True" display="Allow keyboard">
-        <HelpText>Enable keyboard input for this controller.</HelpText>
-      </Property>
     </Group>
 
     <Group name="Controller 3">
@@ -95,9 +92,6 @@
       </Property>
       <Property name="RumbleMinTime" type="int" defaultvalue="0" min="0" max="32767" display="Minimum rumble time">
         <HelpText>Minimum rumble time (from 0 to 32767).</HelpText>
-      </Property>
-      <Property name="AllowKeyboard" type="bool" defaultvalue="True" display="Allow keyboard">
-        <HelpText>Enable keyboard input for this controller.</HelpText>
       </Property>
     </Group>
 
@@ -126,9 +120,6 @@
       <Property name="RumbleMinTime" type="int" defaultvalue="0" min="0" max="32767" display="Minimum rumble time">
         <HelpText>Minimum rumble time (from 0 to 32767).</HelpText>
       </Property>
-      <Property name="AllowKeyboard" type="bool" defaultvalue="True" display="Allow keyboard">
-        <HelpText>Enable keyboard input for this controller.</HelpText>
-      </Property>
     </Group>
 
     <Group name="Controller 5">
@@ -155,9 +146,6 @@
       </Property>
       <Property name="RumbleMinTime" type="int" defaultvalue="0" min="0" max="32767" display="Minimum rumble time">
         <HelpText>Minimum rumble time (from 0 to 32767).</HelpText>
-      </Property>
-      <Property name="AllowKeyboard" type="bool" defaultvalue="True" display="Allow keyboard">
-        <HelpText>Enable keyboard input for this controller.</HelpText>
       </Property>
     </Group>
 
@@ -186,9 +174,6 @@
       <Property name="RumbleMinTime" type="int" defaultvalue="0" min="0" max="32767" display="Minimum rumble time">
         <HelpText>Minimum rumble time (from 0 to 32767).</HelpText>
       </Property>
-      <Property name="AllowKeyboard" type="bool" defaultvalue="True" display="Allow keyboard">
-        <HelpText>Enable keyboard input for this controller.</HelpText>
-      </Property>
     </Group>
 
     <Group name="Controller 7">
@@ -215,9 +200,6 @@
       </Property>
       <Property name="RumbleMinTime" type="int" defaultvalue="0" min="0" max="32767" display="Minimum rumble time">
         <HelpText>Minimum rumble time (from 0 to 32767).</HelpText>
-      </Property>
-      <Property name="AllowKeyboard" type="bool" defaultvalue="True" display="Allow keyboard">
-        <HelpText>Enable keyboard input for this controller.</HelpText>
       </Property>
     </Group>
 
@@ -246,12 +228,9 @@
       <Property name="RumbleMinTime" type="int" defaultvalue="0" min="0" max="32767" display="Minimum rumble time">
         <HelpText>Minimum rumble time (from 0 to 32767).</HelpText>
       </Property>
-      <Property name="AllowKeyboard" type="bool" defaultvalue="True" display="Allow keyboard">
-        <HelpText>Enable keyboard input for this controller.</HelpText>
-      </Property>
     </Group>
-
- <Group name="Keyboard">
+    
+    <Group name="Keyboard">
       <Property name="-lefty" type="int" defaultvalue="38" min="8" max="255" display="Move forward">
         <HelpText>Analog Y-.</HelpText>
       </Property>
@@ -324,8 +303,20 @@
       <Property name="dpright" type="int" defaultvalue="102" min="8" max="255" display="Menu right">
         <HelpText>D-Pad right.</HelpText>
       </Property>
-
     </Group>
-
   </Groups>
+  
+  <Enums>
+    <Enum name="Players">
+      <EnumMember name="0" display="Player 1"></EnumMember>
+      <EnumMember name="1" display="Player 2"></EnumMember>
+      <EnumMember name="2" display="Player 3"></EnumMember>
+      <EnumMember name="3" display="Player 4"></EnumMember>
+      <EnumMember name="4" display="Player 5"></EnumMember>
+      <EnumMember name="5" display="Player 6"></EnumMember>
+      <EnumMember name="6" display="Player 7"></EnumMember>
+      <EnumMember name="7" display="Player 8"></EnumMember>
+    </Enum>
+  </Enums>
+  
 </ConfigSchema>
