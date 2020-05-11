@@ -37,6 +37,8 @@ class DreamPad
 	int effect_id      = -1;
 
 	bool  connected_   = false;
+	bool  e_held       = false;
+	bool  half_press   = false;
 	Motor rumble_state = Motor::none;
 
 	float normalized_l_ = 0.0f;
@@ -73,6 +75,7 @@ public:
 	Motor active_motor() const;
 	void  set_active_motor(Motor motor, bool enable);
 	bool  connected() const;
+	bool  e_held_pad() const;
 	int   controller_id() const;
 	float normalized_l() const;
 	float normalized_r() const;

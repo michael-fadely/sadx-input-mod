@@ -135,6 +135,7 @@ xcopy /Y /D "$(SolutionDir)SDL2\README-SDL.txt" "$(OutDir)"</Command>
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="typedefs.h" />
     <ClInclude Include="input.h" />
+    <ClInclude Include="Variables_SADX.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="configschema.xml">

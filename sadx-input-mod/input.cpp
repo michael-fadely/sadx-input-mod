@@ -19,7 +19,10 @@ namespace input
 	ControllerData raw_input[GAMEPAD_COUNT];
 	bool controller_enabled[GAMEPAD_COUNT];
 	bool debug = false;
-
+	bool disable_mouse = true;
+	bool e_held = false;
+	bool demo = false;
+	KeyboardMapping keys;
 	inline void poll_sdl()
 	{
 		SDL_Event event;
@@ -71,7 +74,6 @@ namespace input
 	void poll_controllers()
 	{
 		poll_sdl();
-
 		KeyboardMouse::poll();
 
 		for (uint i = 0; i < GAMEPAD_COUNT; i++)
@@ -89,6 +91,7 @@ namespace input
 			}
 
 		#ifdef EXTENDED_BUTTONS
+			if (dreampad.e_held_pad()) input::e_held = true;
 			if (debug && raw_input[i].HeldButtons & Buttons_C)
 			{
 				const ControllerData& pad = raw_input[i];
