@@ -138,7 +138,7 @@ void DreamPad::poll()
 		};
 
 		normalized_l_ = convert_axes(reinterpret_cast<NJS_POINT2I*>(&dc_pad.LeftStickX), axis, settings.deadzone_l,
-						settings.radial_l);
+                                     settings.radial_l);
 	}
 
 	if (!connected_ || (allow_keyboard && (kb.RightStickX || kb.RightStickY)))
@@ -155,7 +155,7 @@ void DreamPad::poll()
 		};
 
 		normalized_r_ = convert_axes(reinterpret_cast<NJS_POINT2I*>(&dc_pad.RightStickX), axis, settings.deadzone_r,
-						settings.radial_r);
+                                     settings.radial_r);
 	}
 
 	constexpr short short_max = std::numeric_limits<short>::max();
@@ -268,8 +268,7 @@ void DreamPad::poll()
 		dc_pad.RightStickY = 0;
 		dc_pad.LTriggerPressure = 0;
 		dc_pad.RTriggerPressure = 0;
-		if (buttons & Buttons_Start) buttons = Buttons_Start;
-		else buttons = 0;
+		buttons = (buttons & Buttons_Start) ? Buttons_Start : 0;
 		half_press = false;
 		e_held = false;
 	}
