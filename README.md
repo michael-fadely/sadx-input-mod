@@ -60,35 +60,35 @@ KeyboardPlayer = 0
 ```
 
 ### `[Keyboard]` section
-This section allows you to configure keyboard controls. The values are Windows virtual key codes (decimal). Click [here](http://cherrytree.at/misc/vk.htm) for a list of usable keycodes.
+This section allows you to configure keyboard controls. The values are Windows virtual key codes (decimal). Click [here](http://cherrytree.at/misc/vk.htm) for a list of usable keycodes. `256` is a hardcoded keycode for Numpad Enter, `-1` is an empty binding.
 
 #### Fields
 | Field                    | Type        | Range        | Default     | Description |
 | ------------------------ | ----------- | ------------ | -----------:| ----------- |
-| `-leftx`                 | integer     | `0`, `255`   |       `37`  | Move character left. |
-| `+leftx`                 | integer     | `0`, `255`   |       `39`  | Move character right. |
-| `-lefty`                 | integer     | `0`, `255`   |       `38`  | Move character forward. |
-| `+lefty`                 | integer     | `0`, `255`   |       `40`  | Move character backwards. |
-| `start`                  | integer     | `0`, `255`   |       `13`  | Start button. |
-| `a`                      | integer     | `0`, `255`   |       `88`  | Jump (A button). |
-| `b`                      | integer     | `0`, `255`   |       `90`  | Action (B button). |
-| `x`                      | integer     | `0`, `255`   |       `65`  | Pick Up (X button). |
-| `y`                      | integer     | `0`, `255`   |       `83`  | Whistle (Y button). |
-| `lefttrigger`            | integer     | `0`, `255`   |       `81`  | Rotate camera left. |
-| `righttrigger`           | integer     | `0`, `255`   |       `87`  | Rotate camera right. |
-| `-rightx`                | integer     | `0`, `255`   |       `74`  | Look left. |
-| `+rightx`                | integer     | `0`, `255`   |       `76`  | Look right. |
-| `-righty`                | integer     | `0`, `255`   |       `73`  | Look up. |
-| `+righty`                | integer     | `0`, `255`   |       `77`  | Look down. |
-| `leftshoulder`           | integer     | `0`, `255`   |       `67`  | C button. |
-| `rightshoulder`          | integer     | `0`, `255`   |       `66`  | Z button. |
-| `back`		           | integer     | `0`, `255`   |       `86`  | D button. |
-| `leftstick`	           | integer     | `0`, `255`   |       `69`  | Center camera on character. |
-| `rightstick`	           | integer     | `0`, `255`   |       `160` | Imitate analog half-press. |
-| `dpup`		           | integer     | `0`, `255`   |       `104` | D-Pad up (menus). |
-| `dpdown`		           | integer     | `0`, `255`   |       `98`  | D-Pad down (menus). |
-| `dpleft`		           | integer     | `0`, `255`   |       `100` | D-Pad left (menus). |
-| `dpright`		           | integer     | `0`, `255`   |       `102` | D-Pad right (menus). |
+| `-leftx`                 | integer     | `0`, `256`   |       `37`  | Move character left. |
+| `+leftx`                 | integer     | `0`, `256`   |       `39`  | Move character right. |
+| `-lefty`                 | integer     | `0`, `256`   |       `38`  | Move character forward. |
+| `+lefty`                 | integer     | `0`, `256`   |       `40`  | Move character backwards. |
+| `start`                  | integer     | `0`, `256`   |       `13`  | Start button. |
+| `a`                      | integer     | `0`, `256`   |       `88`  | Jump (A button). |
+| `b`                      | integer     | `0`, `256`   |       `90`  | Action (B button). |
+| `x`                      | integer     | `0`, `256`   |       `65`  | Pick Up (X button). |
+| `y`                      | integer     | `0`, `256`   |       `83`  | Whistle (Y button). |
+| `lefttrigger`            | integer     | `0`, `256`   |       `81`  | Rotate camera left. |
+| `righttrigger`           | integer     | `0`, `256`   |       `87`  | Rotate camera right. |
+| `-rightx`                | integer     | `0`, `256`   |       `74`  | Look left. |
+| `+rightx`                | integer     | `0`, `256`   |       `76`  | Look right. |
+| `-righty`                | integer     | `0`, `256`   |       `73`  | Look up. |
+| `+righty`                | integer     | `0`, `256`   |       `77`  | Look down. |
+| `leftshoulder`           | integer     | `0`, `256`   |       `67`  | C button. |
+| `rightshoulder`          | integer     | `0`, `256`   |       `66`  | Z button. |
+| `back`		           | integer     | `0`, `256`   |       `86`  | D button. |
+| `leftstick`	           | integer     | `0`, `256`   |       `69`  | Center camera on character. |
+| `rightstick`	           | integer     | `0`, `256`   |       `160` | Imitate analog half-press. |
+| `dpup`		           | integer     | `0`, `256`   |       `104` | D-Pad up (menus). |
+| `dpdown`		           | integer     | `0`, `256`   |       `98`  | D-Pad down (menus). |
+| `dpleft`		           | integer     | `0`, `256`   |       `100` | D-Pad left (menus). |
+| `dpright`		           | integer     | `0`, `256`   |       `102` | D-Pad right (menus). |
 
 #### Example
 ```ini

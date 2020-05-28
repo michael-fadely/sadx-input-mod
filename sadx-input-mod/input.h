@@ -4,30 +4,30 @@
 
 struct KeyboardMapping
 {
-	Uint8 Analog1_Up;
-	Uint8 Analog1_Down;
-	Uint8 Analog1_Left;
-	Uint8 Analog1_Right;
-	Uint8 Analog2_Up;
-	Uint8 Analog2_Down;
-	Uint8 Analog2_Left;
-	Uint8 Analog2_Right;
-	Uint8 LT;
-	Uint8 RT;
-	Uint8 DPad_Up;
-	Uint8 DPad_Down;
-	Uint8 DPad_Left;
-	Uint8 DPad_Right;
-	Uint8 Button_A;
-	Uint8 Button_B;
-	Uint8 Button_X;
-	Uint8 Button_Y;
-	Uint8 Button_Start;
-	Uint8 Button_LeftShoulder;
-	Uint8 Button_RightShoulder;
-	Uint8 Button_Back;
-	Uint8 Button_LeftStick;
-	Uint8 Button_RightStick;
+	Sint16 Analog1_Up;
+	Sint16 Analog1_Down;
+	Sint16 Analog1_Left;
+	Sint16 Analog1_Right;
+	Sint16 Analog2_Up;
+	Sint16 Analog2_Down;
+	Sint16 Analog2_Left;
+	Sint16 Analog2_Right;
+	Sint16 LT;
+	Sint16 RT;
+	Sint16 DPad_Up;
+	Sint16 DPad_Down;
+	Sint16 DPad_Left;
+	Sint16 DPad_Right;
+	Sint16 Button_A;
+	Sint16 Button_B;
+	Sint16 Button_X;
+	Sint16 Button_Y;
+	Sint16 Button_Start;
+	Sint16 Button_LeftShoulder;
+	Sint16 Button_RightShoulder;
+	Sint16 Button_Back;
+	Sint16 Button_LeftStick;
+	Sint16 Button_RightStick;
 };
 
 struct DemoControllerData
