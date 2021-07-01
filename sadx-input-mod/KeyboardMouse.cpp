@@ -560,11 +560,12 @@ LRESULT KeyboardMouse::read_window_message(HWND handle, UINT Msg, WPARAM wParam,
 	{
 		auto x = static_cast<short>(lParam & 0xFFFF);
 		auto y = static_cast<short>(lParam >> 16);
-
-		update_cursor(x - mouse_x, y - mouse_y);
-
-		mouse_x = x;
-		mouse_y = y;
+		if (!input::disable_mouse)
+		{
+			update_cursor(x - mouse_x, y - mouse_y);
+			mouse_x = x;
+			mouse_y = y;
+		}
 		break;
 	}
 
