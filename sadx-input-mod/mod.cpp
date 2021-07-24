@@ -50,7 +50,7 @@ static std::string build_mod_path(const char* modpath, const char* path)
 
 int GetEKey(int index)
 {
-	if (input::e_held)
+	if (input::e_held && input::controller_enabled[0])
 	{
 		input::e_held = false;
 		return 1;
@@ -72,14 +72,14 @@ extern "C"
 	{
 		input::poll_controllers();
 
-		//Soft reset
+		// Soft reset
 		if (ControllerPointers[0]->HeldButtons == (Buttons_A | Buttons_B | Buttons_X | Buttons_Y) && ControllerPointers[0]->ReleasedButtons == Buttons_Start && GameMode != 1 && GameMode != 8)
 		{
 			if (input::debug) PrintDebug("Soft reset\n");
 			SoftResetByte = 1;
 		}
 
-		//Demo playback
+		// Demo playback
 		if (DemoPlaying && Demo_Enabled && Demo_Cutscene < 0 && !input::demo) input::demo = true; //Ignore everything but the Start button
 		if (input::demo)
 		{
