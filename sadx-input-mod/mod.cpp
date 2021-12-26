@@ -50,7 +50,7 @@ static std::string build_mod_path(const char* modpath, const char* path)
 
 int GetEKey(int index)
 {
-	if (input::e_held && input::controller_enabled[0])
+	if (input::e_held && IsCameraControlEnabled())
 	{
 		input::e_held = false;
 		return 1;
