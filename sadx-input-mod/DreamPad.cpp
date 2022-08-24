@@ -86,7 +86,7 @@ void DreamPad::poll()
 
 	// TODO: keyboard/mouse toggle
 	auto& kb = KeyboardMouse::dreamcast_data();
-	bool allow_keyboard = settings.allow_keyboard;
+	const bool allow_keyboard = settings.allow_keyboard;
 
 	if (!connected_ || (allow_keyboard && (kb.LeftStickX || kb.LeftStickY)))
 	{
@@ -130,7 +130,7 @@ void DreamPad::poll()
 	}
 	else
 	{
-		auto lt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
+		const auto lt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
 		dc_pad.LTriggerPressure = static_cast<short>(255.0f * (static_cast<float>(lt) / static_cast<float>(short_max)));
 	}
 
@@ -140,10 +140,9 @@ void DreamPad::poll()
 	}
 	else
 	{
-		auto rt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+		const auto rt = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
 		dc_pad.RTriggerPressure = static_cast<short>(255.0f * (static_cast<float>(rt) / static_cast<float>(short_max)));
 	}
-
 
 	Uint32 buttons = 0;
 
