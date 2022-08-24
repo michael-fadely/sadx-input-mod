@@ -30,16 +30,16 @@ class DreamPad
 	ControllerData dc_pad = {};
 
 	SDL_GameController* gamepad = nullptr;
-	SDL_Haptic*         haptic  = nullptr;
-	SDL_HapticEffect    effect  = {};
 
 	int controller_id_ = -1;
-	int effect_id      = -1;
 
 	bool  connected_   = false;
 	bool  e_held       = false;
 	bool  half_press   = false;
 	Motor rumble_state = Motor::none;
+
+	ushort large_magnitude = 0;
+	ushort small_magnitude = 0;
 
 	float normalized_l_ = 0.0f;
 	float normalized_r_ = 0.0f;

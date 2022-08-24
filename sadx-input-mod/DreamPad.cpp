@@ -54,34 +54,7 @@ bool DreamPad::open(int id)
 
 	dc_pad.Support = PAD_SUPPORT;
 
-	SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad);
-
-	if (joystick == nullptr)
-	{
-		connected_ = false;
-		return false;
-	}
-
 	controller_id_ = id;
-	haptic = SDL_HapticOpenFromJoystick(joystick);
-
-	if (haptic == nullptr)
-	{
-		connected_ = true;
-		return true;
-	}
-
-	if (SDL_HapticRumbleSupported(haptic))
-	{
-		// TODO: Properly detect supported rumble types
-		effect.leftright.type = SDL_HAPTIC_LEFTRIGHT;
-		effect_id = SDL_HapticNewEffect(haptic, &effect);
-	}
-	else
-	{
-		SDL_HapticClose(haptic);
-		haptic = nullptr;
-	}
 
 	connected_ = true;
 	return true;
@@ -92,15 +65,6 @@ void DreamPad::close()
 	if (!connected_)
 	{
 		return;
-	}
-
-	if (haptic != nullptr)
-	{
-		SDL_HapticDestroyEffect(haptic, effect_id);
-		SDL_HapticClose(haptic);
-
-		effect_id = -1;
-		haptic = nullptr;
 	}
 
 	if (gamepad != nullptr)
@@ -313,11 +277,6 @@ const ControllerData& DreamPad::dreamcast_data() const
 
 void DreamPad::set_active_motor(Motor motor, bool enable)
 {
-	if (effect_id == -1 || haptic == nullptr)
-	{
-		return;
-	}
-
 	if (settings.mega_rumble)
 	{
 		motor = Motor::both;
@@ -327,18 +286,17 @@ void DreamPad::set_active_motor(Motor motor, bool enable)
 
 	if (motor & Motor::large)
 	{
-		effect.leftright.large_magnitude = enable ? static_cast<ushort>(std::numeric_limits<ushort>::max() * f) : 0;
+		large_magnitude = enable ? static_cast<ushort>(std::numeric_limits<ushort>::max() * f) : 0;
 		rumble_state = static_cast<Motor>(enable ? rumble_state | motor : rumble_state & ~Motor::large);
 	}
 
 	if (motor & Motor::small)
 	{
-		effect.leftright.small_magnitude = enable ? static_cast<ushort>(std::numeric_limits<ushort>::max() * f) : 0;
+		small_magnitude = enable ? static_cast<ushort>(std::numeric_limits<ushort>::max() * f) : 0;
 		rumble_state = static_cast<Motor>(enable ? rumble_state | motor : rumble_state & ~Motor::small);
 	}
 
-	SDL_HapticUpdateEffect(haptic, effect_id, &effect);
-	SDL_HapticRunEffect(haptic, effect_id, 1);
+	SDL_GameControllerRumble(gamepad, large_magnitude, small_magnitude, 0);
 }
 
 float DreamPad::convert_axes(NJS_POINT2I* dest, const NJS_POINT2I& source, short deadzone, bool radial)
@@ -392,22 +350,15 @@ void DreamPad::update_buttons(ControllerData& pad, Uint32 buttons)
 
 void DreamPad::move_from(DreamPad&& other)
 {
-	gamepad        = other.gamepad;
-	haptic         = other.haptic;
-	effect         = other.effect;
-	controller_id_ = other.controller_id_;
-	effect_id      = other.effect_id;
-	connected_     = other.connected_;
-	rumble_state   = other.rumble_state;
-	normalized_l_  = other.normalized_l_;
-	normalized_r_  = other.normalized_r_;
-	settings       = other.settings;
-
-	other.gamepad        = nullptr;
-	other.haptic         = nullptr;
-	other.controller_id_ = -1;
-	other.effect_id      = -1;
-	other.connected_     = false;
+	gamepad         = std::exchange(other.gamepad, nullptr);
+	controller_id_  = std::exchange(other.controller_id_, -1);
+	connected_      = std::exchange(other.connected_, false);
+	rumble_state    = other.rumble_state;
+	normalized_l_   = other.normalized_l_;
+	normalized_r_   = other.normalized_r_;
+	settings        = other.settings;
+	large_magnitude = other.large_magnitude;
+	small_magnitude = other.small_magnitude;
 }
 
 DreamPad::Settings::Settings()
