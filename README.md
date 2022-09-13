@@ -10,15 +10,16 @@ sadx-input-mod is a mod for SADX PC that replaces the default DirectInput pollin
 * Configurable gamepad controls using SDL controller maps
 * Configurable keyboard controls
 
-
-## Using SDL controller mappings
-To make the mod recognize your SDL controller mapping(s), place `gamecontrollerdb.txt` in the mod's root folder (`mods/sadx-input-mod`). To create an SDL mapping for your controller, you can use the [SDL2 Gamepad Tool](http://www.generalarcade.com/gamepadtool).
-
 ## Configuration
-To configure each controller and/or the keyboard, create a file called `config.ini` in the mod's root folder (`mods/sadx-input-mod`).
+Use the [SADX Launcher](https://sadxmodinstaller.unreliable.network/index.php/tools/#sadx-launcher) to configure controls and create controller mappings.
+
+## Manual configuration
+This mod's configuration consists of two parts: SDL controller mappings and general mod settings such as rumble and keyboard controls.
+- To make the mod recognize your SDL controller mapping(s), place `gamecontrollerdb.txt` in the mod's root folder (`mods/sadx-input-mod`). To create an SDL mapping for your controller, you can use the [SDL2 Gamepad Tool](http://www.generalarcade.com/gamepadtool).
+- You can use the `Configure...` button in SADX Mod Manager to edit the mod's configuration manually. To configure the mod without the Mod Manager, create a file called `config.ini` in the mod's root folder (`mods/sadx-input-mod`) and add the sections below.
 
 ### `[Controller N]` section
-Where `N` is the controller slot to configure. In official builds, you can use and configure up to 8 controllers.
+Where `N` is the controller slot to configure. You can use and configure up to 8 controllers.
 Configurable controller fields are as follows:
 
 #### Fields
